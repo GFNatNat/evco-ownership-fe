@@ -7,6 +7,7 @@
     "@emotion/styled": "^11.11.5",
     "@mui/icons-material": "^5.15.20",
     "@mui/material": "^5.15.20",
+    "@mui/x-charts": "^6.18.3",
     "@mui/x-data-grid": "^6.20.1",
     "@mui/x-date-pickers": "^6.18.3",
     "axios": "1.7.7",

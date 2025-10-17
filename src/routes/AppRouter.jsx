@@ -11,6 +11,16 @@ import Payments from '../pages/CoOwner/Payments';
 import StaffDashboard from '../pages/Dashboard/StaffDashboard';
 import AdminDashboard from '../pages/Dashboard/AdminDashboard';
 import PrivateRoute from './PrivateRoute';
+import AdminSettings from '../pages/Admin/Settings';
+import AdminReports from '../pages/Admin/Reports';
+import AdminGroups from '../pages/Admin/Groups';
+import AdminUsers from '../pages/Admin/Users';
+import StaffDisputes from '../pages/Staff/Disputes';
+import StaffServices from '../pages/Staff/Services';
+import CheckInOut from '../pages/Staff/CheckInOut';
+import StaffContracts from '../pages/Staff/Contracts';
+import Fleet from '../pages/Staff/Fleet';
+import AccountOwnership from '../pages/CoOwner/AccountOwnership';
 import AccessDenied from '../pages/Error/AccessDenied';
 import NotFound from '../pages/Error/NotFound';
 
@@ -31,10 +41,20 @@ export default function AppRouter() {
           {/* role-based redirect */}
           <Route path="/dashboard/role" element={<RoleRedirect />} />
           <Route path="/dashboard/coowner" element={<CoOwnerDashboard />} />
+              <Route path="/co-owner/account" element={<AccountOwnership />} />
               <Route path="/co-owner/schedule" element={<Schedule />} />
               <Route path="/co-owner/payments" element={<Payments />} />
           <Route path="/dashboard/staff" element={<StaffDashboard />} />
+              <Route path="/staff/fleet" element={<Fleet />} />
+              <Route path="/staff/contracts" element={<StaffContracts />} />
+              <Route path="/staff/checkin" element={<CheckInOut />} />
+              <Route path="/staff/services" element={<StaffServices />} />
+              <Route path="/staff/disputes" element={<StaffDisputes />} />
           <Route path="/dashboard/admin" element={<AdminDashboard />} />
+              <Route path="/admin/users" element={<AdminUsers />} />
+              <Route path="/admin/groups" element={<AdminGroups />} />
+              <Route path="/admin/reports" element={<AdminReports />} />
+              <Route path="/admin/settings" element={<AdminSettings />} />
         </Route>
       </Route>
 
