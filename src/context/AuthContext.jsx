@@ -73,6 +73,42 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // ✅ Hàm register
+  const register = async ({ email, password, fullName, confirmPassword }) => {
+    setLoading(true);
+    try {
+      if (password !== confirmPassword) {
+        return { ok: false, error: 'Mật khẩu xác nhận không khớp' };
+      }
+
+      const payload = {
+        email,
+        password,
+        fullName,
+        confirmPassword,
+        userName: email,
+        userNameOrEmail: email,
+      };
+
+      const res = await authApi.register(payload);
+      const d = res?.data || {};
+
+      // Successful registration - don't auto-login
+      return { ok: true, message: 'Đăng ký thành công! Vui lòng đăng nhập.' };
+    } catch (err) {
+      console.error('Register error:', err);
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.errors?.Password?.[0] ||
+        JSON.stringify(err?.response?.data) ||
+        err.message ||
+        'Đăng ký thất bại';
+      return { ok: false, error: msg };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // ✅ Đăng xuất
   const logout = () => {
     localStorage.removeItem('accessToken');
@@ -101,6 +137,7 @@ export const AuthProvider = ({ children }) => {
         user,
         loading,
         login,
+        register,
         logout,
         setUser,
         setRole,

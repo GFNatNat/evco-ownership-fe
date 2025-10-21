@@ -3,6 +3,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, Box, Drawer, List, ListItem, ListItemButton, ListItemText, Divider, IconButton, Button } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useAuth } from '../../context/AuthContext';
+import NotificationCenter from '../common/NotificationCenter';
 
 const drawerWidth = 240;
 
@@ -16,6 +17,9 @@ export default function AppLayout() {
     CoOwner: [
       { to: '/dashboard/coowner', label: 'Dashboard' },
       { to: '/co-owner/account', label: 'Tài khoản & quyền sở hữu' },
+      { to: '/co-owner/vehicles', label: 'Quản lý xe' },
+      { to: '/co-owner/create-vehicle', label: 'Thêm xe mới' },
+      { to: '/co-owner/invitations', label: 'Lời mời đồng sở hữu' },
       { to: '/co-owner/schedule', label: 'Lịch & đặt xe' },
       { to: '/co-owner/payments', label: 'Chi phí & thanh toán' },
       { to: '/co-owner/history', label: 'Lịch sử & phân tích' },
@@ -24,6 +28,7 @@ export default function AppLayout() {
     Staff: [
       { to: '/dashboard/staff', label: 'Dashboard' },
       { to: '/staff/fleet', label: 'Quản lý nhóm xe' },
+      { to: '/staff/vehicle-verification', label: 'Xác minh xe' },
       { to: '/staff/contracts', label: 'Hợp đồng điện tử' },
       { to: '/staff/checkin', label: 'Check-in/Check-out' },
       { to: '/staff/services', label: 'Dịch vụ xe' },
@@ -31,7 +36,7 @@ export default function AppLayout() {
     ],
     Admin: [
       { to: '/dashboard/admin', label: 'Dashboard' },
-      { to: '/admin/users', label: 'Người dùng' },
+      { to: '/admin/users', label: 'Quản lý người dùng' },
       { to: '/admin/groups', label: 'Nhóm đồng sở hữu' },
       { to: '/admin/reports', label: 'Báo cáo tài chính' },
       { to: '/admin/settings', label: 'Cấu hình hệ thống' },
@@ -52,6 +57,14 @@ export default function AppLayout() {
           </ListItem>
         ))}
       </List>
+      <Divider />
+      <List>
+        <ListItem disablePadding>
+          <ListItemButton component={Link} to="/profile" selected={location.pathname === '/profile'}>
+            <ListItemText primary="Thông tin cá nhân" />
+          </ListItemButton>
+        </ListItem>
+      </List>
     </div>
   );
 
@@ -63,6 +76,7 @@ export default function AppLayout() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>EV Co-ownership — {user?.role}</Typography>
+          <NotificationCenter />
           <Button color="inherit" onClick={logout}>Đăng xuất</Button>
         </Toolbar>
       </AppBar>

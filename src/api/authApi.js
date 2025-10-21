@@ -1,20 +1,59 @@
 import axiosClient from './axiosClient';
-const p = '/api/Auth';
 
 const authApi = {
-  login: ({ email, password }) => axiosClient.post(`${p}/login`, {
-    email,               
-    password,            
-    userName: email,     
-    username: email,     
-    userNameOrEmail: email, 
-    rememberMe: true,
+  // Authentication endpoints
+  login: (data) => axiosClient.post('/api/Auth/login', {
+    email: data.email,
+    password: data.password,
+    rememberMe: data.rememberMe || false
   }),
-  register: (data) => axiosClient.post(`${p}/register`, data),
-  forgotPassword: (data) => axiosClient.post(`${p}/forgot-password`, data),
-  resetPassword: (data) => axiosClient.post(`${p}/reset-password`, data),
 
-  verifyLicense: (data) => axiosClient.post(`${p}/verify-license`, data),
-  checkExist: (data) => axiosClient.post(`${p}/check-exist`, data),
+  register: (data) => axiosClient.post('/api/Auth/register', {
+    email: data.email,
+    password: data.password,
+    confirmPassword: data.confirmPassword,
+    fullName: data.fullName,
+    phoneNumber: data.phoneNumber || '',
+    role: data.role || 'CoOwner'
+  }),
+
+  refreshToken: (data) => axiosClient.post('/api/Auth/refresh-token', {
+    token: data.token,
+    refreshToken: data.refreshToken
+  }),
+
+  logout: () => axiosClient.post('/api/Auth/logout'),
+
+  forgotPassword: (data) => axiosClient.post('/api/Auth/forgot-password', {
+    email: data.email
+  }),
+
+  resetPassword: (data) => axiosClient.post('/api/Auth/reset-password', {
+    email: data.email,
+    token: data.token,
+    newPassword: data.newPassword,
+    confirmPassword: data.confirmPassword
+  }),
+
+  changePassword: (data) => axiosClient.post('/api/Auth/change-password', {
+    currentPassword: data.currentPassword,
+    newPassword: data.newPassword,
+    confirmPassword: data.confirmPassword
+  }),
+
+  // Profile endpoints
+  getProfile: () => axiosClient.get('/api/Profile'),
+  updateProfile: (data) => axiosClient.put('/api/Profile', data),
+
+  // Verification endpoints
+  verifyEmail: (data) => axiosClient.post('/api/Auth/verify-email', {
+    email: data.email,
+    token: data.token
+  }),
+
+  resendEmailConfirmation: (data) => axiosClient.post('/api/Auth/resend-confirmation', {
+    email: data.email
+  })
 };
+
 export default authApi;

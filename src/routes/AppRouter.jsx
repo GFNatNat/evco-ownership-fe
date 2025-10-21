@@ -21,6 +21,11 @@ import CheckInOut from '../pages/Staff/CheckInOut';
 import StaffContracts from '../pages/Staff/Contracts';
 import Fleet from '../pages/Staff/Fleet';
 import AccountOwnership from '../pages/CoOwner/AccountOwnership';
+import CreateVehicle from '../pages/CoOwner/CreateVehicle';
+import VehicleManagement from '../pages/CoOwner/VehicleManagement';
+import Invitations from '../pages/CoOwner/Invitations';
+import VehicleVerification from '../pages/Staff/VehicleVerification';
+import Profile from '../pages/Profile/Profile';
 import AccessDenied from '../pages/Error/AccessDenied';
 import NotFound from '../pages/Error/NotFound';
 
@@ -34,27 +39,34 @@ export default function AppRouter() {
       <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* Authenticated routes with layout */}
-      <Route element={<PrivateRoute roles={['CoOwner','Admin','Staff']} />}>
+      <Route element={<PrivateRoute roles={['CoOwner', 'Admin', 'Staff']} />}>
         <Route element={<AppLayout />}>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Navigate to="/dashboard/role" replace />} />
           {/* role-based redirect */}
           <Route path="/dashboard/role" element={<RoleRedirect />} />
           <Route path="/dashboard/coowner" element={<CoOwnerDashboard />} />
-              <Route path="/co-owner/account" element={<AccountOwnership />} />
-              <Route path="/co-owner/schedule" element={<Schedule />} />
-              <Route path="/co-owner/payments" element={<Payments />} />
+          <Route path="/co-owner/account" element={<AccountOwnership />} />
+          <Route path="/co-owner/schedule" element={<Schedule />} />
+          <Route path="/co-owner/payments" element={<Payments />} />
+          <Route path="/co-owner/vehicles" element={<VehicleManagement />} />
+          <Route path="/co-owner/create-vehicle" element={<CreateVehicle />} />
+          <Route path="/co-owner/invitations" element={<Invitations />} />
           <Route path="/dashboard/staff" element={<StaffDashboard />} />
-              <Route path="/staff/fleet" element={<Fleet />} />
-              <Route path="/staff/contracts" element={<StaffContracts />} />
-              <Route path="/staff/checkin" element={<CheckInOut />} />
-              <Route path="/staff/services" element={<StaffServices />} />
-              <Route path="/staff/disputes" element={<StaffDisputes />} />
+          <Route path="/staff/fleet" element={<Fleet />} />
+          <Route path="/staff/contracts" element={<StaffContracts />} />
+          <Route path="/staff/checkin" element={<CheckInOut />} />
+          <Route path="/staff/services" element={<StaffServices />} />
+          <Route path="/staff/disputes" element={<StaffDisputes />} />
+          <Route path="/staff/vehicle-verification" element={<VehicleVerification />} />
           <Route path="/dashboard/admin" element={<AdminDashboard />} />
-              <Route path="/admin/users" element={<AdminUsers />} />
-              <Route path="/admin/groups" element={<AdminGroups />} />
-              <Route path="/admin/reports" element={<AdminReports />} />
-              <Route path="/admin/settings" element={<AdminSettings />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/groups" element={<AdminGroups />} />
+          <Route path="/admin/reports" element={<AdminReports />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
+
+          {/* Profile route for all roles */}
+          <Route path="/profile" element={<Profile />} />
         </Route>
       </Route>
 

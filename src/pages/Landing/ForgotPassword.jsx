@@ -1,18 +1,41 @@
 import React from 'react';
-import { Container, Card, CardContent, Typography, TextField, Button, Stack } from '@mui/material';
-import { useAuth } from '../../context/AuthContext';
+import { Container, Card, CardContent, Typography, TextField, Button, Stack, Alert } from '@mui/material';
+import { Link } from 'react-router-dom';
+import authApi from '../../api/authApi';
 
 export default function ForgotPassword() {
-  const { forgot } = useAuth();
   const [email, setEmail] = React.useState('');
-  const [msg, setMsg] = React.useState('');
+  const [message, setMessage] = React.useState('');
   const [error, setError] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const [emailError, setEmailError] = React.useState('');
+
+  const validateEmail = (email) => {
+    if (!email.trim()) return 'Email không được để trống';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Email không hợp lệ';
+    return '';
+  };
 
   const submit = async () => {
-    setMsg(''); setError('');
-    const res = await forgot({ email });
-    if (res.ok) setMsg('Đã gửi hướng dẫn đặt lại mật khẩu vào email (nếu tồn tại).');
-    else setError(typeof res.error === 'string' ? res.error : JSON.stringify(res.error));
+    const emailValidation = validateEmail(email);
+    if (emailValidation) {
+      setEmailError(emailValidation);
+      return;
+    }
+
+    setMessage('');
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await authApi.forgotPassword({ email });
+      setMessage('Đã gửi hướng dẫn đặt lại mật khẩu vào email của bạn. Vui lòng kiểm tra hộp thư.');
+    } catch (err) {
+      console.error('Forgot password error:', err);
+      setError(err.response?.data?.message || 'Đã xảy ra lỗi. Vui lòng thử lại sau.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -20,10 +43,37 @@ export default function ForgotPassword() {
       <Card><CardContent>
         <Typography variant="h5" sx={{ mb: 2 }}>Quên mật khẩu</Typography>
         <Stack spacing={2}>
-          <TextField label="Email" value={email} onChange={(e)=>setEmail(e.target.value)} />
-          {msg && <Typography color="primary">{msg}</Typography>}
-          {error && <Typography color="error">{error}</Typography>}
-          <Button variant="contained" onClick={submit}>Gửi</Button>
+          <TextField
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (emailError) setEmailError('');
+            }}
+            error={!!emailError}
+            helperText={emailError}
+            required
+            fullWidth
+          />
+          {message && <Alert severity="success">{message}</Alert>}
+          {error && <Alert severity="error">{error}</Alert>}
+          <Button
+            variant="contained"
+            onClick={submit}
+            disabled={loading || !email}
+            fullWidth
+          >
+            {loading ? 'Đang gửi...' : 'Gửi yêu cầu'}
+          </Button>
+          <Button
+            component={Link}
+            to="/login"
+            variant="text"
+            fullWidth
+          >
+            Quay về đăng nhập
+          </Button>
         </Stack>
       </CardContent></Card>
     </Container>
