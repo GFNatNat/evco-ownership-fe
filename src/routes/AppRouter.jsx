@@ -28,10 +28,14 @@ import VehicleVerification from '../pages/Staff/VehicleVerification';
 import Profile from '../pages/Profile/Profile';
 import AccessDenied from '../pages/Error/AccessDenied';
 import NotFound from '../pages/Error/NotFound';
+import Index from '../pages/Landing/Index';
 
 export default function AppRouter() {
   return (
     <Routes>
+      {/* Public Landing Page */}
+      <Route path="/" element={<Index />} />
+
       {/* Landing */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
@@ -40,26 +44,29 @@ export default function AppRouter() {
 
       {/* Authenticated routes with layout */}
       <Route element={<PrivateRoute roles={['CoOwner', 'Admin', 'Staff']} />}>
+        {/* Dashboard routes WITHOUT AppLayout */}
+        <Route path="/dashboard" element={<Navigate to="/dashboard/role" replace />} />
+        <Route path="/dashboard/role" element={<RoleRedirect />} />
+        <Route path="/dashboard/coowner" element={<CoOwnerDashboard />} />
+        <Route path="/dashboard/staff" element={<StaffDashboard />} />
+        <Route path="/dashboard/admin" element={<AdminDashboard />} />
+
+        {/* Other routes WITH AppLayout */}
         <Route element={<AppLayout />}>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<Navigate to="/dashboard/role" replace />} />
-          {/* role-based redirect */}
-          <Route path="/dashboard/role" element={<RoleRedirect />} />
-          <Route path="/dashboard/coowner" element={<CoOwnerDashboard />} />
           <Route path="/co-owner/account" element={<AccountOwnership />} />
           <Route path="/co-owner/schedule" element={<Schedule />} />
           <Route path="/co-owner/payments" element={<Payments />} />
           <Route path="/co-owner/vehicles" element={<VehicleManagement />} />
           <Route path="/co-owner/create-vehicle" element={<CreateVehicle />} />
           <Route path="/co-owner/invitations" element={<Invitations />} />
-          <Route path="/dashboard/staff" element={<StaffDashboard />} />
+
           <Route path="/staff/fleet" element={<Fleet />} />
           <Route path="/staff/contracts" element={<StaffContracts />} />
           <Route path="/staff/checkin" element={<CheckInOut />} />
           <Route path="/staff/services" element={<StaffServices />} />
           <Route path="/staff/disputes" element={<StaffDisputes />} />
           <Route path="/staff/vehicle-verification" element={<VehicleVerification />} />
-          <Route path="/dashboard/admin" element={<AdminDashboard />} />
+
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/groups" element={<AdminGroups />} />
           <Route path="/admin/reports" element={<AdminReports />} />
