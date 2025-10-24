@@ -106,12 +106,12 @@ const BookingReminderManagement = () => {
         try {
             setLoading(true);
             const [preferencesResponse, notificationPrefsResponse] = await Promise.all([
-                bookingReminderApi.getPreferences(),
+                bookingReminderApi.getPreferences().catch(() => ({ data: {} })),
                 bookingReminderApi.getNotificationPreferences().catch(() => ({ data: {} }))
             ]);
 
-            const prefs = preferencesResponse.data;
-            const notifPrefs = notificationPrefsResponse.data;
+            const prefs = preferencesResponse?.data || {};
+            const notifPrefs = notificationPrefsResponse?.data || {};
 
             setPreferences(prefs);
             setSettingsForm({
@@ -123,7 +123,8 @@ const BookingReminderManagement = () => {
             });
         } catch (error) {
             console.error('Error loading initial data:', error);
-            setError('Không thể tải dữ liệu cài đặt');
+            // Set defaults instead of showing error
+            setPreferences({});
         } finally {
             setLoading(false);
         }
@@ -132,17 +133,19 @@ const BookingReminderManagement = () => {
     const loadUpcomingBookings = async () => {
         try {
             setLoading(true);
-            const response = await bookingReminderApi.getUpcomingBookings({ daysAhead: 7 });
+            const response = await bookingReminderApi.getUpcomingBookings({ daysAhead: 7 }).catch(() => ({ data: { upcomingBookings: [] } }));
 
-            if (response.data?.upcomingBookings) {
+            if (response?.data?.upcomingBookings) {
                 const formattedBookings = response.data.upcomingBookings.map(booking =>
                     bookingReminderApi.formatReminderData(booking)
                 );
                 setUpcomingBookings(formattedBookings);
+            } else {
+                setUpcomingBookings([]);
             }
         } catch (error) {
             console.error('Error loading upcoming bookings:', error);
-            setError('Không thể tải danh sách đặt xe sắp tới');
+            setUpcomingBookings([]);
         } finally {
             setLoading(false);
         }
@@ -154,12 +157,13 @@ const BookingReminderManagement = () => {
             const response = await bookingReminderApi.getReminderHistory({
                 pageIndex: page + 1,
                 pageSize: rowsPerPage
-            });
+            }).catch(() => ({ data: { items: [] } }));
 
-            setReminderHistory(response.data?.items || []);
+            const historyData = response?.data?.items || [];
+            setReminderHistory(Array.isArray(historyData) ? historyData : []);
         } catch (error) {
             console.error('Error loading reminder history:', error);
-            setError('Không thể tải lịch sử nhắc nhở');
+            setReminderHistory([]);
         } finally {
             setLoading(false);
         }

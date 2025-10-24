@@ -124,19 +124,20 @@ const CheckInCheckOutManagement = () => {
                 status: 'Confirmed',
                 sortBy: 'StartTime',
                 sortDirection: 'asc'
-            });
+            }).catch(() => ({ data: { items: [] } }));
 
             const today = new Date();
-            const relevantBookings = response.data?.items?.filter(booking => {
+            const bookingItems = response?.data?.items || [];
+            const relevantBookings = bookingItems.filter(booking => {
                 const bookingDate = new Date(booking.startTime);
                 const dayDiff = Math.abs(bookingDate - today) / (1000 * 60 * 60 * 24);
                 return dayDiff <= 1; // Only show bookings within 1 day
-            }) || [];
+            });
 
-            setBookings(relevantBookings);
+            setBookings(Array.isArray(relevantBookings) ? relevantBookings : []);
         } catch (error) {
             console.error('Error loading bookings:', error);
-            setError('Không thể tải danh sách đặt xe');
+            setBookings([]);
         } finally {
             setLoading(false);
         }
