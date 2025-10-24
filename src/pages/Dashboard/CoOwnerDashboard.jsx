@@ -142,11 +142,15 @@ export default function CoOwnerDashboard() {
           <Tabs
             value={selectedTab}
             onChange={(e, v) => setSelectedTab(v)}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
             sx={{
               '& .MuiTab-root': {
                 textTransform: 'none',
                 fontWeight: 500,
-                minHeight: 56
+                minHeight: 56,
+                minWidth: 120
               },
               '& .Mui-selected': {
                 color: '#10b981'
@@ -154,6 +158,12 @@ export default function CoOwnerDashboard() {
               '& .MuiTabs-indicator': {
                 bgcolor: '#10b981',
                 height: 2
+              },
+              '& .MuiTabs-scrollButtons': {
+                color: '#10b981',
+                '&.Mui-disabled': {
+                  opacity: 0.3
+                }
               }
             }}
           >

@@ -48,29 +48,27 @@ import {
   Radio,
   FormLabel
 } from '@mui/material';
-import {
-  HowToVote,
-  Add,
-  Visibility,
-  ThumbUp,
-  ThumbDown,
-  Warning,
-  CheckCircle,
-  Cancel,
-  Schedule,
-  Build,
-  Emergency,
-  Upgrade,
-  Lightbulb,
-  ExpandMore,
-  Edit,
-  Delete,
-  History,
-  PieChart,
-  People,
-  Assignment,
-  Pending
-} from '@mui/icons-material';
+import HowToVote from '@mui/icons-material/HowToVote';
+import Add from '@mui/icons-material/Add';
+import Visibility from '@mui/icons-material/Visibility';
+import ThumbUp from '@mui/icons-material/ThumbUp';
+import ThumbDown from '@mui/icons-material/ThumbDown';
+import Warning from '@mui/icons-material/Warning';
+import CheckCircle from '@mui/icons-material/CheckCircle';
+import Cancel from '@mui/icons-material/Cancel';
+import Schedule from '@mui/icons-material/Schedule';
+import Build from '@mui/icons-material/Build';
+import ReportProblem from '@mui/icons-material/ReportProblem';
+import Upgrade from '@mui/icons-material/Upgrade';
+import Lightbulb from '@mui/icons-material/Lightbulb';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import Edit from '@mui/icons-material/Edit';
+import Delete from '@mui/icons-material/Delete';
+import History from '@mui/icons-material/History';
+import PieChart from '@mui/icons-material/PieChart';
+import People from '@mui/icons-material/People';
+import Assignment from '@mui/icons-material/Assignment';
+import Pending from '@mui/icons-material/Pending';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -434,7 +432,7 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
     if (!proposals.length) return null;
 
     // Calculate statistics by type
-    const typeStats = maintenanceVoteApi.getMaintenanceTypes().map(type => {
+    const typeStats = (maintenanceVoteApi.getMaintenanceTypes() || []).map(type => {
       const typeProposals = proposals.filter(p => p.maintenanceType === type.value);
       return {
         name: type.label,
@@ -511,7 +509,7 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
                 value={proposalForm.maintenanceType}
                 onChange={(e) => setProposalForm(prev => ({ ...prev, maintenanceType: e.target.value }))}
               >
-                {maintenanceVoteApi.getMaintenanceTypes().map(type => (
+                {(maintenanceVoteApi.getMaintenanceTypes() || []).map(type => (
                   <MenuItem key={type.value} value={type.value}>
                     <Box display="flex" alignItems="center">
                       <span style={{ marginRight: 8 }}>{type.icon}</span>
@@ -530,7 +528,7 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
                 value={proposalForm.priority}
                 onChange={(e) => setProposalForm(prev => ({ ...prev, priority: e.target.value }))}
               >
-                {maintenanceVoteApi.getPriorities().map(priority => (
+                {(maintenanceVoteApi.getPriorities() || []).map(priority => (
                   <MenuItem key={priority.value} value={priority.value}>
                     <Box display="flex" alignItems="center">
                       <span style={{ marginRight: 8 }}>{priority.icon}</span>

@@ -310,7 +310,12 @@ export default function ProfileDashboardLayout() {
                     variant="permanent"
                     sx={{
                         display: { xs: 'none', md: 'block' },
-                        '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box' }
+                        '& .MuiDrawer-paper': {
+                            width: drawerWidth,
+                            boxSizing: 'border-box',
+                            mt: '64px',
+                            height: 'calc(100vh - 64px)'
+                        }
                     }}
                     open
                 >
@@ -325,7 +330,8 @@ export default function ProfileDashboardLayout() {
                     flexGrow: 1,
                     p: 3,
                     width: { md: `calc(100% - ${drawerWidth}px)` },
-                    mt: '64px' // AppBar height
+                    mt: '80px', // AppBar height + spacing
+                    minHeight: 'calc(100vh - 80px)'
                 }}
             >
                 {/* Page Content */}
