@@ -36,6 +36,17 @@ const coOwnerApi = {
   // Vehicle ownership management
   getOwnerships: () => axiosClient.get('/api/CoOwner/ownerships'),
   getOwnershipById: (id) => axiosClient.get(`/api/CoOwner/ownership/${id}`),
+  getOwnershipRequests: () => axiosClient.get('/api/CoOwner/ownership-requests'),
+  createOwnershipRequest: (data) => axiosClient.post('/api/CoOwner/ownership-request', {
+    vehicleId: data.vehicleId,
+    ownershipPercentage: data.ownershipPercentage,
+    investmentAmount: data.investmentAmount,
+    notes: data.notes
+  }),
+
+  // Document management
+  getDocuments: () => axiosClient.get('/api/CoOwner/documents'),
+  uploadDocument: (data) => axiosClient.post('/api/CoOwner/document', data),
 
   // Group management for existing functionality
   getGroups: () => axiosClient.get('/api/CoOwner/groups'),

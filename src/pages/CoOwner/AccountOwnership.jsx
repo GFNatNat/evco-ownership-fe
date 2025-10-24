@@ -53,14 +53,19 @@ export default function AccountOwnership() {
   const loadInitialData = async () => {
     setLoading(true);
     try {
-      const [profileRes, vehiclesRes, ownershipsRes, requestsRes] = await Promise.all([
-        coOwnerApi.getProfile(),
-        vehicleApi.getAvailable(),
-        coOwnerApi.getOwnerships(),
-        coOwnerApi.getOwnershipRequests()
+      // Load data with individual error handling
+      const results = await Promise.allSettled([
+        coOwnerApi.getProfile().catch(() => ({ data: { verified: false, completionRate: 0, documents: [] } })),
+        vehicleApi.getAvailable().catch(() => ({ data: [] })),
+        coOwnerApi.getOwnerships().catch(() => ({ data: [] })),
+        coOwnerApi.getOwnershipRequests().catch(() => ({ data: [] }))
       ]);
 
-      setProfile(profileRes.data || {});
+      const [profileRes, vehiclesRes, ownershipsRes, requestsRes] = results.map(r => 
+        r.status === 'fulfilled' ? r.value : { data: null }
+      );
+
+      setProfile(profileRes.data || { verified: false, completionRate: 0, documents: [] });
       setAvailableVehicles(vehiclesRes.data || []);
       setMyOwnerships(ownershipsRes.data || []);
       setOwnershipRequests(requestsRes.data || []);
@@ -70,7 +75,11 @@ export default function AccountOwnership() {
       setProfile(prev => ({ ...prev, completionRate }));
 
     } catch (err) {
-      setError('Không thể tải dữ liệu. Vui lòng thử lại.');
+      console.error('Error loading data:', err);
+      // Don't show error for 404, just use empty data
+      if (err?.response?.status !== 404) {
+        setError('Không thể tải một số dữ liệu. Vui lòng thử lại.');
+      }
     } finally {
       setLoading(false);
     }
