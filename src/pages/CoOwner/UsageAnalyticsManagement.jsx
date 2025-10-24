@@ -151,12 +151,13 @@ function UsageAnalyticsManagement() {
     setLoading(true);
     try {
       // Load vehicles
-      const vehiclesResponse = await vehicleApi.getAll();
-      setVehicles(vehiclesResponse.data.data || []);
+      const vehiclesResponse = await vehicleApi.getAll().catch(() => ({ data: { data: [] } }));
+      const vehiclesData = vehiclesResponse?.data?.data || [];
+      setVehicles(Array.isArray(vehiclesData) ? vehiclesData : []);
 
     } catch (err) {
       console.error('Error loading initial data:', err);
-      setError('Lỗi khi tải dữ liệu: ' + err.message);
+      setVehicles([]);
     } finally {
       setLoading(false);
     }
@@ -169,16 +170,17 @@ function UsageAnalyticsManagement() {
     setLoading(true);
     try {
       // Load usage vs ownership data
-      const usageVsOwnershipResponse = await usageAnalyticsApi.getUsageVsOwnership(selectedVehicle, analyticsFilters);
-      setUsageVsOwnership(usageVsOwnershipResponse.data.data);
+      const usageVsOwnershipResponse = await usageAnalyticsApi.getUsageVsOwnership(selectedVehicle, analyticsFilters).catch(() => ({ data: { data: null } }));
+      setUsageVsOwnership(usageVsOwnershipResponse?.data?.data || null);
 
       // Load trends data
-      const trendsResponse = await usageAnalyticsApi.getUsageVsOwnershipTrends(selectedVehicle, analyticsFilters);
-      setTrendsData(trendsResponse.data.data);
+      const trendsResponse = await usageAnalyticsApi.getUsageVsOwnershipTrends(selectedVehicle, analyticsFilters).catch(() => ({ data: { data: null } }));
+      setTrendsData(trendsResponse?.data?.data || null);
 
     } catch (err) {
       console.error('Error loading usage analytics:', err);
-      setError('Lỗi khi tải dữ liệu phân tích: ' + err.message);
+      setUsageVsOwnership(null);
+      setTrendsData(null);
     } finally {
       setLoading(false);
     }
@@ -188,11 +190,11 @@ function UsageAnalyticsManagement() {
   const loadMyUsageHistory = async () => {
     setLoading(true);
     try {
-      const response = await usageAnalyticsApi.getMyUsageHistory(historyFilters);
-      setMyUsageHistory(response.data.data);
+      const response = await usageAnalyticsApi.getMyUsageHistory(historyFilters).catch(() => ({ data: { data: null } }));
+      setMyUsageHistory(response?.data?.data || null);
     } catch (err) {
       console.error('Error loading usage history:', err);
-      setError('Lỗi khi tải lịch sử sử dụng: ' + err.message);
+      setMyUsageHistory(null);
     } finally {
       setLoading(false);
     }
@@ -202,11 +204,11 @@ function UsageAnalyticsManagement() {
   const loadGroupSummary = async () => {
     setLoading(true);
     try {
-      const response = await usageAnalyticsApi.getGroupUsageSummary(analyticsFilters);
-      setGroupSummary(response.data.data);
+      const response = await usageAnalyticsApi.getGroupUsageSummary(analyticsFilters).catch(() => ({ data: { data: null } }));
+      setGroupSummary(response?.data?.data || null);
     } catch (err) {
       console.error('Error loading group summary:', err);
-      setError('Lỗi khi tải tóm tắt nhóm: ' + err.message);
+      setGroupSummary(null);
     } finally {
       setLoading(false);
     }

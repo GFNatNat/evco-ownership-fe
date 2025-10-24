@@ -120,10 +120,12 @@ const VotingManagement = () => {
 
     const loadVehicles = async () => {
         try {
-            const response = await vehicleApi.getMyVehicles();
-            setVehicles(response.data || []);
+            const response = await vehicleApi.getMyVehicles().catch(() => ({ data: [] }));
+            const vehiclesData = response?.data || [];
+            setVehicles(Array.isArray(vehiclesData) ? vehiclesData : []);
         } catch (error) {
-            showAlert('error', 'Không thể tải danh sách xe: ' + error.message);
+            console.error('Lỗi tải danh sách xe:', error);
+            setVehicles([]);
         }
     };
 
@@ -151,12 +153,14 @@ const VotingManagement = () => {
             const response = await votingApi.getPendingProposals({
                 pageIndex: proposalsPagination.page + 1,
                 pageSize: proposalsPagination.rowsPerPage
-            });
+            }).catch(() => ({ data: { items: [], totalItems: 0 } }));
 
-            setPendingProposals(response.data?.items || []);
-            setTotalProposals(response.data?.totalItems || 0);
+            setPendingProposals(response?.data?.items || []);
+            setTotalProposals(response?.data?.totalItems || 0);
         } catch (error) {
-            showAlert('error', 'Không thể tải danh sách đề xuất: ' + error.message);
+            console.error('Lỗi tải danh sách đề xuất:', error);
+            setPendingProposals([]);
+            setTotalProposals(0);
         } finally {
             setLoading(false);
         }
@@ -168,12 +172,14 @@ const VotingManagement = () => {
             const response = await votingApi.getMyVotingHistory({
                 pageIndex: historyPagination.page + 1,
                 pageSize: historyPagination.rowsPerPage
-            });
+            }).catch(() => ({ data: { items: [], totalItems: 0 } }));
 
-            setMyVotingHistory(response.data?.items || []);
-            setTotalHistory(response.data?.totalItems || 0);
+            setMyVotingHistory(response?.data?.items || []);
+            setTotalHistory(response?.data?.totalItems || 0);
         } catch (error) {
-            showAlert('error', 'Không thể tải lịch sử bình chọn: ' + error.message);
+            console.error('Lỗi tải lịch sử bình chọn:', error);
+            setMyVotingHistory([]);
+            setTotalHistory(0);
         } finally {
             setLoading(false);
         }

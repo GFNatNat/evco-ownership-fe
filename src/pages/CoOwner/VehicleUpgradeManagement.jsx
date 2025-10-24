@@ -150,22 +150,23 @@ const VehicleUpgradeManagement = () => {
 
   const loadVehicles = async () => {
     try {
-      const response = await vehicleApi.getAllVehicles();
-      setVehicles(response.data.data || []);
+      const response = await vehicleApi.getAllVehicles().catch(() => ({ data: { data: [] } }));
+      const vehiclesData = response?.data?.data || [];
+      setVehicles(Array.isArray(vehiclesData) ? vehiclesData : []);
     } catch (error) {
       console.error('Lỗi tải danh sách xe:', error);
-      setError('Không thể tải danh sách xe');
+      setVehicles([]);
     }
   };
 
   const loadPendingProposals = async () => {
     try {
       setLoading(true);
-      const response = await vehicleUpgradeApi.getPendingProposals(selectedVehicle);
-      setPendingProposals(response.data.data?.pendingProposals || []);
+      const response = await vehicleUpgradeApi.getPendingProposals(selectedVehicle).catch(() => ({ data: { data: { pendingProposals: [] } } }));
+      setPendingProposals(response?.data?.data?.pendingProposals || []);
     } catch (error) {
       console.error('Lỗi tải đề xuất:', error);
-      setError('Không thể tải danh sách đề xuất');
+      setPendingProposals([]);
     } finally {
       setLoading(false);
     }
@@ -173,19 +174,21 @@ const VehicleUpgradeManagement = () => {
 
   const loadMyHistory = async () => {
     try {
-      const response = await vehicleUpgradeApi.getMyVotingHistory();
-      setMyHistory(response.data.data);
+      const response = await vehicleUpgradeApi.getMyVotingHistory().catch(() => ({ data: { data: null } }));
+      setMyHistory(response?.data?.data || null);
     } catch (error) {
       console.error('Lỗi tải lịch sử:', error);
+      setMyHistory(null);
     }
   };
 
   const loadStatistics = async () => {
     try {
-      const response = await vehicleUpgradeApi.getVehicleUpgradeStatistics(selectedVehicle);
-      setStatistics(response.data.data);
+      const response = await vehicleUpgradeApi.getVehicleUpgradeStatistics(selectedVehicle).catch(() => ({ data: { data: null } }));
+      setStatistics(response?.data?.data || null);
     } catch (error) {
       console.error('Lỗi tải thống kê:', error);
+      setStatistics(null);
     }
   };
 

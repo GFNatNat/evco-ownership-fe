@@ -131,16 +131,16 @@ const VehicleReportManagement = () => {
     try {
       setLoading(true);
       setError('');
-      
+
       const { vehicleId, year, month, quarter } = reportForm;
-      
+
       if (!vehicleId) {
         setError('Vui lòng chọn xe');
         return;
       }
 
       let response;
-      
+
       switch (reportType) {
         case 'monthly':
           if (!month) {
@@ -196,17 +196,17 @@ const VehicleReportManagement = () => {
   const exportReport = async () => {
     try {
       setLoading(true);
-      
+
       const { vehicleId, year, month, quarter, exportFormat } = reportForm;
-      
+
       await vehicleReportApi.downloadReport(
-        vehicleId, 
-        year, 
-        month ? parseInt(month) : null, 
-        quarter ? parseInt(quarter) : null, 
+        vehicleId,
+        year,
+        month ? parseInt(month) : null,
+        quarter ? parseInt(quarter) : null,
         exportFormat
       );
-      
+
       setSuccess(`Xuất báo cáo ${exportFormat} thành công`);
       setExportDialog(false);
     } catch (error) {
@@ -229,7 +229,7 @@ const VehicleReportManagement = () => {
       ...prev,
       [field]: event.target.value
     }));
-    
+
     // Reset dependent fields
     if (field === 'vehicleId') {
       setSelectedVehicle(event.target.value);
@@ -261,27 +261,27 @@ const VehicleReportManagement = () => {
               <List dense>
                 <ListItem>
                   <ListItemIcon><DirectionsCar /></ListItemIcon>
-                  <ListItemText 
-                    primary="Xe" 
-                    secondary={`${reportData.vehicleName} (${reportData.licensePlate})`} 
+                  <ListItemText
+                    primary="Xe"
+                    secondary={`${reportData.vehicleName} (${reportData.licensePlate})`}
                   />
                 </ListItem>
                 <ListItem>
                   <ListItemIcon><CalendarToday /></ListItemIcon>
-                  <ListItemText 
-                    primary="Kỳ báo cáo" 
+                  <ListItemText
+                    primary="Kỳ báo cáo"
                     secondary={
                       isMonthly ? `${reportData.reportPeriod.monthName} ${reportData.reportPeriod.year}` :
-                      isQuarterly ? `${reportData.quarterName} ${reportData.year}` :
-                      `Năm ${reportData.year || reportData.yearSummary?.year}`
-                    } 
+                        isQuarterly ? `${reportData.quarterName} ${reportData.year}` :
+                          `Năm ${reportData.year || reportData.yearSummary?.year}`
+                    }
                   />
                 </ListItem>
                 <ListItem>
                   <ListItemIcon><Assessment /></ListItemIcon>
-                  <ListItemText 
-                    primary="Tạo lúc" 
-                    secondary={vehicleReportApi.formatReportDate(reportData.generatedAt)} 
+                  <ListItemText
+                    primary="Tạo lúc"
+                    secondary={vehicleReportApi.formatReportDate(reportData.generatedAt)}
                   />
                 </ListItem>
               </List>
@@ -302,29 +302,29 @@ const VehicleReportManagement = () => {
     if (!reportData) return null;
 
     const summary = reportData.usageStatistics || reportData.quarterSummary || reportData.yearSummary;
-    
+
     const metrics = [
-      { 
-        label: 'Tổng đặt xe', 
-        value: summary?.totalBookings || 0, 
+      {
+        label: 'Tổng đặt xe',
+        value: summary?.totalBookings || 0,
         icon: <DirectionsCar />,
         color: '#4caf50'
       },
-      { 
-        label: 'Tổng thu nhập', 
-        value: vehicleReportApi.formatCurrency(summary?.totalIncome || 0), 
+      {
+        label: 'Tổng thu nhập',
+        value: vehicleReportApi.formatCurrency(summary?.totalIncome || 0),
         icon: <AttachMoney />,
         color: '#2196f3'
       },
-      { 
-        label: 'Lợi nhuận', 
-        value: vehicleReportApi.formatCurrency(summary?.netProfit || 0), 
+      {
+        label: 'Lợi nhuận',
+        value: vehicleReportApi.formatCurrency(summary?.netProfit || 0),
         icon: <TrendingUp />,
         color: '#ff9800'
       },
-      { 
-        label: 'Tỷ lệ sử dụng', 
-        value: `${summary?.utilizationRate || summary?.averageMonthlyUtilization || 0}%`, 
+      {
+        label: 'Tỷ lệ sử dụng',
+        value: `${summary?.utilizationRate || summary?.averageMonthlyUtilization || 0}%`,
         icon: <Timeline />,
         color: '#9c27b0'
       }
@@ -334,8 +334,8 @@ const VehicleReportManagement = () => {
       <Grid container spacing={2}>
         {metrics.map((metric, index) => (
           <Grid item xs={6} key={index}>
-            <Card sx={{ 
-              textAlign: 'center', 
+            <Card sx={{
+              textAlign: 'center',
               p: 1,
               border: `2px solid ${metric.color}`,
               borderRadius: 2
@@ -379,11 +379,11 @@ const VehicleReportManagement = () => {
               <XAxis dataKey="month" />
               <YAxis yAxisId="left" />
               <YAxis yAxisId="right" orientation="right" />
-              <Tooltip 
+              <Tooltip
                 formatter={(value, name) => [
                   name === 'bookings' ? value : `${value}M VND`,
                   name === 'bookings' ? 'Số đặt xe' :
-                  name === 'income' ? 'Thu nhập' : 'Lợi nhuận'
+                    name === 'income' ? 'Thu nhập' : 'Lợi nhuận'
                 ]}
               />
               <Legend />
@@ -449,10 +449,10 @@ const VehicleReportManagement = () => {
                     {reportData.costBreakdown.expenses.map((expense, index) => (
                       <TableRow key={index}>
                         <TableCell>
-                          <Chip 
-                            size="small" 
+                          <Chip
+                            size="small"
                             label={expense.category}
-                            sx={{ 
+                            sx={{
                               backgroundColor: pieData[index].color + '20',
                               color: pieData[index].color
                             }}
@@ -509,18 +509,18 @@ const VehicleReportManagement = () => {
                       </Box>
                     </TableCell>
                     <TableCell align="center">
-                      <Chip 
-                        size="small" 
+                      <Chip
+                        size="small"
                         label={`${coOwner.ownershipPercentage}%`}
-                        color="primary" 
+                        color="primary"
                         variant="outlined"
                       />
                     </TableCell>
                     <TableCell align="center">
-                      <Chip 
-                        size="small" 
+                      <Chip
+                        size="small"
                         label={`${coOwner.usagePercentage}%`}
-                        color="secondary" 
+                        color="secondary"
                         variant="outlined"
                       />
                     </TableCell>
@@ -530,7 +530,7 @@ const VehicleReportManagement = () => {
                       {vehicleReportApi.formatCurrency(coOwner.contributionAmount)}
                     </TableCell>
                     <TableCell align="center">
-                      <Chip 
+                      <Chip
                         size="small"
                         label={`${coOwner.usageVsOwnership > 0 ? '+' : ''}${coOwner.usageVsOwnership}%`}
                         color={coOwner.usageVsOwnership > 0 ? 'error' : 'success'}
@@ -556,8 +556,8 @@ const VehicleReportManagement = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Build />
             <Typography>Tóm tắt bảo dưỡng</Typography>
-            <Chip 
-              size="small" 
+            <Chip
+              size="small"
               label={`${reportData.maintenanceSummary.scheduledMaintenances + reportData.maintenanceSummary.emergencyRepairs} lần`}
               color="info"
             />
@@ -614,7 +614,7 @@ const VehicleReportManagement = () => {
               </Card>
             </Grid>
           </Grid>
-          
+
           {reportData.maintenanceSummary.maintenanceItems && (
             <Box sx={{ mt: 2 }}>
               <Typography variant="subtitle1" gutterBottom>
@@ -639,7 +639,7 @@ const VehicleReportManagement = () => {
                           {vehicleReportApi.formatCurrency(item.cost)}
                         </TableCell>
                         <TableCell>
-                          <Chip 
+                          <Chip
                             size="small"
                             label={item.status}
                             color={item.status === 'Hoàn thành' ? 'success' : 'warning'}
@@ -679,7 +679,7 @@ const VehicleReportManagement = () => {
               ))}
             </TextField>
           </Grid>
-          
+
           <Grid item xs={12} sm={6} md={2}>
             <TextField
               fullWidth
@@ -737,7 +737,7 @@ const VehicleReportManagement = () => {
                 startIcon={<Assessment />}
                 onClick={() => generateReport(
                   tabValue === 0 ? 'monthly' :
-                  tabValue === 1 ? 'quarterly' : 'yearly'
+                    tabValue === 1 ? 'quarterly' : 'yearly'
                 )}
                 disabled={loading}
               >
@@ -827,8 +827,8 @@ const VehicleReportManagement = () => {
       </DialogContent>
       <DialogActions>
         <Button onClick={() => setExportDialog(false)}>Hủy</Button>
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           onClick={exportReport}
           disabled={loading}
           startIcon={loading ? <CircularProgress size={20} /> : <GetApp />}
@@ -845,26 +845,26 @@ const VehicleReportManagement = () => {
         <Assessment /> Quản lý báo cáo xe
       </Typography>
 
-      <Tabs 
-        value={tabValue} 
-        onChange={handleTabChange} 
+      <Tabs
+        value={tabValue}
+        onChange={handleTabChange}
         sx={{ mb: 3 }}
         variant="scrollable"
         scrollButtons="auto"
       >
-        <Tab 
-          icon={<DateRange />} 
+        <Tab
+          icon={<DateRange />}
           label="Báo cáo tháng"
           iconPosition="start"
         />
-        <Tab 
-          icon={<Timeline />} 
-          label="Báo cáo quý" 
+        <Tab
+          icon={<Timeline />}
+          label="Báo cáo quý"
           iconPosition="start"
         />
-        <Tab 
-          icon={<TrendingUp />} 
-          label="Báo cáo năm" 
+        <Tab
+          icon={<TrendingUp />}
+          label="Báo cáo năm"
           iconPosition="start"
         />
       </Tabs>

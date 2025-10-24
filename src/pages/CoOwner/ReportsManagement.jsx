@@ -102,7 +102,7 @@ const ReportsManagement = () => {
                 reportApi.getCurrentYearReport().catch(() => ({ data: null }))
             ]);
 
-            const [monthly, quarterly, yearly] = results.map(r => 
+            const [monthly, quarterly, yearly] = results.map(r =>
                 r.status === 'fulfilled' ? r.value : { data: null }
             );
 

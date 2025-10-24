@@ -98,15 +98,16 @@ const FairnessOptimizationManagement = () => {
 
     const loadVehicles = async () => {
         try {
-            const response = await vehicleApi.getMyVehicles();
-            setVehicles(response.data || []);
+            const response = await vehicleApi.getMyVehicles().catch(() => ({ data: [] }));
+            const vehiclesData = response?.data || [];
+            setVehicles(Array.isArray(vehiclesData) ? vehiclesData : []);
 
-            if (response.data?.length > 0) {
-                setSelectedVehicleId(response.data[0].id);
+            if (vehiclesData?.length > 0) {
+                setSelectedVehicleId(vehiclesData[0].id);
             }
         } catch (error) {
             console.error('Error loading vehicles:', error);
-            setError('Không thể tải danh sách xe');
+            setVehicles([]);
         }
     };
 
@@ -123,9 +124,9 @@ const FairnessOptimizationManagement = () => {
                     startDate: analysisParams.startDate,
                     endDate: analysisParams.endDate,
                     includeRecommendations: analysisParams.includeRecommendations
-                });
+                }).catch(() => ({ data: null }));
 
-                setFairnessReport(fairnessOptimizationApi.formatFairnessReportForDisplay(response.data));
+                setFairnessReport(response?.data ? fairnessOptimizationApi.formatFairnessReportForDisplay(response.data) : null);
             } else if (tabValue === 1) {
                 // Load schedule suggestions
                 const response = await fairnessOptimizationApi.getScheduleSuggestions(selectedVehicleId, {
@@ -133,30 +134,34 @@ const FairnessOptimizationManagement = () => {
                     endDate: analysisParams.endDate,
                     preferredDurationHours: analysisParams.preferredDurationHours,
                     usageType: analysisParams.usageType
-                });
+                }).catch(() => ({ data: null }));
 
-                setScheduleSuggestions(fairnessOptimizationApi.formatScheduleSuggestionsForDisplay(response.data));
+                setScheduleSuggestions(response?.data ? fairnessOptimizationApi.formatScheduleSuggestionsForDisplay(response.data) : null);
             } else if (tabValue === 2) {
                 // Load maintenance suggestions
                 const response = await fairnessOptimizationApi.getMaintenanceSuggestions(selectedVehicleId, {
                     includePredictive: analysisParams.includePredictive,
                     lookaheadDays: analysisParams.lookaheadDays
-                });
+                }).catch(() => ({ data: null }));
 
-                setMaintenanceSuggestions(fairnessOptimizationApi.formatMaintenanceSuggestionsForDisplay(response.data));
+                setMaintenanceSuggestions(response?.data ? fairnessOptimizationApi.formatMaintenanceSuggestionsForDisplay(response.data) : null);
             } else if (tabValue === 3) {
                 // Load cost saving recommendations
                 const response = await fairnessOptimizationApi.getCostSavingRecommendations(selectedVehicleId, {
                     analysisPeriodDays: analysisParams.analysisPeriodDays,
                     includeFundOptimization: analysisParams.includeFundOptimization,
                     includeMaintenanceOptimization: analysisParams.includeMaintenanceOptimization
-                });
+                }).catch(() => ({ data: null }));
 
-                setCostSavingRecommendations(fairnessOptimizationApi.formatCostSavingRecommendationsForDisplay(response.data));
+                setCostSavingRecommendations(response?.data ? fairnessOptimizationApi.formatCostSavingRecommendationsForDisplay(response.data) : null);
             }
         } catch (error) {
             console.error('Error loading analysis data:', error);
-            setError('Không thể tải dữ liệu phân tích');
+            // Set all to null instead of showing error
+            setFairnessReport(null);
+            setScheduleSuggestions(null);
+            setMaintenanceSuggestions(null);
+            setCostSavingRecommendations(null);
         } finally {
             setLoading(false);
         }
