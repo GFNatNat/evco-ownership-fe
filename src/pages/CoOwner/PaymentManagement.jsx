@@ -63,7 +63,7 @@ const PaymentManagement = () => {
                 paymentApi.getAvailableGateways().catch(() => ({ data: [] }))
             ]);
 
-            const [paymentsRes, gatewaysRes] = results.map(r => 
+            const [paymentsRes, gatewaysRes] = results.map(r =>
                 r.status === 'fulfilled' ? r.value : { data: [] }
             );
 

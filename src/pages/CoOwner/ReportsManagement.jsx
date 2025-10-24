@@ -73,13 +73,15 @@ const ReportsManagement = () => {
 
     const loadVehicles = async () => {
         try {
-            const response = await vehicleApi.getMyVehicles();
-            setVehicles(response.data || []);
-            if (response.data?.length > 0) {
-                setSelectedVehicle(response.data[0].vehicleId);
+            const response = await vehicleApi.getMyVehicles().catch(() => ({ data: [] }));
+            const vehiclesData = response?.data || [];
+            setVehicles(Array.isArray(vehiclesData) ? vehiclesData : []);
+            if (vehiclesData?.length > 0) {
+                setSelectedVehicle(vehiclesData[0].vehicleId);
             }
         } catch (error) {
-            showAlert('error', 'Không thể tải danh sách xe: ' + error.message);
+            console.error('Lỗi tải danh sách xe:', error);
+            setVehicles([]);
         }
     };
 
@@ -94,19 +96,24 @@ const ReportsManagement = () => {
 
     const loadCurrentReports = async () => {
         try {
-            const [monthly, quarterly, yearly] = await Promise.all([
-                reportApi.getCurrentMonthReport(),
-                reportApi.getCurrentQuarterReport(),
-                reportApi.getCurrentYearReport()
+            const results = await Promise.allSettled([
+                reportApi.getCurrentMonthReport().catch(() => ({ data: null })),
+                reportApi.getCurrentQuarterReport().catch(() => ({ data: null })),
+                reportApi.getCurrentYearReport().catch(() => ({ data: null }))
             ]);
 
+            const [monthly, quarterly, yearly] = results.map(r => 
+                r.status === 'fulfilled' ? r.value : { data: null }
+            );
+
             setCurrentReports({
-                monthly: monthly.data,
-                quarterly: quarterly.data,
-                yearly: yearly.data
+                monthly: monthly?.data || null,
+                quarterly: quarterly?.data || null,
+                yearly: yearly?.data || null
             });
         } catch (error) {
             console.error('Error loading current reports:', error);
+            setCurrentReports({ monthly: null, quarterly: null, yearly: null });
         }
     };
 

@@ -105,22 +105,23 @@ const VehicleReportManagement = () => {
 
   const loadVehicles = async () => {
     try {
-      const response = await vehicleApi.getAllVehicles();
-      setVehicles(response.data.data || []);
+      const response = await vehicleApi.getAllVehicles().catch(() => ({ data: { data: [] } }));
+      const vehiclesData = response?.data?.data || [];
+      setVehicles(Array.isArray(vehiclesData) ? vehiclesData : []);
     } catch (error) {
       console.error('Lỗi tải danh sách xe:', error);
-      setError('Không thể tải danh sách xe');
+      setVehicles([]);
     }
   };
 
   const loadAvailablePeriods = async () => {
     try {
       setLoading(true);
-      const response = await vehicleReportApi.getAvailablePeriods(selectedVehicle);
-      setAvailablePeriods(response.data.data);
+      const response = await vehicleReportApi.getAvailablePeriods(selectedVehicle).catch(() => ({ data: { data: null } }));
+      setAvailablePeriods(response?.data?.data || null);
     } catch (error) {
       console.error('Lỗi tải kỳ báo cáo:', error);
-      setError('Không thể tải thông tin kỳ báo cáo');
+      setAvailablePeriods(null);
     } finally {
       setLoading(false);
     }
