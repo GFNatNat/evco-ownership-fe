@@ -27,6 +27,9 @@ import VehicleManagement from '../pages/CoOwner/VehicleManagement';
 import Invitations from '../pages/CoOwner/Invitations';
 import VehicleAvailability from '../pages/CoOwner/VehicleAvailability';
 import VehicleAnalytics from '../pages/CoOwner/VehicleAnalytics';
+import BookingManagement from '../pages/CoOwner/BookingManagement';
+import PaymentManagement from '../pages/CoOwner/PaymentManagement';
+import MaintenanceManagement from '../pages/CoOwner/MaintenanceManagement';
 import VehicleVerification from '../pages/Staff/VehicleVerification';
 import Profile from '../pages/Profile/Profile';
 import AccessDenied from '../pages/Error/AccessDenied';
@@ -64,6 +67,9 @@ export default function AppRouter() {
           <Route path="/co-owner/invitations" element={<Invitations />} />
           <Route path="/co-owner/availability" element={<VehicleAvailability />} />
           <Route path="/co-owner/analytics" element={<VehicleAnalytics />} />
+          <Route path="/co-owner/booking-management" element={<BookingManagement />} />
+          <Route path="/co-owner/payment-management" element={<PaymentManagement />} />
+          <Route path="/co-owner/maintenance-management" element={<MaintenanceManagement />} />
 
           <Route path="/staff/fleet" element={<Fleet />} />
           <Route path="/staff/contracts" element={<StaffContracts />} />

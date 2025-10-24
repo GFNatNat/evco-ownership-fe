@@ -94,7 +94,63 @@ const paymentApi = {
   exportPayments: (params) => axiosClient.get('/api/Payment/export', {
     params,
     responseType: 'blob'
-  })
+  }),
+
+  // ===== README 08 COMPLIANCE - CORE METHODS =====
+
+  // 1. Create payment - POST /api/payment
+  createPayment: (data) => axiosClient.post('/api/payment', {
+    amount: data.amount,
+    paymentGateway: data.paymentGateway, // 0: VNPay, 1: Momo, 2: ZaloPay
+    paymentMethod: data.paymentMethod,   // 0: BankTransfer, 1: CreditCard, 2: Wallet
+    paymentType: data.paymentType,       // 0: Booking, 1: Maintenance, 2: Ownership
+    bookingId: data.bookingId,
+    description: data.description
+  }),
+
+  // 2. Process payment callback - POST /api/payment/process
+  processPaymentCallback: (data) => axiosClient.post('/api/payment/process', {
+    paymentId: data.paymentId,
+    transactionId: data.transactionId,
+    isSuccess: data.isSuccess
+  }),
+
+  // 3. Get payment by ID - GET /api/payment/{id}
+  getPaymentById: (id) => axiosClient.get(`/api/payment/${id}`),
+
+  // 4. Get my payments - GET /api/payment/my-payments
+  getMyPaymentsList: (params) => axiosClient.get('/api/payment/my-payments', {
+    params: {
+      pageIndex: params?.pageIndex || 1,
+      pageSize: params?.pageSize || 10
+    }
+  }),
+
+  // 5. Cancel payment - POST /api/payment/{id}/cancel
+  cancelPaymentById: (id) => axiosClient.post(`/api/payment/${id}/cancel`),
+
+  // 6. Get available gateways - GET /api/payment/gateways
+  getAvailableGateways: () => axiosClient.get('/api/payment/gateways'),
+
+  // 7. Get all payments (Admin/Staff) - GET /api/payment
+  getAllPayments: (params) => axiosClient.get('/api/payment', {
+    params: {
+      pageIndex: params?.pageIndex || 1,
+      pageSize: params?.pageSize || 10
+    }
+  }),
+
+  // 8. Get payment statistics (Admin/Staff) - GET /api/payment/statistics
+  getPaymentStatistics: () => axiosClient.get('/api/payment/statistics'),
+
+  // 9. VNPay callback - GET /api/payment/vnpay-callback
+  // Note: This is handled by backend redirect, not direct API call
+
+  // Legacy method aliases for backward compatibility
+  createPaymentLegacy: (data) => paymentApi.create(data),
+  getPaymentByIdLegacy: (id) => paymentApi.getById(id),
+  getAllPaymentsLegacy: (params) => paymentApi.getAll(params),
+  cancelPaymentLegacy: (id, reason) => paymentApi.cancelPayment(id, reason)
 };
 
 export default paymentApi;
