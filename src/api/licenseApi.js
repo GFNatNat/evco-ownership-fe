@@ -1,66 +1,42 @@
 import axiosClient from './axiosClient';
 
 const licenseApi = {
-    // License verification
-    verify: (data) => axiosClient.post('/api/License/verify', {
-        licenseNumber: data.licenseNumber,
-        licenseType: data.licenseType,
-        issueDate: data.issueDate,
-        expiryDate: data.expiryDate,
-        issuingAuthority: data.issuingAuthority
+    // Core License API endpoints as per 04-LICENSE-API.md
+
+    // 1. GET /api/license - Retrieve user's licenses with filter support
+    getAll: (params) => axiosClient.get('/api/License', { params }),
+
+    // 2. GET /api/license/{licenseId} - Get specific license details
+    getById: (licenseId) => axiosClient.get(`/api/License/${licenseId}`),
+
+    // 3. POST /api/license/upload - Upload new license
+    upload: (formData) => axiosClient.post('/api/License/upload', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
     }),
 
-    // License CRUD operations
-    create: (data) => axiosClient.post('/api/License', data),
-    getAll: (params) => axiosClient.get('/api/License', { params }),
-    getById: (id) => axiosClient.get(`/api/License/${id}`),
-    update: (id, data) => axiosClient.put(`/api/License/${id}`, data),
-    delete: (id) => axiosClient.delete(`/api/License/${id}`),
+    // 4. PUT /api/license/{licenseId}/verify - Verify license (Admin only)
+    verify: (licenseId, data) => axiosClient.put(`/api/License/${licenseId}/verify`, {
+        status: data.status,
+        notes: data.notes
+    }),
 
-    // User license management
-    getUserLicenses: () => axiosClient.get('/api/License/user'),
-    addUserLicense: (data) => axiosClient.post('/api/License/user', data),
-    updateUserLicense: (id, data) => axiosClient.put(`/api/License/user/${id}`, data),
-    deleteUserLicense: (id) => axiosClient.delete(`/api/License/user/${id}`),
+    // 5. DELETE /api/license/{licenseId} - Delete license
+    delete: (licenseId) => axiosClient.delete(`/api/License/${licenseId}`),
 
-    // License status management
-    activate: (id) => axiosClient.post(`/api/License/${id}/activate`),
-    deactivate: (id) => axiosClient.post(`/api/License/${id}/deactivate`),
-    suspend: (id, reason) => axiosClient.post(`/api/License/${id}/suspend`, { reason }),
+    // Additional helper methods (for existing frontend compatibility)
+    // These may not be in current backend spec but needed for admin features
 
     // License validation and checks
     checkValidity: (licenseNumber) => axiosClient.get(`/api/License/check/${licenseNumber}`),
-    validateForVehicleType: (licenseId, vehicleType) => axiosClient.post(`/api/License/${licenseId}/validate-vehicle`, {
-        vehicleType
-    }),
 
-    // License types and categories
-    getLicenseTypes: () => axiosClient.get('/api/License/types'),
-    getLicenseCategories: () => axiosClient.get('/api/License/categories'),
-
-    // License renewal
-    requestRenewal: (id, data) => axiosClient.post(`/api/License/${id}/renewal`, data),
-    processRenewal: (renewalId, approved) => axiosClient.post(`/api/License/renewal/${renewalId}/process`, {
-        approved
-    }),
-
-    // License statistics (Admin/Staff only)
+    // License statistics (Admin/Staff only) - for admin dashboard
     getStatistics: () => axiosClient.get('/api/License/statistics'),
+
+    // Get expiring licenses for admin monitoring
     getExpiringLicenses: (days = 30) => axiosClient.get('/api/License/expiring', {
         params: { days }
-    }),
-
-    // License verification history
-    getVerificationHistory: (licenseId) => axiosClient.get(`/api/License/${licenseId}/verification-history`),
-
-    // Bulk operations (Admin only)
-    bulkVerify: (licenseIds) => axiosClient.post('/api/License/bulk-verify', {
-        licenseIds
-    }),
-
-    exportLicenses: (format = 'excel') => axiosClient.get('/api/License/export', {
-        params: { format },
-        responseType: 'blob'
     })
 };
 

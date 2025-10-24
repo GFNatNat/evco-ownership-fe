@@ -20,6 +20,8 @@ export default function AppLayout() {
       { to: '/co-owner/vehicles', label: 'Quản lý xe' },
       { to: '/co-owner/create-vehicle', label: 'Thêm xe mới' },
       { to: '/co-owner/invitations', label: 'Lời mời đồng sở hữu' },
+      { to: '/co-owner/availability', label: 'Lịch trình sử dụng' },
+      { to: '/co-owner/analytics', label: 'Phân tích hiệu suất' },
       { to: '/co-owner/schedule', label: 'Lịch & đặt xe' },
       { to: '/co-owner/payments', label: 'Chi phí & thanh toán' },
       { to: '/co-owner/history', label: 'Lịch sử & phân tích' },
@@ -37,6 +39,7 @@ export default function AppLayout() {
     Admin: [
       { to: '/dashboard/admin', label: 'Dashboard' },
       { to: '/admin/users', label: 'Quản lý người dùng' },
+      { to: '/admin/licenses', label: 'Quản lý giấy phép' },
       { to: '/admin/groups', label: 'Nhóm đồng sở hữu' },
       { to: '/admin/reports', label: 'Báo cáo tài chính' },
       { to: '/admin/settings', label: 'Cấu hình hệ thống' },

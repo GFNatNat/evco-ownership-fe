@@ -15,6 +15,7 @@ import AdminSettings from '../pages/Admin/Settings';
 import AdminReports from '../pages/Admin/Reports';
 import AdminGroups from '../pages/Admin/Groups';
 import AdminUsers from '../pages/Admin/Users';
+import LicenseManagement from '../pages/Admin/LicenseManagement';
 import StaffDisputes from '../pages/Staff/Disputes';
 import StaffServices from '../pages/Staff/Services';
 import CheckInOut from '../pages/Staff/CheckInOut';
@@ -24,6 +25,8 @@ import AccountOwnership from '../pages/CoOwner/AccountOwnership';
 import CreateVehicle from '../pages/CoOwner/CreateVehicle';
 import VehicleManagement from '../pages/CoOwner/VehicleManagement';
 import Invitations from '../pages/CoOwner/Invitations';
+import VehicleAvailability from '../pages/CoOwner/VehicleAvailability';
+import VehicleAnalytics from '../pages/CoOwner/VehicleAnalytics';
 import VehicleVerification from '../pages/Staff/VehicleVerification';
 import Profile from '../pages/Profile/Profile';
 import AccessDenied from '../pages/Error/AccessDenied';
@@ -59,6 +62,8 @@ export default function AppRouter() {
           <Route path="/co-owner/vehicles" element={<VehicleManagement />} />
           <Route path="/co-owner/create-vehicle" element={<CreateVehicle />} />
           <Route path="/co-owner/invitations" element={<Invitations />} />
+          <Route path="/co-owner/availability" element={<VehicleAvailability />} />
+          <Route path="/co-owner/analytics" element={<VehicleAnalytics />} />
 
           <Route path="/staff/fleet" element={<Fleet />} />
           <Route path="/staff/contracts" element={<StaffContracts />} />
@@ -71,6 +76,7 @@ export default function AppRouter() {
           <Route path="/admin/groups" element={<AdminGroups />} />
           <Route path="/admin/reports" element={<AdminReports />} />
           <Route path="/admin/settings" element={<AdminSettings />} />
+          <Route path="/admin/licenses" element={<LicenseManagement />} />
 
           {/* Profile route for all roles */}
           <Route path="/profile" element={<Profile />} />

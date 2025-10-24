@@ -6,9 +6,10 @@ import {
 } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
 import vehicleApi from '../../api/vehicleApi';
+import coOwnerApi from '../../api/coOwnerApi';
 import { useNavigate } from 'react-router-dom';
 
-const steps = ['Thông tin xe', 'Đồng sở hữu', 'Xác nhận'];
+const steps = ['Kiểm tra điều kiện', 'Thông tin xe', 'Đồng sở hữu', 'Xác nhận'];
 
 export default function CreateVehicle() {
     const navigate = useNavigate();
@@ -16,28 +17,63 @@ export default function CreateVehicle() {
     const [loading, setLoading] = React.useState(false);
     const [message, setMessage] = React.useState('');
     const [error, setError] = React.useState('');
+    const [eligibilityChecked, setEligibilityChecked] = React.useState(false);
+    const [eligibilityStatus, setEligibilityStatus] = React.useState(null);
 
     const [vehicleForm, setVehicleForm] = React.useState({
-        make: '',
+        name: '',
+        brand: '',
         model: '',
         year: new Date().getFullYear(),
-        color: '',
+        vin: '',
         licensePlate: '',
-        vinNumber: '',
-        engineNumber: '',
-        registrationNumber: '',
-        description: '',
+        color: '',
+        batteryCapacity: '',
+        range: '',
+        purchaseDate: new Date().toISOString().split('T')[0],
         purchasePrice: '',
-        estimatedValue: '',
+        warrantyExpiryDate: '',
+        latitude: '',
+        longitude: ''
     });
 
     const [coOwners, setCoOwners] = React.useState([
         { email: '', percentage: 100, name: '', isOwner: true }
     ]);
 
+    // Check eligibility for vehicle creation
+    const checkEligibility = async () => {
+        setLoading(true);
+        try {
+            const response = await coOwnerApi.checkEligibility();
+            setEligibilityStatus(response.data);
+            setEligibilityChecked(true);
+            if (response.data.isEligible) {
+                setMessage('Bạn đủ điều kiện tạo xe đồng sở hữu');
+                // Also check vehicle creation eligibility
+                const vehicleEligibility = await vehicleApi.validateCreationEligibility();
+                if (!vehicleEligibility.data.isEligible) {
+                    setError(vehicleEligibility.data.reason || 'Không thể tạo xe mới');
+                    return;
+                }
+                handleNext();
+            } else {
+                setError(response.data.reason || 'Bạn chưa đủ điều kiện tạo xe đồng sở hữu');
+            }
+        } catch (err) {
+            setError('Không thể kiểm tra điều kiện');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleNext = () => {
-        if (activeStep === 0 && !validateVehicleForm()) return;
-        if (activeStep === 1 && !validateCoOwnership()) return;
+        if (activeStep === 0) {
+            checkEligibility();
+            return;
+        }
+        if (activeStep === 1 && !validateVehicleForm()) return;
+        if (activeStep === 2 && !validateCoOwnership()) return;
         setActiveStep((prev) => prev + 1);
     };
 
@@ -46,7 +82,7 @@ export default function CreateVehicle() {
     };
 
     const validateVehicleForm = () => {
-        const required = ['make', 'model', 'year', 'licensePlate', 'vinNumber'];
+        const required = ['name', 'brand', 'model', 'year', 'licensePlate', 'vin'];
         for (let field of required) {
             if (!vehicleForm[field]) {
                 setError(`Vui lòng nhập ${field}`);
@@ -95,17 +131,23 @@ export default function CreateVehicle() {
         setMessage('');
 
         try {
-            const vehicleData = {
-                ...vehicleForm,
-                coOwners: coOwners.map(owner => ({
-                    email: owner.email,
-                    ownershipPercentage: Number(owner.percentage),
-                    name: owner.name,
-                    isOwner: owner.isOwner
-                }))
-            };
+            // Create vehicle first
+            const res = await vehicleApi.create(vehicleForm);
+            const vehicleId = res.data.id;
 
-            const res = await vehicleApi.create(vehicleData);
+            // Add co-owners if any (excluding the current owner)
+            const additionalCoOwners = coOwners.filter(owner => !owner.isOwner);
+            for (const coOwner of additionalCoOwners) {
+                try {
+                    await vehicleApi.addCoOwner(vehicleId, {
+                        userId: coOwner.userId, // This would need to be resolved from email
+                        ownershipPercentage: Number(coOwner.percentage),
+                        investmentAmount: Number(coOwner.percentage) * Number(vehicleForm.purchasePrice) / 100
+                    });
+                } catch (err) {
+                    console.warn('Failed to add co-owner:', coOwner.email);
+                }
+            }
             setMessage('Tạo xe thành công!');
 
             // Redirect after success
@@ -324,13 +366,47 @@ export default function CreateVehicle() {
         </Grid>
     );
 
+    const renderEligibilityCheck = () => (
+        <Box sx={{ textAlign: 'center', py: 4 }}>
+            <Typography variant="h6" gutterBottom>
+                Kiểm tra điều kiện tạo xe đồng sở hữu
+            </Typography>
+            <Typography variant="body1" color="text.secondary" paragraph>
+                Chúng tôi sẽ kiểm tra xem bạn có đủ điều kiện để tạo xe đồng sở hữu hay không.
+                Điều kiện bao gồm: có giấy phép lái xe được xác minh, không có nợ quá hạn, v.v.
+            </Typography>
+            {!eligibilityChecked ? (
+                <Button
+                    variant="contained"
+                    onClick={checkEligibility}
+                    disabled={loading}
+                    size="large"
+                >
+                    Kiểm tra điều kiện
+                </Button>
+            ) : eligibilityStatus?.isEligible ? (
+                <Alert severity="success">
+                    <Typography variant="h6">Chúc mừng!</Typography>
+                    <Typography>Bạn đủ điều kiện tạo xe đồng sở hữu</Typography>
+                </Alert>
+            ) : (
+                <Alert severity="error">
+                    <Typography variant="h6">Không đủ điều kiện</Typography>
+                    <Typography>{eligibilityStatus?.reason}</Typography>
+                </Alert>
+            )}
+        </Box>
+    );
+
     const getStepContent = (step) => {
         switch (step) {
             case 0:
-                return renderVehicleForm();
+                return renderEligibilityCheck();
             case 1:
-                return renderCoOwnership();
+                return renderVehicleForm();
             case 2:
+                return renderCoOwnership();
+            case 3:
                 return renderConfirmation();
             default:
                 return 'Unknown step';

@@ -8,6 +8,7 @@ import { PhotoCamera, Security, Notifications, Edit, DirectionsCar, Assessment }
 import { useAuth } from '../../context/AuthContext';
 import profileApi from '../../api/profileApi';
 import authApi from '../../api/authApi';
+import licenseApi from '../../api/licenseApi';
 import fileUploadApi from '../../api/fileUploadApi';
 
 export default function Profile() {
@@ -74,7 +75,7 @@ export default function Profile() {
 
     // These endpoints are not in the API specification, commented out for now
     // Will need to implement when backend API is ready
-    
+
     // const loadSecuritySettings = async () => {
     //     try {
     //         const res = await profileApi.getSecuritySettings();
@@ -169,9 +170,16 @@ export default function Profile() {
         setMessage('');
         setError('');
         try {
-            const res = await authApi.verifyLicense(licenseForm);
+            // Upload license using new licenseApi
+            const uploadData = new FormData();
+            uploadData.append('licenseNumber', licenseForm.licenseNumber);
+            uploadData.append('issueDate', licenseForm.issueDate);
+            uploadData.append('firstName', licenseForm.firstName);
+            uploadData.append('lastName', licenseForm.lastName);
+
+            const res = await licenseApi.upload(uploadData);
             if (res.data) {
-                setMessage('Xác minh giấy phép lái xe thành công');
+                setMessage('Tải lên giấy phép lái xe thành công. Đang chờ xác minh.');
                 setLicenseForm({
                     licenseNumber: '',
                     issueDate: '',
@@ -180,7 +188,7 @@ export default function Profile() {
                 });
             }
         } catch (err) {
-            setError(err?.response?.data?.message || 'Xác minh giấy phép thất bại');
+            setError(err?.response?.data?.message || 'Tải lên giấy phép thất bại');
         }
     };
 

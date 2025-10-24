@@ -23,9 +23,17 @@ export default function Invitations() {
     const loadInvitations = async () => {
         setLoading(true);
         try {
-            const res = await vehicleApi.getInvitations();
+            const res = await vehicleApi.getPendingInvitations();
             const data = Array.isArray(res.data) ? res.data : res.data?.items || [];
-            setInvitations(data.map((invitation, index) => ({ id: invitation.id || index, ...invitation })));
+            setInvitations(data.map((invitation, index) => ({
+                id: invitation.invitationId || index,
+                ...invitation,
+                vehicle: {
+                    make: invitation.vehicleBrand,
+                    model: invitation.vehicleModel,
+                    licensePlate: invitation.licensePlate
+                }
+            })));
         } catch (err) {
             setError('Không thể tải danh sách lời mời');
         } finally {
@@ -38,12 +46,12 @@ export default function Invitations() {
         setOpenDetailDialog(true);
     };
 
-    const handleRespond = async (invitationId, response) => {
+    const handleRespond = async (invitation, accept) => {
         setError('');
         setMessage('');
         try {
-            await vehicleApi.respondToInvitation(invitationId, { response });
-            setMessage(response === 'accept' ? 'Đã chấp nhận lời mời' : 'Đã từ chối lời mời');
+            await vehicleApi.respondToInvitation(invitation.vehicleId, { response: accept });
+            setMessage(accept ? 'Đã chấp nhận lời mời đồng sở hữu' : 'Đã từ chối lời mời đồng sở hữu');
             await loadInvitations();
         } catch (err) {
             setError(err?.response?.data?.message || 'Phản hồi lời mời thất bại');
@@ -134,7 +142,7 @@ export default function Invitations() {
                                 size="small"
                                 color="success"
                                 startIcon={<Check />}
-                                onClick={() => handleRespond(params.row.id, 'accept')}
+                                onClick={() => handleRespond(params.row, true)}
                             >
                                 Chấp nhận
                             </Button>
@@ -142,7 +150,7 @@ export default function Invitations() {
                                 size="small"
                                 color="error"
                                 startIcon={<Close />}
-                                onClick={() => handleRespond(params.row.id, 'reject')}
+                                onClick={() => handleRespond(params.row, false)}
                             >
                                 Từ chối
                             </Button>
@@ -242,7 +250,7 @@ export default function Invitations() {
                                             color="success"
                                             startIcon={<Check />}
                                             onClick={() => {
-                                                handleRespond(selectedInvitation.id, 'accept');
+                                                handleRespond(selectedInvitation, true);
                                                 setOpenDetailDialog(false);
                                             }}
                                         >
@@ -253,7 +261,7 @@ export default function Invitations() {
                                             color="error"
                                             startIcon={<Close />}
                                             onClick={() => {
-                                                handleRespond(selectedInvitation.id, 'reject');
+                                                handleRespond(selectedInvitation, false);
                                                 setOpenDetailDialog(false);
                                             }}
                                         >

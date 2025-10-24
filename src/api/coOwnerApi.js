@@ -1,33 +1,48 @@
 import axiosClient from './axiosClient';
 
 const coOwnerApi = {
-  // Co-owner profile and verification
+  // Core CoOwner API endpoints as per 05-COOWNER-API.md
+
+  // 1. GET /api/coowner/eligibility - Check eligibility to become co-owner
+  checkEligibility: () => axiosClient.get('/api/CoOwner/eligibility'),
+
+  // 2. POST /api/coowner/promote - Promote user to co-owner (Admin only)
+  promote: (data) => axiosClient.post('/api/CoOwner/promote', {
+    userId: data.userId,
+    vehicleId: data.vehicleId
+  }),
+
+  // 3. GET /api/coowner/statistics - Get co-owner statistics (Admin only)
+  getStatistics: () => axiosClient.get('/api/CoOwner/statistics'),
+
+  // 4. GET /api/coowner/vehicles - Get vehicles associated with co-owner
+  getVehicles: () => axiosClient.get('/api/CoOwner/vehicles'),
+
+  // 5. DELETE /api/coowner/remove - Remove co-owner status (Admin only)
+  remove: (data) => axiosClient.delete('/api/CoOwner/remove', {
+    data: {
+      userId: data.userId,
+      vehicleId: data.vehicleId
+    }
+  }),
+
+  // Extended functionality (for existing frontend compatibility)
+  // These endpoints may need backend implementation
+
+  // Profile and verification (kept for existing pages)
   getProfile: () => axiosClient.get('/api/CoOwner/profile'),
   updateProfile: (data) => axiosClient.put('/api/CoOwner/profile', data),
-  checkEligibility: (data) => axiosClient.post('/api/CoOwner/eligibility', data),
 
   // Vehicle ownership management
   getOwnerships: () => axiosClient.get('/api/CoOwner/ownerships'),
   getOwnershipById: (id) => axiosClient.get(`/api/CoOwner/ownership/${id}`),
 
-  // Ownership requests
-  createOwnershipRequest: (data) => axiosClient.post('/api/CoOwner/ownership-request', {
-    vehicleId: data.vehicleId,
-    ownershipPercentage: data.ownershipPercentage,
-    investmentAmount: data.investmentAmount,
-    notes: data.notes
-  }),
-
-  getOwnershipRequests: () => axiosClient.get('/api/CoOwner/ownership-requests'),
-  updateOwnershipRequest: (id, data) => axiosClient.put(`/api/CoOwner/ownership-request/${id}`, data),
-  cancelOwnershipRequest: (id) => axiosClient.delete(`/api/CoOwner/ownership-request/${id}`),
-
-  // Co-ownership group management
+  // Group management for existing functionality
   getGroups: () => axiosClient.get('/api/CoOwner/groups'),
   getGroupById: (id) => axiosClient.get(`/api/CoOwner/group/${id}`),
   getGroupMembers: (groupId) => axiosClient.get(`/api/CoOwner/group/${groupId}/members`),
 
-  // Group invitations
+  // Invitations (kept for existing invitation system)
   inviteToGroup: (groupId, data) => axiosClient.post(`/api/CoOwner/group/${groupId}/invite`, {
     email: data.email,
     message: data.message
@@ -39,7 +54,7 @@ const coOwnerApi = {
 
   getInvitations: () => axiosClient.get('/api/CoOwner/invitations'),
 
-  // Vehicle scheduling and usage
+  // Vehicle scheduling (for booking system)
   getSchedule: (vehicleId) => axiosClient.get(`/api/CoOwner/vehicle/${vehicleId}/schedule`),
   bookTimeSlot: (vehicleId, data) => axiosClient.post(`/api/CoOwner/vehicle/${vehicleId}/book`, {
     startTime: data.startTime,
@@ -50,7 +65,7 @@ const coOwnerApi = {
   cancelBooking: (bookingId) => axiosClient.delete(`/api/CoOwner/booking/${bookingId}`),
   getMyBookings: () => axiosClient.get('/api/CoOwner/bookings'),
 
-  // Financial management
+  // Financial management (for payment system)
   getPayments: () => axiosClient.get('/api/CoOwner/payments'),
   makePayment: (data) => axiosClient.post('/api/CoOwner/payment', {
     ownershipId: data.ownershipId,
@@ -59,24 +74,7 @@ const coOwnerApi = {
     description: data.description
   }),
 
-  // Documents and verification
-  uploadDocument: (data) => axiosClient.post('/api/CoOwner/documents', data, {
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  }),
-
-  getDocuments: () => axiosClient.get('/api/CoOwner/documents'),
-  deleteDocument: (id) => axiosClient.delete(`/api/CoOwner/documents/${id}`),
-
-  // Activity history
-  getActivityHistory: () => axiosClient.get('/api/CoOwner/activity-history'),
-
-  // Notifications
-  getNotifications: () => axiosClient.get('/api/CoOwner/notifications'),
-  markNotificationAsRead: (id) => axiosClient.put(`/api/CoOwner/notification/${id}/read`),
-
-  // Statistics and reports
+  // Dashboard stats (for existing dashboard)
   getDashboardStats: () => axiosClient.get('/api/CoOwner/dashboard-stats'),
   getOwnershipSummary: () => axiosClient.get('/api/CoOwner/ownership-summary')
 };

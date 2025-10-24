@@ -65,13 +65,19 @@ export default function VehicleManagement() {
         setError('');
         setMessage('');
         try {
-            await vehicleApi.sendInvitation(selectedVehicle.id, {
-                email: invitationForm.email,
-                ownershipPercentage: Number(invitationForm.ownershipPercentage),
-                message: invitationForm.message
-            });
-            setMessage('Gửi lời mời thành công');
-            setOpenInviteDialog(false);
+            // Note: In real implementation, you would need to resolve email to userId first
+            // For now, we'll use a placeholder userId or show error
+            setError('Chức năng này yêu cầu chọn người dùng từ danh sách thay vì nhập email');
+            return;
+
+            // Example of correct API call:
+            // await vehicleApi.addCoOwner(selectedVehicle.vehicleId, {
+            //     userId: resolvedUserId,
+            //     ownershipPercentage: Number(invitationForm.ownershipPercentage),
+            //     investmentAmount: calculateInvestmentAmount(selectedVehicle.purchasePrice, invitationForm.ownershipPercentage)
+            // });
+            // setMessage('Gửi lời mời thành công');
+            // setOpenInviteDialog(false);
         } catch (err) {
             setError(err?.response?.data?.message || 'Gửi lời mời thất bại');
         }
