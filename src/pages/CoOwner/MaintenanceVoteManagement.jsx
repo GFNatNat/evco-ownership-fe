@@ -98,7 +98,15 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
     maintenanceCostId: '',
     reason: '',
     amount: '',
-    imageFile: null
+    imageFile: null,
+    maintenanceType: 0,
+    priority: 1,
+    title: '',
+    estimatedCost: '',
+    proposedDate: null,
+    description: '',
+    proposalReason: '',
+    supportingDocuments: []
   });
 
   const [voteForm, setVoteForm] = useState({
@@ -442,7 +450,7 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
     });
 
     // Calculate statistics by status
-    const statusStats = maintenanceVoteApi.getProposalStatuses().map(status => {
+    const statusStats = (maintenanceVoteApi.getProposalStatuses() || []).map(status => {
       const statusProposals = proposals.filter(p => p.proposalStatus === status.value);
       return {
         name: status.label,
@@ -600,7 +608,7 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
               fullWidth
               startIcon={<Assignment />}
             >
-              Tài liệu hỗ trợ ({proposalForm.supportingDocuments.length} file)
+              Tài liệu hỗ trợ ({(proposalForm.supportingDocuments || []).length} file)
               <input
                 type="file"
                 hidden
@@ -637,7 +645,7 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
             value={voteForm.voteDecision}
             onChange={(e) => setVoteForm(prev => ({ ...prev, voteDecision: parseInt(e.target.value) }))}
           >
-            {maintenanceVoteApi.getVoteDecisions().map(decision => (
+            {(maintenanceVoteApi.getVoteDecisions() || []).map(decision => (
               <FormControlLabel
                 key={decision.value}
                 value={decision.value}
@@ -756,7 +764,7 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
                       Kết quả bình chọn
                     </Typography>
                     <List>
-                      {proposal.votes.map((vote, index) => {
+                      {(proposal.votes || []).map((vote, index) => {
                         const formattedVote = maintenanceVoteApi.formatVoteForDisplay(vote);
                         return (
                           <ListItem key={index}>
@@ -827,7 +835,7 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
               onChange={(e) => setFilterForm(prev => ({ ...prev, status: e.target.value }))}
             >
               <MenuItem value="">Tất cả</MenuItem>
-              {maintenanceVoteApi.getProposalStatuses().map(status => (
+              {(maintenanceVoteApi.getProposalStatuses() || []).map(status => (
                 <MenuItem key={status.value} value={status.value}>
                   {status.label}
                 </MenuItem>
@@ -872,12 +880,12 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
         {activeTab === 0 && (
           <Box>
             <Typography variant="h6" gutterBottom>
-              Đề xuất đang chờ bình chọn ({voteData.pendingProposals.length})
+              Đề xuất đang chờ bình chọn ({(voteData.pendingProposals || []).length})
             </Typography>
-            {voteData.pendingProposals.length === 0 ? (
+            {(voteData.pendingProposals || []).length === 0 ? (
               <Alert severity="info">Không có đề xuất nào đang chờ bình chọn</Alert>
             ) : (
-              voteData.pendingProposals.map(proposal => (
+              (voteData.pendingProposals || []).map(proposal => (
                 <ProposalCard key={proposal.id} proposal={proposal} showVoteButton={true} />
               ))
             )}
@@ -887,12 +895,12 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
         {activeTab === 1 && (
           <Box>
             <Typography variant="h6" gutterBottom>
-              Lịch sử đề xuất ({voteData.history.length})
+              Lịch sử đề xuất ({(voteData.history || []).length})
             </Typography>
-            {voteData.history.length === 0 ? (
+            {(voteData.history || []).length === 0 ? (
               <Alert severity="info">Chưa có lịch sử đề xuất nào</Alert>
             ) : (
-              voteData.history.map(proposal => (
+              (voteData.history || []).map(proposal => (
                 <ProposalCard key={proposal.id} proposal={proposal} showVoteButton={false} />
               ))
             )}
