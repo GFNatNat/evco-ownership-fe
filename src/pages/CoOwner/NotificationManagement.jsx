@@ -11,14 +11,9 @@ import {
     InputLabel,
     Select,
     MenuItem,
-    TextField,
     Chip,
     Alert,
     CircularProgress,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
     Table,
     TableBody,
     TableCell,
@@ -31,14 +26,9 @@ import {
     Checkbox,
     Switch,
     FormControlLabel,
-    Tabs,
-    Tab,
     Badge,
     Divider,
-    Stack,
-    Menu,
-    ListItemIcon,
-    ListItemText
+    Stack
 } from '@mui/material';
 import {
     Notifications,
@@ -46,12 +36,7 @@ import {
     MarkEmailRead,
     MarkEmailUnread,
     Delete,
-    Send,
-    Group,
-    Person,
-    FilterList,
     Refresh,
-    MoreVert,
     CheckBox,
     CheckBoxOutlineBlank,
     SelectAll
@@ -61,7 +46,6 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import notificationApi from '../../api/notificationApi';
-import userApi from '../../api/userApi';
 
 const NotificationManagement = () => {
     const [loading, setLoading] = useState(false);
@@ -69,7 +53,6 @@ const NotificationManagement = () => {
     const [totalNotifications, setTotalNotifications] = useState(0);
     const [unreadCount, setUnreadCount] = useState(0);
     const [selectedNotifications, setSelectedNotifications] = useState([]);
-    const [currentTab, setCurrentTab] = useState(0);
     const [pagination, setPagination] = useState({
         page: 0,
         rowsPerPage: 10
@@ -83,16 +66,7 @@ const NotificationManagement = () => {
         dateTo: null
     });
 
-    // Admin functions states
-    const [users, setUsers] = useState([]);
-    const [sendDialog, setSendDialog] = useState({ open: false });
-    const [bulkDialog, setBulkDialog] = useState({ open: false });
-    const [newNotification, setNewNotification] = useState({
-        notificationType: 'System',
-        userIds: [],
-        message: '',
-        additionalData: {}
-    });
+
 
     const [alert, setAlert] = useState({ show: false, type: 'info', message: '' });
     const [menuAnchor, setMenuAnchor] = useState(null);
@@ -102,12 +76,6 @@ const NotificationManagement = () => {
         loadNotifications();
         loadUnreadCount();
     }, [pagination, filters]);
-
-    useEffect(() => {
-        if (currentTab === 1) { // Admin tab
-            loadUsers();
-        }
-    }, [currentTab]);
 
     const loadNotifications = async () => {
         setLoading(true);
@@ -133,15 +101,6 @@ const NotificationManagement = () => {
             setUnreadCount(response.data?.count || 0);
         } catch (error) {
             console.error('Error loading unread count:', error);
-        }
-    };
-
-    const loadUsers = async () => {
-        try {
-            const response = await userApi.getAllUsers();
-            setUsers(response.data || []);
-        } catch (error) {
-            console.error('Error loading users:', error);
         }
     };
 
@@ -209,55 +168,6 @@ const NotificationManagement = () => {
             showAlert('success', 'Đã đánh dấu tất cả thông báo là đã đọc');
         } catch (error) {
             showAlert('error', 'Lỗi khi đánh dấu tất cả thông báo: ' + error.message);
-        }
-    };
-
-    const handleSendNotification = async () => {
-        if (!newNotification.message.trim()) {
-            showAlert('warning', 'Vui lòng nhập nội dung thông báo');
-            return;
-        }
-
-        if (newNotification.userIds.length === 0) {
-            showAlert('warning', 'Vui lòng chọn người nhận');
-            return;
-        }
-
-        setLoading(true);
-        try {
-            if (newNotification.userIds.length === 1) {
-                await notificationApi.sendNotificationToUser({
-                    userId: newNotification.userIds[0],
-                    notificationType: newNotification.notificationType,
-                    additionalData: JSON.stringify({
-                        message: newNotification.message,
-                        ...newNotification.additionalData
-                    })
-                });
-            } else {
-                await notificationApi.createNotification({
-                    notificationType: newNotification.notificationType,
-                    userIds: newNotification.userIds,
-                    additionalData: JSON.stringify({
-                        message: newNotification.message,
-                        ...newNotification.additionalData
-                    })
-                });
-            }
-
-            setSendDialog({ open: false });
-            setNewNotification({
-                notificationType: 'System',
-                userIds: [],
-                message: '',
-                additionalData: {}
-            });
-
-            showAlert('success', 'Thông báo đã được gửi thành công');
-        } catch (error) {
-            showAlert('error', 'Lỗi khi gửi thông báo: ' + error.message);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -382,89 +292,6 @@ const NotificationManagement = () => {
         </TableContainer>
     );
 
-    const SendNotificationDialog = () => (
-        <Dialog open={sendDialog.open} onClose={() => setSendDialog({ open: false })} maxWidth="md" fullWidth>
-            <DialogTitle>Gửi thông báo</DialogTitle>
-            <DialogContent>
-                <Grid container spacing={2} sx={{ mt: 1 }}>
-                    <Grid item xs={12} md={6}>
-                        <FormControl fullWidth>
-                            <InputLabel>Loại thông báo</InputLabel>
-                            <Select
-                                value={newNotification.notificationType}
-                                onChange={(e) => setNewNotification(prev => ({ ...prev, notificationType: e.target.value }))}
-                                label="Loại thông báo"
-                            >
-                                <MenuItem value="System">Hệ thống</MenuItem>
-                                <MenuItem value="Booking">Đặt xe</MenuItem>
-                                <MenuItem value="Payment">Thanh toán</MenuItem>
-                                <MenuItem value="Maintenance">Bảo trì</MenuItem>
-                                <MenuItem value="Voting">Bình chọn</MenuItem>
-                                <MenuItem value="Report">Báo cáo</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Grid>
-
-                    <Grid item xs={12} md={6}>
-                        <FormControl fullWidth>
-                            <InputLabel>Người nhận</InputLabel>
-                            <Select
-                                multiple
-                                value={newNotification.userIds}
-                                onChange={(e) => setNewNotification(prev => ({ ...prev, userIds: e.target.value }))}
-                                label="Người nhận"
-                                renderValue={(selected) => (
-                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                        {selected.map((userId) => {
-                                            const user = users.find(u => u.userId === userId);
-                                            return (
-                                                <Chip
-                                                    key={userId}
-                                                    label={user ? user.fullName : userId}
-                                                    size="small"
-                                                />
-                                            );
-                                        })}
-                                    </Box>
-                                )}
-                            >
-                                {users.map((user) => (
-                                    <MenuItem key={user.userId} value={user.userId}>
-                                        <Checkbox checked={newNotification.userIds.indexOf(user.userId) > -1} />
-                                        <ListItemText primary={user.fullName} secondary={user.email} />
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    </Grid>
-
-                    <Grid item xs={12}>
-                        <TextField
-                            fullWidth
-                            multiline
-                            rows={4}
-                            label="Nội dung thông báo"
-                            value={newNotification.message}
-                            onChange={(e) => setNewNotification(prev => ({ ...prev, message: e.target.value }))}
-                            placeholder="Nhập nội dung thông báo..."
-                        />
-                    </Grid>
-                </Grid>
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={() => setSendDialog({ open: false })}>Hủy</Button>
-                <Button
-                    variant="contained"
-                    onClick={handleSendNotification}
-                    disabled={loading}
-                    startIcon={loading ? <CircularProgress size={20} /> : <Send />}
-                >
-                    Gửi thông báo
-                </Button>
-            </DialogActions>
-        </Dialog>
-    );
-
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
             <Box sx={{ p: 3 }}>
@@ -481,13 +308,7 @@ const NotificationManagement = () => {
                     </Alert>
                 )}
 
-                <Tabs value={currentTab} onChange={(_, newValue) => setCurrentTab(newValue)} sx={{ mb: 2 }}>
-                    <Tab label="Thông báo của tôi" />
-                    <Tab label="Quản lý (Admin)" />
-                </Tabs>
-
-                {currentTab === 0 && (
-                    <Box>
+                <Box>
                         {/* Quick Stats */}
                         <Grid container spacing={2} sx={{ mb: 3 }}>
                             <Grid item xs={12} md={3}>
@@ -582,42 +403,7 @@ const NotificationManagement = () => {
                         ) : (
                             <NotificationTable />
                         )}
-                    </Box>
-                )}
-
-                {currentTab === 1 && (
-                    <Box>
-                        <Paper sx={{ p: 2, mb: 2 }}>
-                            <Stack direction="row" spacing={2} alignItems="center">
-                                <Button
-                                    variant="contained"
-                                    startIcon={<Send />}
-                                    onClick={() => setSendDialog({ open: true })}
-                                >
-                                    Gửi thông báo
-                                </Button>
-
-                                <Button
-                                    variant="outlined"
-                                    startIcon={<Group />}
-                                    onClick={() => {
-                                        // TODO: Implement bulk notification to all users
-                                        showAlert('info', 'Chức năng gửi thông báo hàng loạt đang được phát triển');
-                                    }}
-                                >
-                                    Gửi hàng loạt
-                                </Button>
-                            </Stack>
-                        </Paper>
-
-                        <Typography variant="body2" color="textSecondary">
-                            Quản lý gửi thông báo cho người dùng. Chỉ Admin mới có quyền truy cập chức năng này.
-                        </Typography>
-                    </Box>
-                )}
-
-                {/* Dialogs */}
-                <SendNotificationDialog />
+                </Box>
             </Box>
         </LocalizationProvider>
     );

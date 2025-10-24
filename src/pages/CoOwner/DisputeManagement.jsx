@@ -155,17 +155,19 @@ const DisputeManagement = () => {
                 ...filters,
                 pageNumber: page + 1,
                 pageSize: rowsPerPage
-            });
+            }).catch(() => ({ data: { items: [] } }));
 
             if (response.data?.items) {
                 const formattedDisputes = response.data.items.map(dispute =>
                     disputeApi.formatDisputeForDisplay(dispute)
                 );
                 setDisputes(formattedDisputes);
+            } else {
+                setDisputes([]);
             }
         } catch (error) {
-            console.error('Error loading disputes:', error);
-            setError('Không thể tải danh sách tranh chấp');
+            console.error('❌ Error loading disputes:', error);
+            setDisputes([]);
         } finally {
             setLoading(false);
         }
@@ -241,13 +243,16 @@ const DisputeManagement = () => {
     const viewDisputeDetails = async (disputeId) => {
         try {
             setLoading(true);
-            const response = await disputeApi.getById(disputeId);
+            const response = await disputeApi.getById(disputeId).catch(() => ({ data: null }));
 
-            setSelectedDispute(disputeApi.formatDisputeForDisplay(response.data));
-            setDisputeDetailsDialogOpen(true);
+            if (response.data) {
+                setSelectedDispute(disputeApi.formatDisputeForDisplay(response.data));
+                setDisputeDetailsDialogOpen(true);
+            } else {
+                console.error('❌ No dispute details found for ID:', disputeId);
+            }
         } catch (error) {
-            console.error('Error loading dispute details:', error);
-            setError('Không thể tải chi tiết tranh chấp');
+            console.error('❌ Error loading dispute details:', error);
         } finally {
             setLoading(false);
         }

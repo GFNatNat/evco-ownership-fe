@@ -18,7 +18,7 @@ export default function Invitations() {
     const [myVehicles, setMyVehicles] = React.useState([]);
     const [message, setMessage] = React.useState('');
     const [error, setError] = React.useState('');
-    
+
     const [inviteForm, setInviteForm] = React.useState({
         vehicleId: '',
         email: '',
@@ -282,7 +282,7 @@ export default function Invitations() {
                                 </Select>
                             </FormControl>
                         </Grid>
-                        
+
                         <Grid item xs={12}>
                             <TextField
                                 label="Email người nhận"
@@ -334,8 +334,8 @@ export default function Invitations() {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOpenInviteDialog(false)}>Hủy</Button>
-                    <Button 
-                        onClick={handleSendInvitation} 
+                    <Button
+                        onClick={handleSendInvitation}
                         variant="contained"
                         disabled={!inviteForm.vehicleId || !inviteForm.email || !inviteForm.ownershipPercentage || !inviteForm.investmentAmount}
                     >
