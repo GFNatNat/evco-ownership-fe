@@ -58,15 +58,25 @@ const PaymentManagement = () => {
     const loadData = async () => {
         setLoading(true);
         try {
-            const [paymentsRes, gatewaysRes] = await Promise.all([
-                paymentApi.getMyPaymentsList(),
-                paymentApi.getAvailableGateways()
+            const results = await Promise.allSettled([
+                paymentApi.getMyPaymentsList().catch(() => ({ data: [] })),
+                paymentApi.getAvailableGateways().catch(() => ({ data: [] }))
             ]);
 
-            setPayments(paymentsRes.data || []);
-            setGateways(gatewaysRes.data || []);
+            const [paymentsRes, gatewaysRes] = results.map(r => 
+                r.status === 'fulfilled' ? r.value : { data: [] }
+            );
+
+            // Ensure payments and gateways are always arrays
+            const paymentsData = paymentsRes?.data || [];
+            const gatewaysData = gatewaysRes?.data || [];
+
+            setPayments(Array.isArray(paymentsData) ? paymentsData : []);
+            setGateways(Array.isArray(gatewaysData) ? gatewaysData : []);
         } catch (error) {
-            showAlert('Lỗi tải dữ liệu: ' + error.message, 'error');
+            console.error('Error loading data:', error);
+            setPayments([]);
+            setGateways([]);
         }
         setLoading(false);
     };
@@ -74,9 +84,10 @@ const PaymentManagement = () => {
     const loadStatistics = async () => {
         try {
             const response = await paymentApi.getPaymentStatistics();
-            setStatistics(response.data);
+            setStatistics(response.data || null);
         } catch (error) {
             console.error('Error loading statistics:', error);
+            setStatistics(null);
         }
     };
 
