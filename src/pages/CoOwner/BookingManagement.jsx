@@ -77,7 +77,7 @@ const BookingManagement = () => {
                 bookingApi.getSlotRequests().catch(() => ({ data: { requests: [] } }))
             ]);
 
-            const [bookingsRes, vehiclesRes, conflictsRes, slotsRes] = results.map(r => 
+            const [bookingsRes, vehiclesRes, conflictsRes, slotsRes] = results.map(r =>
                 r.status === 'fulfilled' ? r.value : { data: null }
             );
 

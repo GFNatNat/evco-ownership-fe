@@ -71,9 +71,7 @@ const MaintenanceManagement = () => {
     const loadData = async () => {
         setLoading(true);
         try {
-            const [vehiclesRes] = await Promise.all([
-                vehicleApi.getMyVehicles()
-            ]);
+            const vehiclesRes = await vehicleApi.getMyVehicles().catch(() => ({ data: [] }));
 
             setVehicles(vehiclesRes.data || []);
 
@@ -83,7 +81,8 @@ const MaintenanceManagement = () => {
                 loadVehicleMaintenances(firstVehicleId);
             }
         } catch (error) {
-            showAlert('Lỗi tải dữ liệu: ' + error.message, 'error');
+            console.error('Error loading data:', error);
+            showAlert('Một số dữ liệu không tải được', 'warning');
         }
         setLoading(false);
     };
@@ -91,9 +90,10 @@ const MaintenanceManagement = () => {
     const loadVehicleMaintenances = async (vehicleId) => {
         try {
             const response = await maintenanceApi.getByVehicleId(vehicleId);
-            setMaintenances(response.data?.maintenances || []);
+            setMaintenances(response.data?.maintenances || response.data || []);
         } catch (error) {
             console.error('Error loading maintenances:', error);
+            setMaintenances([]);
         }
     };
 
@@ -101,10 +101,11 @@ const MaintenanceManagement = () => {
         try {
             if (selectedVehicle) {
                 const response = await maintenanceApi.getVehicleStatistics(selectedVehicle);
-                setStatistics(response.data);
+                setStatistics(response.data || null);
             }
         } catch (error) {
             console.error('Error loading statistics:', error);
+            setStatistics(null);
         }
     };
 
