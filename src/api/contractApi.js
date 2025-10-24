@@ -96,40 +96,40 @@ const contractApi = {
   // Validate contract data before creation
   validateContractData: (data) => {
     const errors = [];
-    
+
     if (!data.vehicleId) {
       errors.push('Vehicle ID is required');
     }
-    
+
     if (!data.templateType) {
       errors.push('Template type is required');
     }
-    
+
     if (!data.title || data.title.trim().length < 5 || data.title.trim().length > 200) {
       errors.push('Title must be between 5 and 200 characters');
     }
-    
+
     if (data.description && data.description.length > 2000) {
       errors.push('Description must be less than 2000 characters');
     }
-    
+
     if (!data.signatoryUserIds || data.signatoryUserIds.length === 0) {
       errors.push('At least one signatory is required');
     }
-    
+
     if (data.effectiveDate && new Date(data.effectiveDate) <= new Date()) {
       errors.push('Effective date must be in the future');
     }
-    
-    if (data.expiryDate && data.effectiveDate && 
-        new Date(data.expiryDate) <= new Date(data.effectiveDate)) {
+
+    if (data.expiryDate && data.effectiveDate &&
+      new Date(data.expiryDate) <= new Date(data.effectiveDate)) {
       errors.push('Expiry date must be after effective date');
     }
-    
+
     if (data.signatureDeadline && new Date(data.signatureDeadline) <= new Date()) {
       errors.push('Signature deadline must be in the future');
     }
-    
+
     return {
       isValid: errors.length === 0,
       errors
@@ -139,15 +139,15 @@ const contractApi = {
   // Validate signature data
   validateSignatureData: (data) => {
     const errors = [];
-    
+
     if (!data.signature || data.signature.length < 10) {
       errors.push('Valid signature is required (minimum 10 characters)');
     }
-    
+
     if (data.ipAddress && !/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(data.ipAddress)) {
       errors.push('Invalid IP address format');
     }
-    
+
     return {
       isValid: errors.length === 0,
       errors
@@ -201,34 +201,34 @@ const contractApi = {
     mySignatureStatus: contract.mySignatureStatus,
     totalSignatories: contract.totalSignatories,
     completedSignatures: contract.completedSignatures,
-    signatureProgress: contract.totalSignatories > 0 ? 
+    signatureProgress: contract.totalSignatories > 0 ?
       (contract.completedSignatures / contract.totalSignatories) * 100 : 0,
     effectiveDate: contract.effectiveDate,
-    formattedEffectiveDate: contract.effectiveDate ? 
+    formattedEffectiveDate: contract.effectiveDate ?
       new Date(contract.effectiveDate).toLocaleDateString('vi-VN') : null,
     expiryDate: contract.expiryDate,
-    formattedExpiryDate: contract.expiryDate ? 
+    formattedExpiryDate: contract.expiryDate ?
       new Date(contract.expiryDate).toLocaleDateString('vi-VN') : null,
     signatureDeadline: contract.signatureDeadline,
-    formattedSignatureDeadline: contract.signatureDeadline ? 
+    formattedSignatureDeadline: contract.signatureDeadline ?
       new Date(contract.signatureDeadline).toLocaleDateString('vi-VN') : null,
-    daysUntilDeadline: contract.signatureDeadline ? 
+    daysUntilDeadline: contract.signatureDeadline ?
       Math.ceil((new Date(contract.signatureDeadline) - new Date()) / (1000 * 60 * 60 * 24)) : null,
     createdAt: contract.createdAt,
-    formattedCreatedAt: contract.createdAt ? 
+    formattedCreatedAt: contract.createdAt ?
       new Date(contract.createdAt).toLocaleString('vi-VN') : null,
-    isUrgent: contract.signatureDeadline ? 
+    isUrgent: contract.signatureDeadline ?
       Math.ceil((new Date(contract.signatureDeadline) - new Date()) / (1000 * 60 * 60 * 24)) <= 7 : false
   }),
 
   // Calculate signature progress
   calculateSignatureProgress: (signatories) => {
     if (!signatories || signatories.length === 0) return { completed: 0, total: 0, percentage: 0 };
-    
+
     const completed = signatories.filter(s => s.signatureStatus === 'Signed').length;
     const total = signatories.length;
     const percentage = (completed / total) * 100;
-    
+
     return { completed, total, percentage };
   },
 

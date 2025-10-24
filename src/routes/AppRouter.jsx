@@ -33,6 +33,9 @@ import MaintenanceManagement from '../pages/CoOwner/MaintenanceManagement';
 import ReportsManagement from '../pages/CoOwner/ReportsManagement';
 import NotificationManagement from '../pages/CoOwner/NotificationManagement';
 import VotingManagement from '../pages/CoOwner/VotingManagement';
+import DepositManagement from '../pages/CoOwner/DepositManagement';
+import DisputeManagement from '../pages/CoOwner/DisputeManagement';
+import FairnessOptimizationManagement from '../pages/CoOwner/FairnessOptimizationManagement';
 import VehicleVerification from '../pages/Staff/VehicleVerification';
 import Profile from '../pages/Profile/Profile';
 import AccessDenied from '../pages/Error/AccessDenied';
@@ -76,6 +79,9 @@ export default function AppRouter() {
           <Route path="/co-owner/reports-management" element={<ReportsManagement />} />
           <Route path="/co-owner/notification-management" element={<NotificationManagement />} />
           <Route path="/co-owner/voting-management" element={<VotingManagement />} />
+          <Route path="/co-owner/deposit-management" element={<DepositManagement />} />
+          <Route path="/co-owner/dispute-management" element={<DisputeManagement />} />
+          <Route path="/co-owner/fairness-optimization" element={<FairnessOptimizationManagement />} />
 
           <Route path="/staff/fleet" element={<Fleet />} />
           <Route path="/staff/contracts" element={<StaffContracts />} />
