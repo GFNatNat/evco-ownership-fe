@@ -2,11 +2,11 @@ import React from 'react';
 import {
     Card, CardContent, Typography, Button, Grid, Chip, Box,
     Dialog, DialogTitle, DialogContent, DialogActions, TextField,
-    Snackbar, Alert, Stack, Avatar, Divider, FormControl,
-    InputLabel, Select, MenuItem
+    Snackbar, Alert, Stack, Divider, FormControl,
+    InputLabel, Select, MenuItem, Tabs, Tab, Badge
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import { Check, Close, Visibility, VerifiedUser, Warning } from '@mui/icons-material';
+import { Check, Close, Visibility, VerifiedUser, Warning, Refresh, FilterList } from '@mui/icons-material';
 import vehicleApi from '../../api/vehicleApi';
 
 export default function VehicleVerification() {
@@ -15,6 +15,11 @@ export default function VehicleVerification() {
     const [selectedVehicle, setSelectedVehicle] = React.useState(null);
     const [openDetailDialog, setOpenDetailDialog] = React.useState(false);
     const [openVerifyDialog, setOpenVerifyDialog] = React.useState(false);
+    const [activeTab, setActiveTab] = React.useState(0);
+    const [filters, setFilters] = React.useState({
+        status: 'all',
+        priority: 'all'
+    });
     const [verificationForm, setVerificationForm] = React.useState({
         status: '',
         notes: '',
@@ -22,19 +27,42 @@ export default function VehicleVerification() {
     });
     const [message, setMessage] = React.useState('');
     const [error, setError] = React.useState('');
+    
+    // Statistics
+    const [stats, setStats] = React.useState({
+        pending: 0,
+        verified: 0,
+        rejected: 0,
+        total: 0
+    });
 
     React.useEffect(() => {
         loadVehicles();
-    }, []);
+    }, [activeTab, filters]);
 
     const loadVehicles = async () => {
         setLoading(true);
         try {
-            const res = await vehicleApi.list({ needsVerification: true });
+            const params = { needsVerification: activeTab === 0 };
+            if (filters.status !== 'all') params.verificationStatus = filters.status;
+            if (filters.priority !== 'all') params.priority = filters.priority;
+            
+            const res = await vehicleApi.list(params).catch(() => ({ data: { items: [] } }));
             const data = Array.isArray(res.data) ? res.data : res.data?.items || [];
-            setVehicles(data.map((vehicle, index) => ({ id: vehicle.id || index, ...vehicle })));
+            const mappedVehicles = data.map((vehicle, index) => ({ id: vehicle.vehicleId || vehicle.id || index, ...vehicle }));
+            setVehicles(mappedVehicles);
+            
+            // Calculate statistics
+            setStats({
+                pending: mappedVehicles.filter(v => v.verificationStatus === 'Pending').length,
+                verified: mappedVehicles.filter(v => v.verificationStatus === 'Verified').length,
+                rejected: mappedVehicles.filter(v => v.verificationStatus === 'Rejected').length,
+                total: mappedVehicles.length
+            });
         } catch (err) {
-            setError('Không thể tải danh sách xe cần xác minh');
+            console.error('❌ Error loading vehicles for verification:', err);
+            setVehicles([]);
+            setStats({ pending: 0, verified: 0, rejected: 0, total: 0 });
         } finally {
             setLoading(false);
         }
@@ -42,11 +70,15 @@ export default function VehicleVerification() {
 
     const handleViewDetail = async (vehicle) => {
         try {
-            const res = await vehicleApi.get(vehicle.id);
-            setSelectedVehicle(res.data);
-            setOpenDetailDialog(true);
+            const res = await vehicleApi.get(vehicle.id).catch(() => ({ data: null }));
+            if (res.data) {
+                setSelectedVehicle(res.data);
+                setOpenDetailDialog(true);
+            } else {
+                console.error('❌ No vehicle details found');
+            }
         } catch (err) {
-            setError('Không thể tải thông tin chi tiết xe');
+            console.error('❌ Error loading vehicle details:', err);
         }
     };
 
@@ -186,9 +218,118 @@ export default function VehicleVerification() {
 
     return (
         <Box>
-            <Typography variant="h5" gutterBottom>
-                Xác minh xe
-            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Typography variant="h5">
+                    Xác minh xe
+                </Typography>
+                <Button
+                    variant="outlined"
+                    startIcon={<Refresh />}
+                    onClick={loadVehicles}
+                >
+                    Tải lại
+                </Button>
+            </Box>
+
+            {/* Statistics Cards */}
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+                <Grid item xs={12} sm={6} md={3}>
+                    <Card>
+                        <CardContent>
+                            <Typography color="text.secondary" gutterBottom>
+                                Chờ xác minh
+                            </Typography>
+                            <Typography variant="h4" color="warning.main">
+                                {stats.pending}
+                            </Typography>
+                        </CardContent>
+                    </Card>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                    <Card>
+                        <CardContent>
+                            <Typography color="text.secondary" gutterBottom>
+                                Đã xác minh
+                            </Typography>
+                            <Typography variant="h4" color="success.main">
+                                {stats.verified}
+                            </Typography>
+                        </CardContent>
+                    </Card>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                    <Card>
+                        <CardContent>
+                            <Typography color="text.secondary" gutterBottom>
+                                Bị từ chối
+                            </Typography>
+                            <Typography variant="h4" color="error.main">
+                                {stats.rejected}
+                            </Typography>
+                        </CardContent>
+                    </Card>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                    <Card>
+                        <CardContent>
+                            <Typography color="text.secondary" gutterBottom>
+                                Tổng số
+                            </Typography>
+                            <Typography variant="h4" color="primary.main">
+                                {stats.total}
+                            </Typography>
+                        </CardContent>
+                    </Card>
+                </Grid>
+            </Grid>
+
+            {/* Tabs */}
+            <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+                <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
+                    <Tab label={
+                        <Badge badgeContent={stats.pending} color="warning">
+                            Chờ xác minh
+                        </Badge>
+                    } />
+                    <Tab label="Tất cả xe" />
+                </Tabs>
+            </Box>
+
+            {/* Filters */}
+            <Card sx={{ mb: 2 }}>
+                <CardContent>
+                    <Stack direction="row" spacing={2} alignItems="center">
+                        <FilterList />
+                        <FormControl size="small" sx={{ minWidth: 150 }}>
+                            <InputLabel>Trạng thái</InputLabel>
+                            <Select
+                                value={filters.status}
+                                label="Trạng thái"
+                                onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                            >
+                                <MenuItem value="all">Tất cả</MenuItem>
+                                <MenuItem value="Pending">Chờ xác minh</MenuItem>
+                                <MenuItem value="Verified">Đã xác minh</MenuItem>
+                                <MenuItem value="Rejected">Bị từ chối</MenuItem>
+                                <MenuItem value="RequiresUpdate">Cần cập nhật</MenuItem>
+                            </Select>
+                        </FormControl>
+                        <FormControl size="small" sx={{ minWidth: 150 }}>
+                            <InputLabel>Ưu tiên</InputLabel>
+                            <Select
+                                value={filters.priority}
+                                label="Ưu tiên"
+                                onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
+                            >
+                                <MenuItem value="all">Tất cả</MenuItem>
+                                <MenuItem value="High">Cao</MenuItem>
+                                <MenuItem value="Medium">Trung bình</MenuItem>
+                                <MenuItem value="Low">Thấp</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Stack>
+                </CardContent>
+            </Card>
 
             <Card>
                 <CardContent>
