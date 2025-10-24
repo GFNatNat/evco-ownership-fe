@@ -4,23 +4,23 @@ import {
     Stack, Snackbar, Alert, Avatar, Divider, Box, Tabs, Tab,
     Switch, FormControlLabel, IconButton, Chip
 } from '@mui/material';
-import { PhotoCamera, Security, Notifications, Edit } from '@mui/icons-material';
+import { PhotoCamera, Security, Notifications, Edit, DirectionsCar, Assessment } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
 import profileApi from '../../api/profileApi';
+import authApi from '../../api/authApi';
 import fileUploadApi from '../../api/fileUploadApi';
 
 export default function Profile() {
     const { user, setUser } = useAuth();
     const [tabValue, setTabValue] = React.useState(0);
     const [profile, setProfile] = React.useState({
-        fullName: '',
+        firstName: '',
+        lastName: '',
         email: '',
         phoneNumber: '',
         address: '',
         dateOfBirth: '',
         gender: '',
-        emergencyContact: '',
-        bio: '',
         profilePictureUrl: '',
     });
     const [passwordForm, setPasswordForm] = React.useState({
@@ -40,6 +40,18 @@ export default function Profile() {
         bookingReminders: true,
         paymentNotifications: true,
     });
+    const [activitySummary, setActivitySummary] = React.useState({
+        totalBookings: 0,
+        totalPayments: 0,
+        totalVehicles: 0
+    });
+    const [vehicles, setVehicles] = React.useState([]);
+    const [licenseForm, setLicenseForm] = React.useState({
+        licenseNumber: '',
+        issueDate: '',
+        firstName: '',
+        lastName: ''
+    });
     const [loading, setLoading] = React.useState(false);
     const [message, setMessage] = React.useState('');
     const [error, setError] = React.useState('');
@@ -47,8 +59,6 @@ export default function Profile() {
     // Load profile data
     React.useEffect(() => {
         loadProfile();
-        loadSecuritySettings();
-        loadNotificationPreferences();
     }, []);
 
     const loadProfile = async () => {
@@ -62,27 +72,19 @@ export default function Profile() {
         }
     };
 
-    const loadSecuritySettings = async () => {
-        try {
-            const res = await profileApi.getSecuritySettings();
-            if (res.data) {
-                setSecuritySettings(res.data);
-            }
-        } catch (err) {
-            console.error('Failed to load security settings:', err);
-        }
-    };
-
-    const loadNotificationPreferences = async () => {
-        try {
-            const res = await profileApi.getNotificationPreferences();
-            if (res.data) {
-                setNotificationPrefs(res.data);
-            }
-        } catch (err) {
-            console.error('Failed to load notification preferences:', err);
-        }
-    };
+    // These endpoints are not in the API specification, commented out for now
+    // Will need to implement when backend API is ready
+    
+    // const loadSecuritySettings = async () => {
+    //     try {
+    //         const res = await profileApi.getSecuritySettings();
+    //         if (res.data) {
+    //             setSecuritySettings(res.data);
+    //         }
+    //     } catch (err) {
+    //         console.error('Failed to load security settings:', err);
+    //     }
+    // };
 
     const updateProfile = async () => {
         setLoading(true);
@@ -131,7 +133,7 @@ export default function Profile() {
 
         try {
             const res = await profileApi.uploadProfilePicture(formData);
-            setProfile({ ...profile, profilePictureUrl: res.data.url });
+            setProfile({ ...profile, profilePictureUrl: res.data.profileImageUrl || res.data.url });
             setMessage('Cập nhật ảnh đại diện thành công');
         } catch (err) {
             setError('Upload ảnh đại diện thất bại');
@@ -163,6 +165,25 @@ export default function Profile() {
         }
     };
 
+    const verifyLicense = async () => {
+        setMessage('');
+        setError('');
+        try {
+            const res = await authApi.verifyLicense(licenseForm);
+            if (res.data) {
+                setMessage('Xác minh giấy phép lái xe thành công');
+                setLicenseForm({
+                    licenseNumber: '',
+                    issueDate: '',
+                    firstName: '',
+                    lastName: ''
+                });
+            }
+        } catch (err) {
+            setError(err?.response?.data?.message || 'Xác minh giấy phép thất bại');
+        }
+    };
+
     const TabPanel = ({ children, value, index }) => (
         <div role="tabpanel" hidden={value !== index}>
             {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
@@ -187,7 +208,7 @@ export default function Profile() {
                                     sx={{ width: 100, height: 100 }}
                                     src={profile.profilePictureUrl}
                                 >
-                                    {profile.fullName?.charAt(0)?.toUpperCase()}
+                                    {profile.firstName?.charAt(0)?.toUpperCase()}
                                 </Avatar>
                                 <IconButton
                                     sx={{
@@ -211,7 +232,7 @@ export default function Profile() {
                                 </IconButton>
                             </Box>
                             <Box>
-                                <Typography variant="h6">{profile.fullName}</Typography>
+                                <Typography variant="h6">{profile.firstName} {profile.lastName}</Typography>
                                 <Typography variant="body2" color="text.secondary">
                                     {user?.role}
                                 </Typography>
@@ -240,6 +261,8 @@ export default function Profile() {
                         <Tab label="Thông tin cá nhân" />
                         <Tab label="Bảo mật" icon={<Security />} />
                         <Tab label="Thông báo" icon={<Notifications />} />
+                        <Tab label="Hoạt động" icon={<Assessment />} />
+                        <Tab label="Phương tiện" icon={<DirectionsCar />} />
                     </Tabs>
 
                     {/* Tab 1: Profile Information */}
@@ -248,9 +271,17 @@ export default function Profile() {
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     fullWidth
-                                    label="Họ và tên"
-                                    value={profile.fullName}
-                                    onChange={(e) => setProfile({ ...profile, fullName: e.target.value })}
+                                    label="Tên"
+                                    value={profile.firstName}
+                                    onChange={(e) => setProfile({ ...profile, firstName: e.target.value })}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    label="Họ"
+                                    value={profile.lastName}
+                                    onChange={(e) => setProfile({ ...profile, lastName: e.target.value })}
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
@@ -295,14 +326,6 @@ export default function Profile() {
                                     <option value="Other">Khác</option>
                                 </TextField>
                             </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    fullWidth
-                                    label="Liên hệ khẩn cấp"
-                                    value={profile.emergencyContact}
-                                    onChange={(e) => setProfile({ ...profile, emergencyContact: e.target.value })}
-                                />
-                            </Grid>
                             <Grid item xs={12}>
                                 <TextField
                                     fullWidth
@@ -311,16 +334,6 @@ export default function Profile() {
                                     rows={2}
                                     value={profile.address}
                                     onChange={(e) => setProfile({ ...profile, address: e.target.value })}
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    fullWidth
-                                    label="Giới thiệu bản thân"
-                                    multiline
-                                    rows={3}
-                                    value={profile.bio}
-                                    onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
                                 />
                             </Grid>
                             <Grid item xs={12}>
@@ -482,8 +495,144 @@ export default function Profile() {
                             </Button>
                         </Stack>
                     </TabPanel>
+
+                    {/* Tab 4: Activity Summary */}
+                    <TabPanel value={tabValue} index={3}>
+                        <Grid container spacing={3}>
+                            <Grid item xs={12}>
+                                <Typography variant="h6" gutterBottom>
+                                    Tổng quan hoạt động
+                                </Typography>
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                                <Card variant="outlined">
+                                    <CardContent>
+                                        <Typography variant="h4" color="primary">
+                                            {activitySummary.totalBookings}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Tổng số lượt đặt xe
+                                        </Typography>
+                                    </CardContent>
+                                </Card>
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                                <Card variant="outlined">
+                                    <CardContent>
+                                        <Typography variant="h4" color="success.main">
+                                            {activitySummary.totalPayments}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Tổng số giao dịch
+                                        </Typography>
+                                    </CardContent>
+                                </Card>
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                                <Card variant="outlined">
+                                    <CardContent>
+                                        <Typography variant="h4" color="info.main">
+                                            {activitySummary.totalVehicles}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Số xe tham gia
+                                        </Typography>
+                                    </CardContent>
+                                </Card>
+                            </Grid>
+                        </Grid>
+                    </TabPanel>
+
+                    {/* Tab 5: Vehicles List */}
+                    <TabPanel value={tabValue} index={4}>
+                        <Stack spacing={2}>
+                            <Typography variant="h6" gutterBottom>
+                                Danh sách phương tiện của tôi ({vehicles.length})
+                            </Typography>
+                            {vehicles.length === 0 ? (
+                                <Alert severity="info">
+                                    Bạn chưa tham gia sở hữu phương tiện nào
+                                </Alert>
+                            ) : (
+                                <Grid container spacing={2}>
+                                    {vehicles.map((vehicle) => (
+                                        <Grid item xs={12} sm={6} md={4} key={vehicle.vehicleId}>
+                                            <Card variant="outlined">
+                                                <CardContent>
+                                                    <Typography variant="h6">
+                                                        {vehicle.name}
+                                                    </Typography>
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        Biển số: {vehicle.licensePlate}
+                                                    </Typography>
+                                                </CardContent>
+                                            </Card>
+                                        </Grid>
+                                    ))}
+                                </Grid>
+                            )}
+                        </Stack>
+                    </TabPanel>
                 </Card>
             </Grid>
+
+            {/* License Verification Card */}
+            {user?.role === 'CoOwner' && (
+                <Grid item xs={12}>
+                    <Card>
+                        <CardContent>
+                            <Typography variant="h6" gutterBottom>
+                                Xác minh giấy phép lái xe
+                            </Typography>
+                            <Grid container spacing={2}>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Số giấy phép"
+                                        value={licenseForm.licenseNumber}
+                                        onChange={(e) => setLicenseForm({ ...licenseForm, licenseNumber: e.target.value })}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Ngày cấp"
+                                        type="date"
+                                        value={licenseForm.issueDate}
+                                        onChange={(e) => setLicenseForm({ ...licenseForm, issueDate: e.target.value })}
+                                        InputLabelProps={{ shrink: true }}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Tên"
+                                        value={licenseForm.firstName}
+                                        onChange={(e) => setLicenseForm({ ...licenseForm, firstName: e.target.value })}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Họ"
+                                        value={licenseForm.lastName}
+                                        onChange={(e) => setLicenseForm({ ...licenseForm, lastName: e.target.value })}
+                                    />
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <Button
+                                        variant="contained"
+                                        onClick={verifyLicense}
+                                        disabled={!licenseForm.licenseNumber || !licenseForm.issueDate || !licenseForm.firstName || !licenseForm.lastName}
+                                    >
+                                        Xác minh giấy phép
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </CardContent>
+                    </Card>
+                </Grid>
+            )}
 
             {/* Notifications */}
             <Snackbar

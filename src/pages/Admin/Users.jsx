@@ -43,9 +43,10 @@ export default function Users() {
     };
 
     const handleCreate = () => {
-        setSelectedUser(null);
-        setForm({ fullName: '', email: '', phone: '', role: 'CoOwner', password: '' });
-        setOpenDialog(true);
+        setError('Tạo người dùng mới không có trong User API. Người dùng phải đăng ký qua Auth API (/register).');
+        // setSelectedUser(null);
+        // setForm({ fullName: '', email: '', phone: '', role: 'CoOwner', password: '' });
+        // setOpenDialog(true);
     };
 
     const handleEdit = (user) => {
@@ -65,27 +66,20 @@ export default function Users() {
         setMessage('');
         try {
             if (selectedUser) {
-                // Update user
+                // Update user - only basic info allowed per API spec
                 await userApi.update(selectedUser.id, {
                     fullName: form.fullName,
                     phoneNumber: form.phone,
-                    // Don't update email and password in edit mode
+                    address: '', // Optional
+                    dateOfBirth: '' // Optional
                 });
                 setMessage('Cập nhật người dùng thành công');
+                setOpenDialog(false);
+                await loadUsers();
             } else {
-                // Create user - use proper field names matching backend
-                await userApi.create({
-                    fullName: form.fullName,
-                    email: form.email,
-                    phoneNumber: form.phone,
-                    password: form.password,
-                    role: form.role,
-                    status: 'Active'
-                });
-                setMessage('Tạo người dùng thành công');
+                // Create user not available in User API - must use Auth API register
+                setError('Tạo người dùng mới phải thông qua trang đăng ký. User API chỉ hỗ trợ cập nhật thông tin.');
             }
-            setOpenDialog(false);
-            await loadUsers();
         } catch (err) {
             setError(err?.response?.data?.message || 'Thao tác thất bại');
         }
@@ -103,36 +97,20 @@ export default function Users() {
         setAnchorEl(null);
     };
 
+    // Note: These functions are not available in current User API specification
+    // Backend needs to implement these endpoints for full admin functionality
     const handleActivate = async (userId) => {
-        try {
-            await userApi.updateStatus(userId, 'Active');
-            setMessage('Kích hoạt tài khoản thành công');
-            await loadUsers();
-        } catch (err) {
-            setError('Kích hoạt thất bại');
-        }
+        setError('Chức năng kích hoạt/vô hiệu hóa chưa được implement trong API');
         setAnchorEl(null);
     };
 
     const handleDeactivate = async (userId) => {
-        try {
-            await userApi.updateStatus(userId, 'Inactive');
-            setMessage('Vô hiệu hóa tài khoản thành công');
-            await loadUsers();
-        } catch (err) {
-            setError('Vô hiệu hóa thất bại');
-        }
+        setError('Chức năng kích hoạt/vô hiệu hóa chưa được implement trong API');
         setAnchorEl(null);
     };
 
     const handleUpdateRole = async (userId, newRole) => {
-        try {
-            await userApi.updateRole(userId, newRole);
-            setMessage('Cập nhật vai trò thành công');
-            await loadUsers();
-        } catch (err) {
-            setError('Cập nhật vai trò thất bại');
-        }
+        setError('Chức năng cập nhật vai trò chưa được implement trong API');
     };
 
     const handleMenuOpen = (event, user) => {

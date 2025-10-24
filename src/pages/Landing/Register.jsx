@@ -10,7 +10,8 @@ export default function Register() {
     email: '',
     password: '',
     confirmPassword: '',
-    fullName: '',
+    firstName: '',
+    lastName: '',
     phoneNumber: ''
   });
   const [error, setError] = React.useState('');
@@ -20,7 +21,8 @@ export default function Register() {
 
   const validateForm = () => {
     const errors = {};
-    if (!form.fullName.trim()) errors.fullName = 'Họ tên không được để trống';
+    if (!form.firstName.trim()) errors.firstName = 'Tên không được để trống';
+    if (!form.lastName.trim()) errors.lastName = 'Họ không được để trống';
     if (!form.email.trim()) errors.email = 'Email không được để trống';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errors.email = 'Email không hợp lệ';
     if (!form.password) errors.password = 'Mật khẩu không được để trống';
@@ -63,14 +65,25 @@ export default function Register() {
           <Typography variant="h5" sx={{ mb: 2 }}>Đăng ký</Typography>
           <Stack spacing={2}>
             <TextField
-              label="Họ tên"
-              value={form.fullName}
+              label="Tên"
+              value={form.firstName}
               onChange={(e) => {
-                setForm({ ...form, fullName: e.target.value });
-                if (validationErrors.fullName) setValidationErrors({ ...validationErrors, fullName: '' });
+                setForm({ ...form, firstName: e.target.value });
+                if (validationErrors.firstName) setValidationErrors({ ...validationErrors, firstName: '' });
               }}
-              error={!!validationErrors.fullName}
-              helperText={validationErrors.fullName}
+              error={!!validationErrors.firstName}
+              helperText={validationErrors.firstName}
+              required
+            />
+            <TextField
+              label="Họ"
+              value={form.lastName}
+              onChange={(e) => {
+                setForm({ ...form, lastName: e.target.value });
+                if (validationErrors.lastName) setValidationErrors({ ...validationErrors, lastName: '' });
+              }}
+              error={!!validationErrors.lastName}
+              helperText={validationErrors.lastName}
               required
             />
             <TextField

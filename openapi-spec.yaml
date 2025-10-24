@@ -1,0 +1,1156 @@
+openapi: 3.0.0
+info:
+  title: EV Co-ownership Platform API
+  description: Comprehensive API for electric vehicle co-ownership management system
+  version: 1.0.0
+  contact:
+    name: Backend Development Team
+    email: backend@evco-ownership.com
+
+servers:
+  - url: https://swp391-evcoownership-api.azurewebsites.net
+    description: Production server
+  - url: http://localhost:5215
+    description: Development server
+
+security:
+  - BearerAuth: []
+
+paths:
+  # ================================
+  # AUTHENTICATION & USER MANAGEMENT
+  # ================================
+  
+  /api/Auth/login:
+    post:
+      tags: [Authentication]
+      summary: User login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+                rememberMe:
+                  type: boolean
+                  default: false
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Invalid email or password
+        '403':
+          description: Account suspended or inactive
+
+  /api/Auth/register:
+    post:
+      tags: [Authentication]
+      summary: User registration
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Registration successful
+        '409':
+          description: Email already exists
+
+  /api/Auth/refresh-token:
+    post:
+      tags: [Authentication]
+      summary: Refresh access token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Token refresh successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+
+  # ===============================
+  # VEHICLE MANAGEMENT & CO-OWNERSHIP
+  # ===============================
+  
+  /api/Vehicle:
+    post:
+      tags: [Vehicle Management]
+      summary: Create new vehicle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVehicleRequest'
+      responses:
+        '201':
+          description: Vehicle created successfully
+        '400':
+          description: Validation error
+
+    get:
+      tags: [Vehicle Management]  
+      summary: Get vehicles (filtered by role)
+      parameters:
+        - name: pageIndex
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: brand
+          in: query
+          schema:
+            type: string
+        - name: model
+          in: query
+          schema:
+            type: string
+        - name: minYear
+          in: query
+          schema:
+            type: integer
+        - name: maxYear
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, maintenance, inactive]
+      responses:
+        '200':
+          description: Vehicles retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleListResponse'
+
+  /api/Vehicle/{vehicleId}/co-owners:
+    post:
+      tags: [Co-ownership]
+      summary: Invite co-owner to vehicle
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, ownershipPercentage]
+              properties:
+                email:
+                  type: string
+                  format: email
+                ownershipPercentage:
+                  type: number
+                  minimum: 1
+                  maximum: 50
+                message:
+                  type: string
+                  maxLength: 500
+      responses:
+        '200':
+          description: Invitation sent successfully
+        '400':
+          description: Invalid ownership percentage or user not found
+        '403':
+          description: Not authorized to invite co-owners
+
+    delete:
+      tags: [Co-ownership]
+      summary: Remove co-owner from vehicle
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: coOwnerUserId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Co-owner removed successfully
+        '403':
+          description: Not authorized
+        '404':
+          description: Co-owner not found
+
+  /api/Vehicle/{vehicleId}/invitations/respond:
+    put:
+      tags: [Co-ownership]
+      summary: Respond to co-ownership invitation
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [invitationId, response]
+              properties:
+                invitationId:
+                  type: integer
+                response:
+                  type: string
+                  enum: [accept, reject]
+                message:
+                  type: string
+                  maxLength: 500
+      responses:
+        '200':
+          description: Response recorded successfully
+        '404':
+          description: Invitation not found
+        '400':
+          description: Invalid response
+
+  /api/Vehicle/invitations/pending:
+    get:
+      tags: [Co-ownership]
+      summary: Get pending invitations for current user
+      responses:
+        '200':
+          description: Pending invitations retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VehicleInvitation'
+
+  # ===============================
+  # BOOKING & SCHEDULING SYSTEM
+  # ===============================
+
+  /api/Booking:
+    post:
+      tags: [Booking]
+      summary: Create new booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookingRequest'
+      responses:
+        '201':
+          description: Booking created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingResponse'
+        '400':
+          description: Validation error or time conflict
+        '403':
+          description: Not authorized to book this vehicle
+
+    get:
+      tags: [Booking]
+      summary: Get all bookings (Admin/Staff only)
+      parameters:
+        - name: pageIndex
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, confirmed, active, completed, cancelled]
+        - name: vehicleId
+          in: query
+          schema:
+            type: integer
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Bookings retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingListResponse'
+
+  /api/Booking/my-bookings:
+    get:
+      tags: [Booking]
+      summary: Get current user's bookings
+      parameters:
+        - name: pageIndex
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, confirmed, active, completed, cancelled]
+      responses:
+        '200':
+          description: User bookings retrieved successfully
+
+  /api/Booking/{bookingId}:
+    get:
+      tags: [Booking]
+      summary: Get booking details
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Booking details retrieved
+        '404':
+          description: Booking not found
+        '403':
+          description: Not authorized to view this booking
+
+    put:
+      tags: [Booking]
+      summary: Update booking
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBookingRequest'
+      responses:
+        '200':
+          description: Booking updated successfully
+        '400':
+          description: Validation error or time conflict
+
+  /api/Booking/{bookingId}/cancel:
+    post:
+      tags: [Booking]
+      summary: Cancel booking
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  maxLength: 500
+      responses:
+        '200':
+          description: Booking cancelled successfully
+        '400':
+          description: Cannot cancel booking (too late, already active, etc.)
+
+  /api/Booking/vehicle/{vehicleId}/request-slot:
+    post:
+      tags: [Booking]
+      summary: Request booking slot (with potential conflicts)
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SlotRequestData'
+      responses:
+        '200':
+          description: Slot request created successfully
+        '409':
+          description: Time conflict detected, approval required
+
+  /api/Booking/calendar:
+    get:
+      tags: [Booking]
+      summary: Get calendar view of bookings
+      parameters:
+        - name: startDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: vehicleId
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Calendar data retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CalendarBooking'
+
+  # ===============================
+  # PAYMENT & FINANCIAL MANAGEMENT
+  # ===============================
+
+  /api/Payment/invoices:
+    get:
+      tags: [Payment]
+      summary: Get invoices for current user
+      parameters:
+        - name: pageIndex
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, paid, overdue, cancelled]
+        - name: vehicleId
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Invoices retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceListResponse'
+
+  /api/Payment/invoices/{invoiceId}:
+    get:
+      tags: [Payment]
+      summary: Get invoice details
+      parameters:
+        - name: invoiceId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Invoice details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceDetail'
+
+  /api/Payment/invoices/{invoiceId}/pay:
+    post:
+      tags: [Payment]
+      summary: Pay invoice
+      parameters:
+        - name: invoiceId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [paymentMethodId]
+              properties:
+                paymentMethodId:
+                  type: integer
+                notes:
+                  type: string
+      responses:
+        '200':
+          description: Payment processed successfully
+        '400':
+          description: Payment failed
+
+  /api/Payment/methods:
+    get:
+      tags: [Payment]
+      summary: Get user's payment methods
+      responses:
+        '200':
+          description: Payment methods retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PaymentMethod'
+
+    post:
+      tags: [Payment]
+      summary: Add new payment method
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddPaymentMethodRequest'
+      responses:
+        '201':
+          description: Payment method added successfully
+
+  /api/Payment/fund/{vehicleId}/balance:
+    get:
+      tags: [Fund Management]
+      summary: Get vehicle fund balance
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Fund balance retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FundBalance'
+
+  /api/Payment/fund/{vehicleId}/add:
+    post:
+      tags: [Fund Management]
+      summary: Add funds to vehicle
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount]
+              properties:
+                amount:
+                  type: number
+                  minimum: 10000
+                description:
+                  type: string
+      responses:
+        '200':
+          description: Funds added successfully
+
+  # ===============================
+  # NOTIFICATIONS
+  # ===============================
+
+  /api/Notification:
+    get:
+      tags: [Notification]
+      summary: Get user notifications
+      parameters:
+        - name: pageIndex
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: isRead
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Notifications retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationListResponse'
+
+  /api/Notification/{notificationId}/read:
+    put:
+      tags: [Notification]
+      summary: Mark notification as read
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Notification marked as read
+
+  /api/Notification/subscribe:
+    post:
+      tags: [Notification]
+      summary: Subscribe to push notifications
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PushSubscription'
+      responses:
+        '200':
+          description: Subscription successful
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # Authentication Schemas
+    RegisterRequest:
+      type: object
+      required: [email, password, confirmPassword, fullName]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 100
+        password:
+          type: string
+          minLength: 8
+          pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]'
+        confirmPassword:
+          type: string
+        fullName:
+          type: string
+          maxLength: 101
+        phoneNumber:
+          type: string
+          pattern: '^(\+84|0)[1-9][0-9]{8}$'
+
+    AuthResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            accessToken:
+              type: string
+            refreshToken:
+              type: string
+            tokenType:
+              type: string
+              example: Bearer
+            expiresIn:
+              type: integer
+            user:
+              $ref: '#/components/schemas/UserProfile'
+
+    TokenResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        tokenType:
+          type: string
+        expiresIn:
+          type: integer
+
+    UserProfile:
+      type: object
+      properties:
+        userId:
+          type: integer
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          type: string
+          enum: [Admin, Staff, CoOwner, User]
+        status:
+          type: string
+          enum: [Active, Inactive, Suspended]
+
+    # Vehicle Schemas
+    CreateVehicleRequest:
+      type: object
+      required: [name, brand, model, year, licensePlate, purchasePrice]
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        brand:
+          type: string
+          maxLength: 50
+        model:
+          type: string
+          maxLength: 50
+        year:
+          type: integer
+          minimum: 2020
+          maximum: 2025
+        licensePlate:
+          type: string
+          maxLength: 20
+        vin:
+          type: string
+          maxLength: 17
+        color:
+          type: string
+          maxLength: 30
+        batteryCapacity:
+          type: number
+        range:
+          type: integer
+        purchaseDate:
+          type: string
+          format: date
+        purchasePrice:
+          type: number
+          minimum: 0
+
+    VehicleInvitation:
+      type: object
+      properties:
+        invitationId:
+          type: integer
+        vehicleId:
+          type: integer
+        vehicleName:
+          type: string
+        inviterName:
+          type: string
+        ownershipPercentage:
+          type: number
+        message:
+          type: string
+        invitationDate:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [pending, accepted, rejected, expired]
+
+    VehicleListResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Vehicle'
+            pageIndex:
+              type: integer
+            pageSize:
+              type: integer
+            totalCount:
+              type: integer
+            totalPages:
+              type: integer
+            hasPreviousPage:
+              type: boolean
+            hasNextPage:
+              type: boolean
+
+    Vehicle:
+      type: object
+      properties:
+        vehicleId:
+          type: integer
+        name:
+          type: string
+        brand:
+          type: string
+        model:
+          type: string
+        year:
+          type: integer
+        licensePlate:
+          type: string
+        color:
+          type: string
+        batteryLevel:
+          type: integer
+          minimum: 0
+          maximum: 100
+        range:
+          type: integer
+        status:
+          type: string
+          enum: [active, maintenance, inactive]
+        imageUrl:
+          type: string
+        ownershipPercentage:
+          type: number
+        totalCoOwners:
+          type: integer
+
+    # Booking Schemas
+    CreateBookingRequest:
+      type: object
+      required: [vehicleId, startTime, endTime, purpose]
+      properties:
+        vehicleId:
+          type: integer
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        purpose:
+          type: string
+          maxLength: 200
+        estimatedDistance:
+          type: number
+          minimum: 0
+        notes:
+          type: string
+          maxLength: 500
+
+    UpdateBookingRequest:
+      type: object
+      properties:
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        purpose:
+          type: string
+          maxLength: 200
+        estimatedDistance:
+          type: number
+        notes:
+          type: string
+          maxLength: 500
+
+    BookingResponse:
+      type: object
+      properties:
+        bookingId:
+          type: integer
+        vehicleId:
+          type: integer
+        vehicleName:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        purpose:
+          type: string
+        status:
+          type: string
+          enum: [pending, confirmed, active, completed, cancelled]
+        bookedBy:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    BookingListResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/BookingResponse'
+            pageIndex:
+              type: integer
+            totalCount:
+              type: integer
+
+    CalendarBooking:
+      type: object
+      properties:
+        bookingId:
+          type: integer
+        vehicleId:
+          type: integer
+        vehicleName:
+          type: string
+        title:
+          type: string
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+        status:
+          type: string
+        bookedBy:
+          type: string
+
+    SlotRequestData:
+      type: object
+      required: [startTime, endTime, purpose]
+      properties:
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        purpose:
+          type: string
+        priority:
+          type: string
+          enum: [low, normal, high, urgent]
+        message:
+          type: string
+
+    # Payment Schemas
+    InvoiceListResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+        data:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Invoice'
+
+    Invoice:
+      type: object
+      properties:
+        invoiceId:
+          type: integer
+        code:
+          type: string
+        type:
+          type: string
+        amount:
+          type: number
+        yourShare:
+          type: number
+        status:
+          type: string
+          enum: [pending, paid, overdue, cancelled]
+        dueDate:
+          type: string
+          format: date
+        description:
+          type: string
+
+    InvoiceDetail:
+      allOf:
+        - $ref: '#/components/schemas/Invoice'
+        - type: object
+          properties:
+            itemBreakdown:
+              type: array
+              items:
+                type: object
+                properties:
+                  description:
+                    type: string
+                  amount:
+                    type: number
+                  yourShare:
+                    type: number
+
+    PaymentMethod:
+      type: object
+      properties:
+        paymentMethodId:
+          type: integer
+        type:
+          type: string
+          enum: [credit_card, debit_card, bank_transfer, e_wallet]
+        displayName:
+          type: string
+        maskedNumber:
+          type: string
+        isDefault:
+          type: boolean
+
+    AddPaymentMethodRequest:
+      type: object
+      required: [type, details]
+      properties:
+        type:
+          type: string
+          enum: [credit_card, debit_card, bank_transfer, e_wallet]
+        details:
+          type: object
+          # Details vary by payment method type
+
+    FundBalance:
+      type: object
+      properties:
+        vehicleId:
+          type: integer
+        currentBalance:
+          type: number
+        pendingExpenses:
+          type: number
+        availableBalance:
+          type: number
+        currency:
+          type: string
+          example: VND
+
+    # Notification Schemas
+    NotificationListResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+        data:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Notification'
+
+    Notification:
+      type: object
+      properties:
+        notificationId:
+          type: integer
+        title:
+          type: string
+        message:
+          type: string
+        type:
+          type: string
+          enum: [info, warning, error, success]
+        isRead:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        actionUrl:
+          type: string
+
+    PushSubscription:
+      type: object
+      required: [endpoint, keys]
+      properties:
+        endpoint:
+          type: string
+        keys:
+          type: object
+          properties:
+            p256dh:
+              type: string
+            auth:
+              type: string

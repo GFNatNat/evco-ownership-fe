@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   // ✅ Hàm register
-  const register = async ({ email, password, fullName, confirmPassword }) => {
+  const register = async ({ email, password, firstName, lastName, confirmPassword }) => {
     setLoading(true);
     try {
       if (password !== confirmPassword) {
@@ -84,10 +84,9 @@ export const AuthProvider = ({ children }) => {
       const payload = {
         email,
         password,
-        fullName,
-        confirmPassword,
-        userName: email,
-        userNameOrEmail: email,
+        firstName,
+        lastName,
+        confirmPassword
       };
 
       const res = await authApi.register(payload);
