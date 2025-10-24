@@ -70,19 +70,24 @@ const BookingManagement = () => {
     const loadData = async () => {
         setLoading(true);
         try {
-            const [bookingsRes, vehiclesRes, conflictsRes, slotsRes] = await Promise.all([
-                bookingApi.getMyBookings(),
-                vehicleApi.getMyVehicles(),
-                bookingApi.getConflicts(),
-                bookingApi.getSlotRequests()
+            const results = await Promise.allSettled([
+                bookingApi.getMyBookings().catch(() => ({ data: { bookings: [] } })),
+                vehicleApi.getMyVehicles().catch(() => ({ data: [] })),
+                bookingApi.getPendingConflicts().catch(() => ({ data: { conflicts: [] } })),
+                bookingApi.getSlotRequests().catch(() => ({ data: { requests: [] } }))
             ]);
 
-            setBookings(bookingsRes.data?.bookings || []);
+            const [bookingsRes, vehiclesRes, conflictsRes, slotsRes] = results.map(r => 
+                r.status === 'fulfilled' ? r.value : { data: null }
+            );
+
+            setBookings(bookingsRes.data?.bookings || bookingsRes.data || []);
             setVehicles(vehiclesRes.data || []);
-            setConflicts(conflictsRes.data?.conflicts || []);
-            setSlotRequests(slotsRes.data?.requests || []);
+            setConflicts(conflictsRes.data?.conflicts || conflictsRes.data || []);
+            setSlotRequests(slotsRes.data?.requests || slotsRes.data || []);
         } catch (error) {
-            showAlert('Lỗi tải dữ liệu: ' + error.message, 'error');
+            console.error('Error loading data:', error);
+            showAlert('Một số dữ liệu không tải được. Vui lòng thử lại.', 'warning');
         }
         setLoading(false);
     };

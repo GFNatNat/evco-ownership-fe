@@ -109,6 +109,9 @@ const bookingApi = {
     alternativeSlots: data.alternativeSlots
   }),
 
+  // Get all slot requests for co-owner
+  getSlotRequests: () => axiosClient.get('/api/booking/slot-requests'),
+
   // Respond to slot request - POST /slot-request/{requestId}/respond
   respondToSlotRequest: (requestId, data) => axiosClient.post(`/api/booking/slot-request/${requestId}/respond`, {
     isApproved: data.isApproved,

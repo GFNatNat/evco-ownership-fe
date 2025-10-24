@@ -61,7 +61,7 @@ export default function AccountOwnership() {
         coOwnerApi.getOwnershipRequests().catch(() => ({ data: [] }))
       ]);
 
-      const [profileRes, vehiclesRes, ownershipsRes, requestsRes] = results.map(r => 
+      const [profileRes, vehiclesRes, ownershipsRes, requestsRes] = results.map(r =>
         r.status === 'fulfilled' ? r.value : { data: null }
       );
 
