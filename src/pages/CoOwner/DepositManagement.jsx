@@ -125,18 +125,22 @@ const DepositManagement = () => {
                 ...filters,
                 pageNumber: page + 1,
                 pageSize: rowsPerPage
-            });
+            }).catch(() => ({ data: { items: [], totalCount: 0 } }));
 
-            if (response.data?.items) {
+            if (response?.data?.items) {
                 const formattedDeposits = response.data.items.map(deposit =>
                     depositApi.formatDepositForDisplay(deposit)
                 );
                 setDeposits(formattedDeposits);
                 setTotalItems(response.data.totalCount || 0);
+            } else {
+                setDeposits([]);
+                setTotalItems(0);
             }
         } catch (error) {
             console.error('Error loading deposits:', error);
-            setError('Không thể tải danh sách giao dịch nạp tiền');
+            setDeposits([]);
+            setTotalItems(0);
         } finally {
             setLoading(false);
         }
