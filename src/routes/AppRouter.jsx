@@ -39,7 +39,7 @@ import CheckInOut from '../pages/Staff/CheckInOut';
 import StaffServices from '../pages/Staff/Services';
 import StaffDisputes from '../pages/Staff/Disputes';
 import VehicleVerification from '../pages/Staff/VehicleVerification';
-import BookingReminderManagement from '../pages/Staff/BookingReminderManagement';
+import BookingReminderManagementStaff from '../pages/Staff/BookingReminderManagement';
 import VehicleReportGeneration from '../pages/Staff/VehicleReportGeneration';
 import VehicleUpgradeApproval from '../pages/Staff/VehicleUpgradeApproval';
 import FairnessMonitoring from '../pages/Staff/FairnessMonitoring';
@@ -69,7 +69,7 @@ import OwnershipHistoryManagement from '../pages/CoOwner/OwnershipHistoryManagem
 import UsageAnalyticsManagement from '../pages/CoOwner/UsageAnalyticsManagement';
 import VehicleReportManagement from '../pages/CoOwner/VehicleReportManagement';
 import VehicleUpgradeManagement from '../pages/CoOwner/VehicleUpgradeManagement';
-import BookingReminderManagement from '../pages/CoOwner/BookingReminderManagement';
+import BookingReminderManagementCoOwner from '../pages/CoOwner/BookingReminderManagement';
 import CheckInCheckOutManagement from '../pages/CoOwner/CheckInCheckOutManagement';
 
 // Profile pages
@@ -120,7 +120,7 @@ export default function AppRouter() {
           <Route path="/staff/vehicle-verification" element={<VehicleVerification />} />
           <Route path="/staff/contracts" element={<StaffContracts />} />
           <Route path="/staff/checkin" element={<CheckInOut />} />
-          <Route path="/staff/booking-reminder" element={<BookingReminderManagement />} />
+          <Route path="/staff/booking-reminder" element={<BookingReminderManagementStaff />} />
           <Route path="/staff/services" element={<StaffServices />} />
           <Route path="/staff/disputes" element={<StaffDisputes />} />
           <Route path="/staff/vehicle-reports" element={<VehicleReportGeneration />} />
@@ -141,7 +141,7 @@ export default function AppRouter() {
           <Route path="/coowner/analytics" element={<VehicleAnalytics />} />
           <Route path="/coowner/schedule" element={<Schedule />} />
           <Route path="/coowner/booking-management" element={<BookingManagement />} />
-          <Route path="/coowner/booking-reminder" element={<BookingReminderManagement />} />
+          <Route path="/coowner/booking-reminder" element={<BookingReminderManagementCoOwner />} />
           <Route path="/coowner/checkin-checkout" element={<CheckInCheckOutManagement />} />
           <Route path="/coowner/payments" element={<Payments />} />
           <Route path="/coowner/payment-management" element={<PaymentManagement />} />

@@ -63,7 +63,7 @@ import {
     Add,
     Remove
 } from '@mui/icons-material';
-import { QrReader } from 'react-qr-reader';
+// import { QrReader } from 'react-qr-reader';
 import checkInCheckOutApi from '../../api/checkInCheckOutApi';
 import bookingApi from '../../api/bookingApi';
 
@@ -593,12 +593,15 @@ const CheckInCheckOutManagement = () => {
                     Quét mã QR để {qrScanMode === 'checkin' ? 'Check-in' : 'Check-out'}
                 </DialogTitle>
                 <DialogContent>
-                    <Box sx={{ width: '100%', height: 400 }}>
-                        <QrReader
+                    <Box sx={{ width: '100%', height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {/* <QrReader
                             onResult={handleQrScan}
                             style={{ width: '100%' }}
                             constraints={{ facingMode: 'environment' }}
-                        />
+                        /> */}
+                        <Typography color="text.secondary">
+                            Tính năng quét QR đang được phát triển
+                        </Typography>
                     </Box>
                 </DialogContent>
                 <DialogActions>
