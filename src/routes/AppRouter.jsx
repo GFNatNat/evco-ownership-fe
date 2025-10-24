@@ -43,6 +43,7 @@ import BookingReminderManagementStaff from '../pages/Staff/BookingReminderManage
 import VehicleReportGeneration from '../pages/Staff/VehicleReportGeneration';
 import VehicleUpgradeApproval from '../pages/Staff/VehicleUpgradeApproval';
 import FairnessMonitoring from '../pages/Staff/FairnessMonitoring';
+import StaffSettings from '../pages/Staff/Settings';
 
 // CoOwner pages
 import AccountOwnership from '../pages/CoOwner/AccountOwnership';
@@ -126,6 +127,7 @@ export default function AppRouter() {
           <Route path="/staff/vehicle-reports" element={<VehicleReportGeneration />} />
           <Route path="/staff/vehicle-upgrade-approval" element={<VehicleUpgradeApproval />} />
           <Route path="/staff/fairness-monitoring" element={<FairnessMonitoring />} />
+          <Route path="/staff/settings" element={<StaffSettings />} />
         </Route>
       </Route>
 

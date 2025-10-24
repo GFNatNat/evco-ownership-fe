@@ -27,7 +27,7 @@ export default function VehicleVerification() {
     });
     const [message, setMessage] = React.useState('');
     const [error, setError] = React.useState('');
-    
+
     // Statistics
     const [stats, setStats] = React.useState({
         pending: 0,
@@ -46,12 +46,12 @@ export default function VehicleVerification() {
             const params = { needsVerification: activeTab === 0 };
             if (filters.status !== 'all') params.verificationStatus = filters.status;
             if (filters.priority !== 'all') params.priority = filters.priority;
-            
+
             const res = await vehicleApi.list(params).catch(() => ({ data: { items: [] } }));
             const data = Array.isArray(res.data) ? res.data : res.data?.items || [];
             const mappedVehicles = data.map((vehicle, index) => ({ id: vehicle.vehicleId || vehicle.id || index, ...vehicle }));
             setVehicles(mappedVehicles);
-            
+
             // Calculate statistics
             setStats({
                 pending: mappedVehicles.filter(v => v.verificationStatus === 'Pending').length,

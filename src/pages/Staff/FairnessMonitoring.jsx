@@ -74,7 +74,7 @@ const FairnessMonitoring = () => {
   };
 
   const getVehicleFairnessStatus = (report) => {
-    if (!report) return { status: 'unknown', color: 'grey' };
+    if (!report) return { status: 'unknown', color: 'default', label: 'Không rõ' };
     
     const score = report.overview?.fairnessScore || 0;
     if (score >= 85) return { status: 'excellent', color: 'success', label: 'Tuyệt vời' };
