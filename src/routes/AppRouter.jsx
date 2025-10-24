@@ -38,6 +38,9 @@ import DisputeManagement from '../pages/CoOwner/DisputeManagement';
 import FairnessOptimizationManagement from '../pages/CoOwner/FairnessOptimizationManagement';
 import FundManagement from '../pages/CoOwner/FundManagement';
 import MaintenanceVoteManagement from '../pages/CoOwner/MaintenanceVoteManagement';
+import OwnershipChangeManagement from '../pages/CoOwner/OwnershipChangeManagement';
+import OwnershipHistoryManagement from '../pages/CoOwner/OwnershipHistoryManagement';
+import UsageAnalyticsManagement from '../pages/CoOwner/UsageAnalyticsManagement';
 import VehicleVerification from '../pages/Staff/VehicleVerification';
 import Profile from '../pages/Profile/Profile';
 import AccessDenied from '../pages/Error/AccessDenied';
@@ -86,6 +89,9 @@ export default function AppRouter() {
           <Route path="/co-owner/fairness-optimization" element={<FairnessOptimizationManagement />} />
           <Route path="/co-owner/fund-management" element={<FundManagement />} />
           <Route path="/co-owner/maintenance-vote-management" element={<MaintenanceVoteManagement />} />
+          <Route path="/co-owner/ownership-change-management" element={<OwnershipChangeManagement />} />
+          <Route path="/co-owner/ownership-history-management" element={<OwnershipHistoryManagement />} />
+          <Route path="/co-owner/usage-analytics-management" element={<UsageAnalyticsManagement />} />
 
           <Route path="/staff/fleet" element={<Fleet />} />
           <Route path="/staff/contracts" element={<StaffContracts />} />

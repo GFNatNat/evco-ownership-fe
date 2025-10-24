@@ -97,7 +97,7 @@ function FundManagement({ vehicleId }) {
   // Load fund data
   const loadFundData = async () => {
     if (!vehicleId) return;
-    
+
     setLoading(true);
     try {
       const [balanceRes, additionsRes, usagesRes, summaryRes, analysisRes] = await Promise.all([
@@ -137,7 +137,7 @@ function FundManagement({ vehicleId }) {
     setLoading(true);
     try {
       let imageUrl = '';
-      
+
       // Upload image if provided
       if (usageForm.imageFile) {
         const formData = fileUploadApi.createFormData(usageForm.imageFile, {
@@ -221,7 +221,7 @@ function FundManagement({ vehicleId }) {
     const statusInfo = balance.balanceStatusInfo;
 
     return (
-      <Card sx={{ 
+      <Card sx={{
         background: `linear-gradient(135deg, ${statusInfo.bgColor} 0%, ${statusInfo.color}20 100%)`,
         border: `2px solid ${statusInfo.color}30`
       }}>
@@ -232,7 +232,7 @@ function FundManagement({ vehicleId }) {
             </Typography>
             <Chip
               label={statusInfo.name}
-              sx={{ 
+              sx={{
                 backgroundColor: statusInfo.color,
                 color: 'white',
                 fontWeight: 'bold'
@@ -240,7 +240,7 @@ function FundManagement({ vehicleId }) {
               icon={<span>{statusInfo.icon}</span>}
             />
           </Box>
-          
+
           <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1, color: statusInfo.color }}>
             {balance.formattedCurrentBalance}
           </Typography>
@@ -293,13 +293,13 @@ function FundManagement({ vehicleId }) {
             <PieChart sx={{ mr: 1 }} />
             Phân tích ngân sách theo danh mục
           </Typography>
-          
+
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis tickFormatter={(value) => fundApi.formatCurrency(value)} />
-              <RechartsTooltip 
+              <RechartsTooltip
                 formatter={(value) => [fundApi.formatCurrency(value), '']}
               />
               <Legend />
@@ -320,9 +320,9 @@ function FundManagement({ vehicleId }) {
                     <Chip
                       size="small"
                       label={budget.categoryName}
-                      sx={{ 
+                      sx={{
                         backgroundColor: fundApi.getUsageTypes().find(t => t.value === budget.categoryCode)?.color + '20',
-                        mr: 1 
+                        mr: 1
                       }}
                     />
                     <Typography variant="body2">
@@ -332,9 +332,9 @@ function FundManagement({ vehicleId }) {
                   <Chip
                     size="small"
                     label={`${budget.formattedBudgetUtilizationPercent}`}
-                    sx={{ 
+                    sx={{
                       backgroundColor: statusInfo.bgColor,
-                      color: statusInfo.color 
+                      color: statusInfo.color
                     }}
                   />
                 </Box>
@@ -365,13 +365,13 @@ function FundManagement({ vehicleId }) {
             <Timeline sx={{ mr: 1 }} />
             Xu hướng tài chính 6 tháng
           </Typography>
-          
+
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis tickFormatter={(value) => fundApi.formatCurrency(value)} />
-              <RechartsTooltip 
+              <RechartsTooltip
                 formatter={(value) => [fundApi.formatCurrency(value), '']}
               />
               <Legend />
@@ -426,7 +426,7 @@ function FundManagement({ vehicleId }) {
                       <Chip
                         label={usage.usageTypeName}
                         size="small"
-                        sx={{ 
+                        sx={{
                           backgroundColor: fundApi.getUsageTypes().find(t => t.value === usage.usageType)?.color + '20'
                         }}
                       />

@@ -73,27 +73,27 @@ const fundApi = {
   // Validate usage data
   validateUsageData: (data) => {
     const errors = [];
-    
+
     if (!data.vehicleId || data.vehicleId <= 0) {
       errors.push('Vehicle ID is required');
     }
-    
+
     if (data.usageType === undefined || data.usageType === null || ![0, 1, 2, 3, 4].includes(data.usageType)) {
       errors.push('Valid usage type is required (0-4)');
     }
-    
+
     if (!data.amount || data.amount <= 0) {
       errors.push('Amount must be greater than 0');
     }
-    
+
     if (!data.description || data.description.trim().length < 5) {
       errors.push('Description must be at least 5 characters');
     }
-    
+
     if (data.description && data.description.length > 500) {
       errors.push('Description cannot exceed 500 characters');
     }
-    
+
     return {
       isValid: errors.length === 0,
       errors
@@ -148,9 +148,9 @@ const fundApi = {
   // Format fund balance for display
   formatBalanceForDisplay: (balance) => {
     if (!balance) return null;
-    
+
     const statusInfo = fundApi.getBalanceStatusInfo(balance.balanceStatus);
-    
+
     return {
       ...balance,
       formattedCurrentBalance: fundApi.formatCurrency(balance.currentBalance),
@@ -166,7 +166,7 @@ const fundApi = {
   // Format fund usage for display
   formatUsageForDisplay: (usage) => {
     if (!usage) return null;
-    
+
     return {
       ...usage,
       usageTypeName: fundApi.getUsageTypeDisplayName(usage.usageType),
@@ -178,7 +178,7 @@ const fundApi = {
   // Format fund addition for display
   formatAdditionForDisplay: (addition) => {
     if (!addition) return null;
-    
+
     return {
       ...addition,
       formattedAmount: fundApi.formatCurrency(addition.amount),
@@ -202,7 +202,7 @@ const fundApi = {
   // Format category analysis for display
   formatCategoryAnalysisForDisplay: (analysis) => {
     if (!analysis) return null;
-    
+
     return {
       ...analysis,
       formattedTotalBudget: fundApi.formatCurrency(analysis.totalBudget),
@@ -269,7 +269,7 @@ const fundApi = {
     };
 
     const desc = description.toLowerCase();
-    
+
     for (const [category, words] of Object.entries(keywords)) {
       const matches = words.filter(word => desc.includes(word));
       if (matches.length > 0) {

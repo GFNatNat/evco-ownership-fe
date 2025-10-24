@@ -113,7 +113,7 @@ const fileUploadApi = {
   createFormData: (file, metadata = {}) => {
     const formData = new FormData();
     formData.append('file', file);
-    
+
     // Add metadata
     Object.keys(metadata).forEach(key => {
       if (metadata[key] !== undefined && metadata[key] !== null) {
@@ -127,11 +127,11 @@ const fileUploadApi = {
   // Format file size for display
   formatFileSize: (bytes) => {
     if (bytes === 0) return '0 B';
-    
+
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
+
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   },
 
@@ -157,7 +157,7 @@ const fileUploadApi = {
     if (!fileInfo) return null;
 
     const typeInfo = fileUploadApi.getFileTypeCategory(fileInfo.mimeType || fileInfo.fileType);
-    
+
     return {
       ...fileInfo,
       typeInfo,
@@ -174,22 +174,22 @@ const fileUploadApi = {
   downloadFileWithName: async (fileId, filename) => {
     try {
       const response = await fileUploadApi.download(fileId);
-      
+
       // Create blob URL
       const blob = new Blob([response.data]);
       const url = window.URL.createObjectURL(blob);
-      
+
       // Create download link
       const link = document.createElement('a');
       link.href = url;
       link.download = filename || `file_${fileId}`;
       document.body.appendChild(link);
       link.click();
-      
+
       // Cleanup
       window.URL.revokeObjectURL(url);
       document.body.removeChild(link);
-      
+
       return { success: true };
     } catch (error) {
       console.error('Download failed:', error);
@@ -200,7 +200,7 @@ const fileUploadApi = {
   // Upload with progress tracking
   uploadWithProgress: (file, metadata = {}, onProgress) => {
     const formData = fileUploadApi.createFormData(file, metadata);
-    
+
     return axiosClient.post('/api/fileupload/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
@@ -219,24 +219,24 @@ const fileUploadApi = {
     const uploadPromises = files.map(file => {
       const validation = fileUploadApi.validateFile(file);
       if (!validation.isValid) {
-        return Promise.resolve({ 
-          file: file.name, 
-          success: false, 
-          errors: validation.errors 
+        return Promise.resolve({
+          file: file.name,
+          success: false,
+          errors: validation.errors
         });
       }
 
       const formData = fileUploadApi.createFormData(file, metadata);
       return fileUploadApi.upload(formData)
-        .then(response => ({ 
-          file: file.name, 
-          success: true, 
-          data: response.data 
+        .then(response => ({
+          file: file.name,
+          success: true,
+          data: response.data
         }))
-        .catch(error => ({ 
-          file: file.name, 
-          success: false, 
-          error: error.message 
+        .catch(error => ({
+          file: file.name,
+          success: false,
+          error: error.message
         }));
     });
 
@@ -268,7 +268,7 @@ const fileUploadApi = {
     }));
 
     const invalidFiles = results.filter(result => !result.validation.isValid);
-    
+
     return {
       isValid: invalidFiles.length === 0,
       results,

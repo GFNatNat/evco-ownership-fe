@@ -53,27 +53,27 @@ const maintenanceVoteApi = {
   // Validate proposal data (README 21 compliant)
   validateProposalData: (data) => {
     const errors = [];
-    
+
     if (!data.vehicleId || data.vehicleId <= 0) {
       errors.push('Vehicle ID is required');
     }
-    
+
     if (!data.maintenanceCostId || data.maintenanceCostId <= 0) {
       errors.push('Maintenance cost ID is required');
     }
-    
+
     if (!data.reason || data.reason.trim().length < 5) {
       errors.push('Reason must be at least 5 characters');
     }
-    
+
     if (data.reason && data.reason.length > 500) {
       errors.push('Reason cannot exceed 500 characters');
     }
-    
+
     if (!data.amount || data.amount <= 0) {
       errors.push('Amount must be greater than 0');
     }
-    
+
     return {
       isValid: errors.length === 0,
       errors
@@ -83,19 +83,19 @@ const maintenanceVoteApi = {
   // Validate vote data (README 21 compliant)
   validateVoteData: (data) => {
     const errors = [];
-    
+
     if (data.approve === undefined || data.approve === null || typeof data.approve !== 'boolean') {
       errors.push('Vote decision (approve) is required and must be boolean');
     }
-    
+
     if (!data.comments || data.comments.trim().length < 5) {
       errors.push('Comments must be at least 5 characters');
     }
-    
+
     if (data.comments && data.comments.length > 500) {
       errors.push('Comments cannot exceed 500 characters');
     }
-    
+
     return {
       isValid: errors.length === 0,
       errors
@@ -128,7 +128,7 @@ const maintenanceVoteApi = {
   getPriorityDisplayName: (priority) => {
     const priorities = {
       0: 'Thấp',
-      1: 'Trung bình', 
+      1: 'Trung bình',
       2: 'Cao',
       3: 'Khẩn cấp'
     };
@@ -201,11 +201,11 @@ const maintenanceVoteApi = {
   // Format proposal for display
   formatProposalForDisplay: (proposal) => {
     if (!proposal) return null;
-    
+
     const maintenanceTypeInfo = maintenanceVoteApi.getMaintenanceTypeInfo(proposal.maintenanceType);
     const priorityInfo = maintenanceVoteApi.getPriorityInfo(proposal.priority);
     const statusInfo = maintenanceVoteApi.getProposalStatusInfo(proposal.proposalStatus);
-    
+
     return {
       ...proposal,
       maintenanceTypeInfo,
@@ -223,9 +223,9 @@ const maintenanceVoteApi = {
   // Format vote for display
   formatVoteForDisplay: (vote) => {
     if (!vote) return null;
-    
+
     const decisionInfo = maintenanceVoteApi.getVoteDecisionInfo(vote.voteDecision);
-    
+
     return {
       ...vote,
       decisionInfo,
@@ -319,60 +319,60 @@ const maintenanceVoteApi = {
   // Check if user can vote on proposal
   canUserVote: (proposal, currentUserId) => {
     if (!proposal || !currentUserId) return { canVote: false, reason: 'Invalid data' };
-    
+
     // Check if proposal is still pending
     if (proposal.proposalStatus !== 0) {
       return { canVote: false, reason: 'Proposal is no longer pending' };
     }
-    
+
     // Check if deadline has passed
     if (proposal.votingDeadline && new Date(proposal.votingDeadline) < new Date()) {
       return { canVote: false, reason: 'Voting deadline has passed' };
     }
-    
+
     // Check if user has already voted
     if (proposal.votes && proposal.votes.some(vote => vote.coOwnerId === currentUserId)) {
       return { canVote: false, reason: 'User has already voted' };
     }
-    
+
     // Check if user is the proposer (usually proposers cannot vote on their own proposals)
     if (proposal.proposerId === currentUserId) {
       return { canVote: false, reason: 'Proposer cannot vote on their own proposal' };
     }
-    
+
     return { canVote: true, reason: 'User can vote' };
   },
 
   // Check if user can edit/cancel proposal
   canUserEditProposal: (proposal, currentUserId) => {
     if (!proposal || !currentUserId) return { canEdit: false, reason: 'Invalid data' };
-    
+
     // Only proposer can edit
     if (proposal.proposerId !== currentUserId) {
       return { canEdit: false, reason: 'Only proposer can edit' };
     }
-    
+
     // Cannot edit if not pending
     if (proposal.proposalStatus !== 0) {
       return { canEdit: false, reason: 'Cannot edit non-pending proposals' };
     }
-    
+
     // Cannot edit if votes have been cast
     if (proposal.votes && proposal.votes.length > 0) {
       return { canEdit: false, reason: 'Cannot edit proposal with existing votes' };
     }
-    
+
     return { canEdit: true, reason: 'User can edit proposal' };
   },
 
   // Generate proposal summary for notifications
   generateProposalSummary: (proposal) => {
     if (!proposal) return '';
-    
+
     const typeInfo = maintenanceVoteApi.getMaintenanceTypeInfo(proposal.maintenanceType);
     const priorityInfo = maintenanceVoteApi.getPriorityInfo(proposal.priority);
     const formattedCost = maintenanceVoteApi.formatCurrency(proposal.estimatedCost);
-    
+
     return `${typeInfo.icon} ${proposal.title}\n💰 Chi phí ước tính: ${formattedCost}\n${priorityInfo.icon} Độ ưu tiên: ${priorityInfo.name}`;
   }
 };

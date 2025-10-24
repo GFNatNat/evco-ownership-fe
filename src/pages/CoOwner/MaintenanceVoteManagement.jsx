@@ -118,7 +118,7 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
   // Load vote data
   const loadVoteData = async () => {
     if (!vehicleId) return;
-    
+
     setLoading(true);
     try {
       const [pendingRes, historyRes] = await Promise.all([
@@ -148,7 +148,7 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
     try {
       const response = await maintenanceVoteApi.getProposalDetails(proposalId);
       const proposal = maintenanceVoteApi.formatProposalForDisplay(response.data.data);
-      
+
       setVoteData(prev => ({
         ...prev,
         proposalDetails: {
@@ -156,7 +156,7 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
           [proposalId]: proposal
         }
       }));
-      
+
       return proposal;
     } catch (err) {
       setError('Không thể tải chi tiết đề xuất: ' + err.message);
@@ -177,7 +177,7 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
     setLoading(true);
     try {
       let imageUrl = '';
-      
+
       // Upload image if provided
       if (proposalForm.imageFile) {
         const formData = fileUploadApi.createFormData(proposalForm.imageFile, {
@@ -198,7 +198,7 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
 
       await maintenanceVoteApi.propose(submitData);
       setSuccess('Đề xuất bảo trì đã được tạo thành công!');
-      
+
       setProposalDialogOpen(false);
       resetProposalForm();
       loadVoteData();
@@ -212,7 +212,7 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
   // Handle vote submission
   const handleVoteSubmit = async () => {
     if (!selectedProposal) return;
-    
+
     const validation = maintenanceVoteApi.validateVoteData(voteForm);
     if (!validation.isValid) {
       setError(validation.errors.join(', '));
@@ -223,7 +223,7 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
     try {
       await maintenanceVoteApi.vote(selectedProposal.id, voteForm);
       setSuccess('Bình chọn đã được ghi nhận!');
-      
+
       setVoteDialogOpen(false);
       resetVoteForm();
       loadVoteData();
@@ -303,7 +303,7 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
             <Box>
               <Chip
                 label={proposal.priorityInfo.name}
-                sx={{ 
+                sx={{
                   backgroundColor: proposal.priorityInfo.color,
                   color: 'white',
                   mr: 1
@@ -312,7 +312,7 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
               />
               <Chip
                 label={proposal.statusInfo.name}
-                sx={{ 
+                sx={{
                   backgroundColor: proposal.statusInfo.bgColor,
                   color: proposal.statusInfo.color
                 }}
@@ -342,12 +342,12 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
             </Box>
           }
         />
-        
+
         <CardContent>
           <Typography variant="body1" gutterBottom>
             {proposal.description}
           </Typography>
-          
+
           <Typography variant="body2" color="textSecondary" gutterBottom>
             <strong>Lý do đề xuất:</strong> {proposal.proposalReason}
           </Typography>
@@ -396,7 +396,7 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
           >
             Chi tiết
           </Button>
-          
+
           {showVoteButton && canVote.canVote && (
             <Button
               size="small"
@@ -407,7 +407,7 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
               Bình chọn
             </Button>
           )}
-          
+
           {canEdit.canEdit && (
             <Button
               size="small"
@@ -431,7 +431,7 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
   // Voting Statistics Chart
   const VotingStatsChart = () => {
     const proposals = [...voteData.pendingProposals, ...voteData.history];
-    
+
     if (!proposals.length) return null;
 
     // Calculate statistics by type
@@ -476,7 +476,7 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
             </CardContent>
           </Card>
         </Grid>
-        
+
         <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
@@ -523,7 +523,7 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
               </Select>
             </FormControl>
           </Grid>
-          
+
           <Grid item xs={12} md={6}>
             <FormControl fullWidth>
               <InputLabel>Độ ưu tiên</InputLabel>
@@ -609,9 +609,9 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
                 hidden
                 multiple
                 accept="image/*,.pdf,.doc,.docx"
-                onChange={(e) => setProposalForm(prev => ({ 
-                  ...prev, 
-                  supportingDocuments: Array.from(e.target.files) 
+                onChange={(e) => setProposalForm(prev => ({
+                  ...prev,
+                  supportingDocuments: Array.from(e.target.files)
                 }))}
               />
             </Button>
@@ -703,8 +703,8 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
 
   // Proposal Detail Dialog
   const ProposalDetailDialog = () => {
-    const proposal = selectedProposal && voteData.proposalDetails[selectedProposal.id] 
-      ? voteData.proposalDetails[selectedProposal.id] 
+    const proposal = selectedProposal && voteData.proposalDetails[selectedProposal.id]
+      ? voteData.proposalDetails[selectedProposal.id]
       : selectedProposal;
 
     return (
@@ -842,7 +842,7 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
         {/* Tabs */}
         <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
           <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
-            <Tab 
+            <Tab
               label={
                 <Badge badgeContent={voteData.pendingProposals.length} color="error">
                   <Box display="flex" alignItems="center">
@@ -850,23 +850,23 @@ function MaintenanceVoteManagement({ vehicleId, currentUserId }) {
                     Đang chờ
                   </Box>
                 </Badge>
-              } 
+              }
             />
-            <Tab 
+            <Tab
               label={
                 <Box display="flex" alignItems="center">
                   <History sx={{ mr: 1 }} />
                   Lịch sử
                 </Box>
-              } 
+              }
             />
-            <Tab 
+            <Tab
               label={
                 <Box display="flex" alignItems="center">
                   <PieChart sx={{ mr: 1 }} />
                   Thống kê
                 </Box>
-              } 
+              }
             />
           </Tabs>
         </Box>
