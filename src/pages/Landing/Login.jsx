@@ -33,18 +33,18 @@ export default function Login() {
 
     try {
       const result = await login(form);
-      if (result.success) {
-        // Navigation will be handled by AuthContext
-        const role = localStorage.getItem('role') || 'CoOwner';
+      if (result.ok) {
+        // Navigation based on role
+        const role = result.role || localStorage.getItem('role') || 'CoOwner';
         switch (role) {
           case 'Admin':
-            nav('/dashboard/admin');
+            nav('/admin');
             break;
           case 'Staff':
-            nav('/dashboard/staff');
+            nav('/staff');
             break;
           default:
-            nav('/dashboard/coowner');
+            nav('/coowner');
         }
       } else {
         setError(result.error || 'Đăng nhập thất bại');
