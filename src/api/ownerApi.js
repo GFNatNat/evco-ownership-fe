@@ -1,9 +1,10 @@
 import axiosClient from './axiosClient';
 
+import fileUploadApi from './fileUploadApi';
+
 const ownerApi = {
-  uploadFile: (formData) => axiosClient.post('/api/FileUpload/upload', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  }),
+  // Use new fileUploadApi for file upload
+  uploadFile: (formData) => fileUploadApi.upload(formData),
   verifyLicenseAuth: (data) => axiosClient.post('/api/Auth/verify-license', data),
   verifyLicense: (data) => axiosClient.post('/api/License/verify', data),
   checkExist: (data) => axiosClient.post('/api/Auth/check-exist', data),

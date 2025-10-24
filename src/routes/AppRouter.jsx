@@ -5,7 +5,7 @@ import Login from '../pages/Landing/Login';
 import Register from '../pages/Landing/Register';
 import ForgotPassword from '../pages/Landing/ForgotPassword';
 import ResetPassword from '../pages/Landing/ResetPassword';
-import CoOwnerDashboard from '../pages/Dashboard/CoOwnerDashboard';
+import CoOwnerDashboard from '../pages/CoOwner/CoOwnerDashboard';
 import Schedule from '../pages/CoOwner/Schedule';
 import Payments from '../pages/CoOwner/Payments';
 import StaffDashboard from '../pages/Dashboard/StaffDashboard';
@@ -36,6 +36,8 @@ import VotingManagement from '../pages/CoOwner/VotingManagement';
 import DepositManagement from '../pages/CoOwner/DepositManagement';
 import DisputeManagement from '../pages/CoOwner/DisputeManagement';
 import FairnessOptimizationManagement from '../pages/CoOwner/FairnessOptimizationManagement';
+import FundManagement from '../pages/CoOwner/FundManagement';
+import MaintenanceVoteManagement from '../pages/CoOwner/MaintenanceVoteManagement';
 import VehicleVerification from '../pages/Staff/VehicleVerification';
 import Profile from '../pages/Profile/Profile';
 import AccessDenied from '../pages/Error/AccessDenied';
@@ -82,6 +84,8 @@ export default function AppRouter() {
           <Route path="/co-owner/deposit-management" element={<DepositManagement />} />
           <Route path="/co-owner/dispute-management" element={<DisputeManagement />} />
           <Route path="/co-owner/fairness-optimization" element={<FairnessOptimizationManagement />} />
+          <Route path="/co-owner/fund-management" element={<FundManagement />} />
+          <Route path="/co-owner/maintenance-vote-management" element={<MaintenanceVoteManagement />} />
 
           <Route path="/staff/fleet" element={<Fleet />} />
           <Route path="/staff/contracts" element={<StaffContracts />} />
