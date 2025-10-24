@@ -122,52 +122,23 @@ export default function CoOwnerDashboard() {
   };
 
   const handleLogout = () => {
-    logout();
+    // This is now handled by the Layout component
     navigate('/login');
   };
 
   if (loading) {
     return (
-      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#fafafa' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}>
         <CircularProgress sx={{ color: '#10b981' }} />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#fafafa' }}>
-      {/* Header */}
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'white' }}>
-        <Box sx={{ maxWidth: 1400, mx: 'auto', px: 3, py: 2 }}>
-          <Box display="flex" alignItems="center" justifyContent="space-between">
-            <Box display="flex" alignItems="center" gap={2}>
-              <Box display="flex" alignItems="center" gap={1}>
-                <DirectionsCar sx={{ fontSize: 32, color: '#10b981' }} />
-                <Typography variant="h5" fontWeight="bold" sx={{
-                  background: 'linear-gradient(135deg, #10b981, #0ea5e9)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}>
-                  EV Share
-                </Typography>
-              </Box>
-              <Chip label="Đồng sở hữu" size="small" variant="outlined" />
-            </Box>
-            <Box display="flex" alignItems="center" gap={2}>
-              <Typography variant="body2" color="text.secondary">
-                {user?.name || 'Nguyễn Văn A'}
-              </Typography>
-              <Button variant="outlined" size="small" onClick={handleLogout}>
-                Đăng xuất
-              </Button>
-            </Box>
-          </Box>
-        </Box>
-      </Box>
-
+    <Box>
       {/* Navigation Tabs */}
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'white' }}>
-        <Box sx={{ maxWidth: 1400, mx: 'auto', px: 3 }}>
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'white', mb: 3 }}>
+        <Box sx={{ px: 0 }}>
           <Tabs
             value={selectedTab}
             onChange={(e, v) => setSelectedTab(v)}
@@ -201,7 +172,7 @@ export default function CoOwnerDashboard() {
       </Box>
 
       {/* Main Content */}
-      <Box sx={{ maxWidth: 1400, mx: 'auto', px: 3, py: 3 }}>
+      <Box sx={{ py: 2 }}>
         {/* Tab 0: Overview */}
         {selectedTab === 0 && (
           <Box>

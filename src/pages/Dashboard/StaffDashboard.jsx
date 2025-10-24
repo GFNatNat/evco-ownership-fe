@@ -107,51 +107,22 @@ export default function StaffDashboard() {
   };
 
   const handleLogout = () => {
-    logout();
+    // This is now handled by the Layout component
     navigate('/login');
   };
 
   if (loading) {
     return (
-      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#fafafa' }}>
-        <CircularProgress sx={{ color: '#10b981' }} />
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}>
+        <CircularProgress sx={{ color: '#0ea5e9' }} />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#fafafa' }}>
-      {/* Header */}
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'white' }}>
-        <Box sx={{ maxWidth: 1400, mx: 'auto', px: 3, py: 2 }}>
-          <Box display="flex" alignItems="center" justifyContent="space-between">
-            <Box display="flex" alignItems="center" gap={2}>
-              <Box display="flex" alignItems="center" gap={1}>
-                <DirectionsCar sx={{ fontSize: 32, color: '#10b981' }} />
-                <Typography variant="h5" fontWeight="bold" sx={{
-                  background: 'linear-gradient(135deg, #10b981, #0ea5e9)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}>
-                  EV Share
-                </Typography>
-              </Box>
-              <Chip label="Nhân viên" size="small" variant="outlined" />
-            </Box>
-            <Box display="flex" alignItems="center" gap={2}>
-              <Typography variant="body2" color="text.secondary">
-                {user?.name || 'Nguyễn Thị Staff'}
-              </Typography>
-              <Button variant="outlined" size="small" onClick={handleLogout}>
-                Đăng xuất
-              </Button>
-            </Box>
-          </Box>
-        </Box>
-      </Box>
-
+    <Box>
       {/* Main Content */}
-      <Box sx={{ maxWidth: 1400, mx: 'auto', px: 3, py: 3 }}>
+      <Box>
         {/* Stats Overview */}
         <Grid container spacing={3} mb={3}>
           <Grid item xs={12} sm={6} md={3}>
