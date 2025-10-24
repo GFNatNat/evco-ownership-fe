@@ -48,7 +48,7 @@ import {
   Receipt,
   Analytics,
   PieChart,
-  Timeline,
+  History,
   Warning,
   CheckCircle,
   Error,
@@ -362,7 +362,7 @@ function FundManagement({ vehicleId }) {
       <Card>
         <CardContent>
           <Typography variant="h6" gutterBottom>
-            <Timeline sx={{ mr: 1 }} />
+            <History sx={{ mr: 1 }} />
             Xu hướng tài chính 6 tháng
           </Typography>
 

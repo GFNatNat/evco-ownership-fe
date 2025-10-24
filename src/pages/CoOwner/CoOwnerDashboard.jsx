@@ -31,7 +31,7 @@ import {
   Build,
   Notifications,
   Settings,
-  Timeline,
+
   BarChart,
   Info,
   Warning,
@@ -39,8 +39,7 @@ import {
   SwapHoriz,
   History,
   Analytics,
-  Assessment,
-  Build
+  Assessment
 } from '@mui/icons-material';// Import components
 import FileUploadManager from '../../components/common/FileUploadManager';
 import FundManagement from '../../components/common/FundManagement';
@@ -187,7 +186,7 @@ function CoOwnerDashboard() {
             <Grid item xs={12} md={3}>
                 <Card>
                     <CardContent sx={{ textAlign: 'center' }}>
-                        <Timeline sx={{ fontSize: 40, color: 'info.main', mb: 1 }} />
+                        <History sx={{ fontSize: 40, color: 'info.main', mb: 1 }} />
                         <Typography variant="h4" color="info.main">
                             {dashboardData.recentActivities.length}
                         </Typography>

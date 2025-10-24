@@ -43,7 +43,7 @@ import {
     ExpandMore,
     Assessment,
     Lightbulb,
-    Timeline,
+    History,
     Refresh,
     CalendarToday,
     Speed,

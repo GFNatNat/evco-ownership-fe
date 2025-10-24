@@ -6,7 +6,7 @@ import {
     Paper, Stack, LinearProgress, Tooltip, IconButton
 } from '@mui/material';
 import {
-    Analytics, TrendingUp, DirectionsCar, Timeline,
+    Analytics, TrendingUp, DirectionsCar, History,
     Refresh, FileDownload, Visibility, BarChart,
     ShowChart, PieChart
 } from '@mui/icons-material';
@@ -271,7 +271,7 @@ export default function VehicleAnalytics() {
                             <Card sx={{ mb: 3 }}>
                                 <CardContent>
                                     <Typography variant="h6" gutterBottom>
-                                        <Timeline sx={{ mr: 1 }} />
+                                        <History sx={{ mr: 1 }} />
                                         Phân tích chuyên sâu
                                     </Typography>
                                     {utilizationData.insights.map((insight, index) => (

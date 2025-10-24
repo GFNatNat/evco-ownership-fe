@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import {
   TrendingUp, TrendingDown, DirectionsCar, Schedule, Payment,
-  Assessment, Timeline, PieChart, BarChart, Download, Share,
+  Assessment, History, PieChart, BarChart, Download, Share,
   FilterList, CalendarToday, Visibility, Receipt, CompareArrows
 } from '@mui/icons-material';
 import {
@@ -243,7 +243,7 @@ export default function History() {
         <Card>
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs value={selectedTab} onChange={(e, newValue) => setSelectedTab(newValue)}>
-              <Tab icon={<Timeline />} label="Xu hướng sử dụng" />
+              <Tab icon={<History />} label="Xu hướng sử dụng" />
               <Tab icon={<PieChart />} label="Phân tích sở hữu" />
               <Tab icon={<BarChart />} label="So sánh hiệu suất" />
               <Tab icon={<Receipt />} label="Lịch sử hoạt động" />
