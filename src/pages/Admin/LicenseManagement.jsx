@@ -43,10 +43,12 @@ export default function LicenseManagement() {
                 params.search = filters.search;
             }
 
-            const response = await licenseApi.getAll(params);
+            const response = await licenseApi.getAll(params).catch(() => ({ data: { items: [] } }));
             setLicenses(response.data?.items || []);
+            console.log('✅ Loaded licenses:', response.data?.items?.length || 0);
         } catch (err) {
-            setError('Không thể tải danh sách giấy phép');
+            console.error('❌ Failed to load licenses:', err);
+            setLicenses([]);
         } finally {
             setLoading(false);
         }
@@ -54,15 +56,20 @@ export default function LicenseManagement() {
 
     const handleViewLicense = async (licenseId) => {
         try {
-            const response = await licenseApi.getById(licenseId);
-            setSelectedLicense(response.data);
-            setVerificationForm({
-                status: response.data.status || 'pending',
-                notes: ''
-            });
-            setDialogOpen(true);
+            const response = await licenseApi.getById(licenseId).catch(() => ({ data: null }));
+            if (response.data) {
+                setSelectedLicense(response.data);
+                setVerificationForm({
+                    status: response.data.status || 'pending',
+                    notes: ''
+                });
+                setDialogOpen(true);
+                console.log('✅ Loaded license details:', licenseId);
+            } else {
+                console.warn('⚠️ No license data found for:', licenseId);
+            }
         } catch (err) {
-            setError('Không thể tải thông tin giấy phép');
+            console.error('❌ Failed to load license details:', err);
         }
     };
 

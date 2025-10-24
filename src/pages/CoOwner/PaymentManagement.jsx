@@ -282,10 +282,6 @@ const PaymentManagement = () => {
 
     return (
         <Box sx={{ flexGrow: 1, p: 3 }}>
-            <Typography variant="h4" gutterBottom>
-                Quản lý Thanh toán
-            </Typography>
-
             {alert.open && (
                 <Alert severity={alert.severity} sx={{ mb: 2 }}>
                     {alert.message}

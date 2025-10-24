@@ -135,7 +135,7 @@ const Settings = () => {
         try {
             setLoading(true);
             setError('');
-            
+
             // Save settings based on active tab
             let settingsData = {};
             switch (activeTab) {
@@ -157,7 +157,7 @@ const Settings = () => {
 
             // API call would go here
             console.log('💾 Saving settings:', settingsData);
-            
+
             setMessage('Cài đặt đã được lưu thành công!');
         } catch (err) {
             setError('Lỗi khi lưu cài đặt: ' + err.message);

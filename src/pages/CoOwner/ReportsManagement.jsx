@@ -355,11 +355,6 @@ const ReportsManagement = () => {
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
             <Box sx={{ p: 3 }}>
-                <Typography variant="h4" gutterBottom>
-                    <Assessment sx={{ mr: 1, verticalAlign: 'middle' }} />
-                    Quản lý Báo cáo
-                </Typography>
-
                 {alert.show && (
                     <Alert severity={alert.type} sx={{ mb: 2 }}>
                         {alert.message}

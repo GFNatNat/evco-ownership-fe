@@ -10,7 +10,8 @@ import {
 import {
   TrendingUp, TrendingDown, DirectionsCar, Schedule, Payment,
   Assessment, History, PieChart, BarChart, Download, Share,
-  FilterList, CalendarToday, Visibility, Receipt, CompareArrows
+  FilterList, CalendarToday, Visibility, Receipt, CompareArrows,
+  Group, Person
 } from '@mui/icons-material';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
@@ -48,10 +49,10 @@ export default function History() {
       { month: 'T10', hours: 31, distance: 500, cost: 620000 }
     ],
     ownershipDistribution: [
-      { name: 'Bạn', value: 25, color: '#0088FE' },
-      { name: 'Nguyễn Văn A', value: 25, color: '#00C49F' },
-      { name: 'Trần Thị B', value: 25, color: '#FFBB28' },
-      { name: 'Lê Văn C', value: 25, color: '#FF8042' }
+      { name: 'Bạn', value: 25, color: '#0088FE', email: user?.email || 'you@example.com', joinDate: '2025-01-15', role: 'Owner' },
+      { name: 'Nguyễn Văn A', value: 25, color: '#00C49F', email: 'nguyenvana@example.com', joinDate: '2025-01-15', role: 'Co-Owner' },
+      { name: 'Trần Thị B', value: 25, color: '#FFBB28', email: 'tranthib@example.com', joinDate: '2025-02-01', role: 'Co-Owner' },
+      { name: 'Lê Văn C', value: 25, color: '#FF8042', email: 'levanc@example.com', joinDate: '2025-02-15', role: 'Co-Owner' }
     ],
     recentActivities: [
       {
@@ -247,6 +248,7 @@ export default function History() {
               <Tab icon={<PieChart />} label="Phân tích sở hữu" />
               <Tab icon={<BarChart />} label="So sánh hiệu suất" />
               <Tab icon={<Receipt />} label="Lịch sử hoạt động" />
+              <Tab icon={<Group />} label="Nhóm" />
             </Tabs>
           </Box>
 
@@ -424,6 +426,135 @@ export default function History() {
                     </React.Fragment>
                   ))}
                 </List>
+              </Box>
+            )}
+
+            {selectedTab === 4 && (
+              <Box>
+                <Typography variant="h6" gutterBottom>Thành viên nhóm đồng sở hữu</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  Danh sách các thành viên và tỷ lệ sở hữu trong nhóm
+                </Typography>
+
+                <Grid container spacing={2}>
+                  {historyData.ownershipDistribution.map((member, index) => (
+                    <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                      <Card variant="outlined" sx={{ height: '100%' }}>
+                        <CardContent>
+                          <Box display="flex" flexDirection="column" alignItems="center" textAlign="center">
+                            <Avatar
+                              sx={{
+                                bgcolor: member.color,
+                                width: 80,
+                                height: 80,
+                                fontSize: '2rem',
+                                mb: 2
+                              }}
+                            >
+                              {member.name.charAt(0).toUpperCase()}
+                            </Avatar>
+
+                            <Typography variant="h6" gutterBottom>
+                              {member.name}
+                            </Typography>
+
+                            <Chip
+                              label={member.role}
+                              color={member.role === 'Owner' ? 'primary' : 'default'}
+                              size="small"
+                              sx={{ mb: 2 }}
+                            />
+
+                            <Box sx={{ width: '100%', mb: 2 }}>
+                              <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                                <Typography variant="body2" color="text.secondary">
+                                  Tỷ lệ sở hữu
+                                </Typography>
+                                <Typography variant="h6" color="primary" fontWeight="bold">
+                                  {member.value}%
+                                </Typography>
+                              </Box>
+                              <LinearProgress
+                                variant="determinate"
+                                value={member.value}
+                                sx={{
+                                  height: 8,
+                                  borderRadius: 4,
+                                  bgcolor: 'grey.200',
+                                  '& .MuiLinearProgress-bar': {
+                                    bgcolor: member.color,
+                                    borderRadius: 4
+                                  }
+                                }}
+                              />
+                            </Box>
+
+                            <Divider sx={{ width: '100%', my: 1 }} />
+
+                            <Box sx={{ width: '100%', textAlign: 'left' }}>
+                              <Typography variant="caption" color="text.secondary" display="block">
+                                <strong>Email:</strong> {member.email}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                                <strong>Tham gia:</strong> {new Date(member.joinDate).toLocaleDateString('vi-VN')}
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+
+                {/* Group Summary */}
+                <Card sx={{ mt: 3 }}>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                      Thống kê nhóm
+                    </Typography>
+                    <Grid container spacing={3} sx={{ mt: 1 }}>
+                      <Grid item xs={12} sm={4}>
+                        <Box textAlign="center">
+                          <Avatar sx={{ bgcolor: 'primary.main', width: 56, height: 56, mx: 'auto', mb: 1 }}>
+                            <Person sx={{ fontSize: 30 }} />
+                          </Avatar>
+                          <Typography variant="h4" color="primary" fontWeight="bold">
+                            {historyData.ownershipDistribution.length}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Tổng thành viên
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={12} sm={4}>
+                        <Box textAlign="center">
+                          <Avatar sx={{ bgcolor: 'success.main', width: 56, height: 56, mx: 'auto', mb: 1 }}>
+                            <PieChart sx={{ fontSize: 30 }} />
+                          </Avatar>
+                          <Typography variant="h4" color="success.main" fontWeight="bold">
+                            {historyData.ownershipDistribution.reduce((sum, m) => sum + m.value, 0)}%
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Tổng tỷ lệ sở hữu
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={12} sm={4}>
+                        <Box textAlign="center">
+                          <Avatar sx={{ bgcolor: 'info.main', width: 56, height: 56, mx: 'auto', mb: 1 }}>
+                            <DirectionsCar sx={{ fontSize: 30 }} />
+                          </Avatar>
+                          <Typography variant="h4" color="info.main" fontWeight="bold">
+                            1
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Xe đang sở hữu
+                          </Typography>
+                        </Box>
+                      </Grid>
+                    </Grid>
+                  </CardContent>
+                </Card>
               </Box>
             )}
           </CardContent>

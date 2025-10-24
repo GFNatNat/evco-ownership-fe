@@ -583,11 +583,6 @@ function FundManagement({ vehicleId }) {
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
-        <Typography variant="h4" gutterBottom>
-          <AccountBalance sx={{ mr: 2, verticalAlign: 'middle' }} />
-          Quản lý quỹ xe
-        </Typography>
-
         {loading && <LinearProgress sx={{ mb: 2 }} />}
 
         <Grid container spacing={3}>

@@ -444,99 +444,8 @@ export default function CoOwnerDashboard() {
           </Box>
         )}
 
-        {/* Tab 2: Costs */}
+        {/* Tab 2: Payment Management */}
         {selectedTab === 2 && (
-          <Box>
-            <Typography variant="h5" fontWeight="bold" mb={3}>
-              Quản lý chi phí
-            </Typography>
-
-            <Grid container spacing={3}>
-              <Grid item xs={12} lg={6}>
-                <Card sx={{ boxShadow: '0 1px 3px rgba(0,0,0,0.12)' }}>
-                  <CardContent>
-                    <Typography variant="h6" fontWeight="bold" mb={3}>
-                      Chi phí tháng này
-                    </Typography>
-
-                    <Box display="flex" flexDirection="column" gap={2}>
-                      {dashboardData.costs.map((cost, index) => (
-                        <Box
-                          key={index}
-                          display="flex"
-                          justifyContent="space-between"
-                          alignItems="center"
-                        >
-                          <Typography variant="body2">{cost.name}</Typography>
-                          <Typography variant="body2" fontWeight={600} color={
-                            cost.name.includes('sạc') ? '#0ea5e9' :
-                              cost.name.includes('Bảo dưỡng') ? '#f59e0b' : '#ef4444'
-                          }>
-                            {cost.amount.toLocaleString()}₫
-                          </Typography>
-                        </Box>
-                      ))}
-
-                      <Divider />
-
-                      <Box display="flex" justifyContent="space-between" alignItems="center">
-                        <Typography variant="body1" fontWeight="bold">
-                          Tổng cộng
-                        </Typography>
-                        <Typography variant="body1" fontWeight="bold" color="#ef4444">
-                          {dashboardData.costThisMonth.toLocaleString()}₫
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-
-              <Grid item xs={12} lg={6}>
-                <Card sx={{ boxShadow: '0 1px 3px rgba(0,0,0,0.12)' }}>
-                  <CardContent>
-                    <Typography variant="h6" fontWeight="bold" mb={3}>
-                      Nạp tiền vào quỹ
-                    </Typography>
-
-                    <Box display="flex" flexDirection="column" gap={2}>
-                      <Box>
-                        <Typography variant="body2" fontWeight={500} mb={1}>
-                          Số tiền
-                        </Typography>
-                        <TextField
-                          fullWidth
-                          type="number"
-                          placeholder="500,000"
-                          variant="outlined"
-                          size="small"
-                        />
-                      </Box>
-
-                      <Button
-                        fullWidth
-                        variant="contained"
-                        startIcon={<AttachMoney />}
-                        sx={{
-                          bgcolor: '#10b981',
-                          textTransform: 'none',
-                          py: 1.5,
-                          boxShadow: '0 10px 30px -5px rgba(16, 185, 129, 0.3)',
-                          '&:hover': { bgcolor: '#059669' }
-                        }}
-                      >
-                        Nạp tiền
-                      </Button>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            </Grid>
-          </Box>
-        )}
-
-        {/* Tab 3: Payment Management */}
-        {selectedTab === 3 && (
           <Box>
             <Typography variant="h5" fontWeight="bold" mb={3}>
               Quản lý thanh toán
@@ -545,8 +454,8 @@ export default function CoOwnerDashboard() {
           </Box>
         )}
 
-        {/* Tab 4: Fund Management */}
-        {selectedTab === 4 && (
+        {/* Tab 3: Fund Management */}
+        {selectedTab === 3 && (
           <Box>
             <Typography variant="h5" fontWeight="bold" mb={3}>
               Quản lý quỹ chung
@@ -555,8 +464,8 @@ export default function CoOwnerDashboard() {
           </Box>
         )}
 
-        {/* Tab 5: Maintenance Management */}
-        {selectedTab === 5 && (
+        {/* Tab 4: Maintenance Management */}
+        {selectedTab === 4 && (
           <Box>
             <Typography variant="h5" fontWeight="bold" mb={3}>
               Quản lý bảo dưỡng
@@ -565,8 +474,8 @@ export default function CoOwnerDashboard() {
           </Box>
         )}
 
-        {/* Tab 6: Reports Management */}
-        {selectedTab === 6 && (
+        {/* Tab 5: Reports Management */}
+        {selectedTab === 5 && (
           <Box>
             <Typography variant="h5" fontWeight="bold" mb={3}>
               Quản lý báo cáo
@@ -581,8 +490,8 @@ export default function CoOwnerDashboard() {
           </Box>
         )}
 
-        {/* Tab 7: Voting Management */}
-        {selectedTab === 7 && (
+        {/* Tab 6: Voting Management */}
+        {selectedTab === 6 && (
           <Box>
             <Typography variant="h5" fontWeight="bold" mb={3}>
               Quản lý bỏ phiếu
@@ -603,8 +512,8 @@ export default function CoOwnerDashboard() {
           </Box>
         )}
 
-        {/* Tab 8: Analytics Management */}
-        {selectedTab === 8 && (
+        {/* Tab 7: Analytics Management */}
+        {selectedTab === 7 && (
           <Box>
             <Typography variant="h5" fontWeight="bold" mb={3}>
               Phân tích sử dụng
@@ -613,8 +522,8 @@ export default function CoOwnerDashboard() {
           </Box>
         )}
 
-        {/* Tab 9: History Management */}
-        {selectedTab === 9 && (
+        {/* Tab 8: History Management */}
+        {selectedTab === 8 && (
           <Box>
             <Typography variant="h5" fontWeight="bold" mb={3}>
               Lịch sử sở hữu
@@ -623,8 +532,8 @@ export default function CoOwnerDashboard() {
           </Box>
         )}
 
-        {/* Tab 10: Group Management */}
-        {selectedTab === 10 && (
+        {/* Tab 9: Group Management */}
+        {selectedTab === 9 && (
           <Box>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
               <Typography variant="h5" fontWeight="bold">

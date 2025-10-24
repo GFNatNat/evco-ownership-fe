@@ -360,10 +360,6 @@ const MaintenanceManagement = () => {
     return (
         <LocalizationProvider dateAdapter={AdapterDateFns}>
             <Box sx={{ flexGrow: 1, p: 3 }}>
-                <Typography variant="h4" gutterBottom>
-                    Quản lý Maintenance
-                </Typography>
-
                 {alert.open && (
                     <Alert severity={alert.severity} sx={{ mb: 2 }}>
                         {alert.message}

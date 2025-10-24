@@ -1174,10 +1174,6 @@ function UsageAnalyticsManagement() {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Phân tích sử dụng xe
-      </Typography>
-
       {/* Vehicle Selection for Analytics */}
       {(activeTab === 0 || activeTab === 3) && (
         <Box mb={3}>

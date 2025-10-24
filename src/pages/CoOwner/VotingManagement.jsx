@@ -674,11 +674,6 @@ const VotingManagement = () => {
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
             <Box sx={{ p: 3 }}>
-                <Typography variant="h4" gutterBottom>
-                    <HowToVote sx={{ mr: 1, verticalAlign: 'middle' }} />
-                    Quản lý Bình chọn Nâng cấp
-                </Typography>
-
                 {alert.show && (
                     <Alert severity={alert.type} sx={{ mb: 2 }}>
                         {alert.message}

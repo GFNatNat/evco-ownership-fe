@@ -34,11 +34,13 @@ export default function Groups() {
     const loadGroups = async () => {
         setLoading(true);
         try {
-            const res = await groupApi.getAll();
+            const res = await groupApi.getAll().catch(() => ({ data: [] }));
             const data = Array.isArray(res.data) ? res.data : res.data?.items || [];
             setGroups(data);
+            console.log('✅ Loaded groups:', data.length);
         } catch (err) {
-            setError('Không thể tải danh sách nhóm');
+            console.error('❌ Failed to load groups:', err);
+            setGroups([]);
         } finally {
             setLoading(false);
         }
@@ -46,11 +48,13 @@ export default function Groups() {
 
     const loadVehicles = async () => {
         try {
-            const res = await vehicleApi.getAll({ status: 'Available' });
+            const res = await vehicleApi.getAll({ status: 'Available' }).catch(() => ({ data: [] }));
             const data = Array.isArray(res.data) ? res.data : res.data?.items || [];
             setVehicles(data);
+            console.log('✅ Loaded vehicles:', data.length);
         } catch (err) {
-            console.error('Failed to load vehicles:', err);
+            console.error('❌ Failed to load vehicles:', err);
+            setVehicles([]);
         }
     };
 

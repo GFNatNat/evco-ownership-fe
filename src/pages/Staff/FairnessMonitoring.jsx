@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box, Typography, Card, CardContent, Grid, Button, Alert, Tabs, Tab,
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, 
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   FormControl, InputLabel, Select, MenuItem, Chip, IconButton
 } from '@mui/material';
 import {
@@ -25,7 +25,7 @@ const FairnessMonitoring = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      
+
       // Mock vehicles data
       const mockVehicles = [
         { id: 1, name: 'Toyota Camry 2023', licensePlate: '30A-12345' },
@@ -75,7 +75,7 @@ const FairnessMonitoring = () => {
 
   const getVehicleFairnessStatus = (report) => {
     if (!report) return { status: 'unknown', color: 'default', label: 'Không rõ' };
-    
+
     const score = report.overview?.fairnessScore || 0;
     if (score >= 85) return { status: 'excellent', color: 'success', label: 'Tuyệt vời' };
     if (score >= 75) return { status: 'good', color: 'info', label: 'Tốt' };
@@ -195,7 +195,7 @@ const FairnessMonitoring = () => {
                         const report = fairnessReports[vehicle.id];
                         const status = getVehicleFairnessStatus(report);
                         const criticalRecs = getCriticalRecommendations(report);
-                        
+
                         return (
                           <TableRow key={vehicle.id}>
                             <TableCell>
@@ -212,7 +212,7 @@ const FairnessMonitoring = () => {
                               </Typography>
                             </TableCell>
                             <TableCell>
-                              <Chip 
+                              <Chip
                                 label={status.label}
                                 color={status.color}
                                 size="small"
@@ -223,7 +223,7 @@ const FairnessMonitoring = () => {
                             </TableCell>
                             <TableCell>
                               {criticalRecs.length > 0 ? (
-                                <Chip 
+                                <Chip
                                   icon={<WarningIcon />}
                                   label={`${criticalRecs.length} vấn đề`}
                                   color="error"
@@ -283,7 +283,7 @@ const FairnessMonitoring = () => {
                     <Typography variant="h3" color="primary">
                       {formatPercentage(fairnessReports[selectedVehicle].overview?.fairnessScore)}
                     </Typography>
-                    <Chip 
+                    <Chip
                       label={getVehicleFairnessStatus(fairnessReports[selectedVehicle]).label}
                       color={getVehicleFairnessStatus(fairnessReports[selectedVehicle]).color}
                     />
@@ -315,7 +315,7 @@ const FairnessMonitoring = () => {
                               <TableCell>{coOwner.formattedOwnershipPercentage}</TableCell>
                               <TableCell>{coOwner.formattedUsagePercentage}</TableCell>
                               <TableCell>
-                                <Typography 
+                                <Typography
                                   color={Math.abs(coOwner.usageVsOwnershipDelta) > 10 ? 'error' : 'success'}
                                 >
                                   {coOwner.formattedUsageDelta}
@@ -338,7 +338,7 @@ const FairnessMonitoring = () => {
                       Khuyến nghị cải thiện
                     </Typography>
                     {fairnessReports[selectedVehicle].recommendations?.map((rec, index) => (
-                      <Alert 
+                      <Alert
                         key={index}
                         severity={rec.priority === 'Critical' ? 'error' : rec.priority === 'High' ? 'warning' : 'info'}
                         sx={{ mb: 1 }}
@@ -371,16 +371,16 @@ const FairnessMonitoring = () => {
                 {vehicles.map(vehicle => {
                   const report = fairnessReports[vehicle.id];
                   const criticalRecs = getCriticalRecommendations(report);
-                  
+
                   if (criticalRecs.length === 0) return null;
-                  
+
                   return (
                     <Box key={vehicle.id} sx={{ mb: 3 }}>
                       <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                         {vehicle.name} ({vehicle.licensePlate})
                       </Typography>
                       {criticalRecs.map((rec, index) => (
-                        <Alert 
+                        <Alert
                           key={index}
                           severity={rec.priority === 'Critical' ? 'error' : 'warning'}
                           sx={{ mb: 1 }}
@@ -425,7 +425,7 @@ const FairnessMonitoring = () => {
                     </Card>
                   ))}
                   <Box sx={{ ml: 2 }}>
-                    <Chip 
+                    <Chip
                       icon={<TrendingIcon />}
                       label="Xu hướng tăng"
                       color="success"
