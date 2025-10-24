@@ -31,18 +31,19 @@ export default function VehicleManagement() {
     const loadVehicles = async () => {
         setLoading(true);
         try {
-            const res = await vehicleApi.getMyVehicles();
-            const data = Array.isArray(res.data) ? res.data : res.data?.items || [];
+            const res = await vehicleApi.getMyVehicles().catch(() => ({ data: [] }));
+            const data = Array.isArray(res?.data) ? res.data : res?.data?.items || [];
             setVehicles(data.map((vehicle, index) => ({ id: vehicle.id || index, ...vehicle })));
         } catch (err) {
-            setError('Không thể tải danh sách xe');
+            console.error('Không thể tải danh sách xe:', err);
+            setVehicles([]);
         } finally {
             setLoading(false);
         }
     };
 
     const handleCreateVehicle = () => {
-        navigate('/co-owner/create-vehicle');
+        navigate('/coowner/create-vehicle');
     };
 
     const handleViewDetail = async (vehicle) => {
