@@ -2,13 +2,27 @@ import React, { useState, useEffect } from 'react';
 import { Box, Card, CardContent, Typography, Grid, LinearProgress, Button, Chip, CircularProgress, Alert, Tabs, Tab, TextField, Divider, Avatar, Dialog, DialogTitle, DialogContent, DialogActions, FormControl, InputLabel, Select, MenuItem as SelectMenuItem, RadioGroup, FormControlLabel, Radio } from '@mui/material';
 import {
   DirectionsCar, TrendingUp, AttachMoney, Schedule, Battery80,
-  AccessTime, Group, CalendarToday, ExitToApp, PeopleOutline
+  AccessTime, Group, CalendarToday, ExitToApp, PeopleOutline,
+  Build, Assessment, Notifications, HowToVote, Handyman,
+  Payment, AccountBalance, Gavel, Analytics, History
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import coOwnerApi from '../../api/coOwnerApi';
 import vehicleApi from '../../api/vehicleApi';
 import scheduleApi from '../../api/scheduleApi';
+
+// Import management components
+import PaymentManagement from '../CoOwner/PaymentManagement';
+import FundManagement from '../CoOwner/FundManagement';
+import MaintenanceManagement from '../CoOwner/MaintenanceManagement';
+import ReportsManagement from '../CoOwner/ReportsManagement';
+import VotingManagement from '../CoOwner/VotingManagement';
+import UsageAnalyticsManagement from '../CoOwner/UsageAnalyticsManagement';
+import OwnershipHistoryManagement from '../CoOwner/OwnershipHistoryManagement';
+import VehicleReportManagement from '../CoOwner/VehicleReportManagement';
+import VehicleUpgradeManagement from '../CoOwner/VehicleUpgradeManagement';
+import MaintenanceVoteManagement from '../CoOwner/MaintenanceVoteManagement';
 
 export default function CoOwnerDashboard() {
   const navigate = useNavigate();
@@ -174,7 +188,13 @@ export default function CoOwnerDashboard() {
           >
             <Tab icon={<TrendingUp sx={{ fontSize: 18 }} />} iconPosition="start" label="Tổng quan" />
             <Tab icon={<CalendarToday sx={{ fontSize: 18 }} />} iconPosition="start" label="Đặt lịch" />
-            <Tab icon={<AttachMoney sx={{ fontSize: 18 }} />} iconPosition="start" label="Chi phí" />
+            <Tab icon={<AttachMoney sx={{ fontSize: 18 }} />} iconPosition="start" label="Thanh toán" />
+            <Tab icon={<AccountBalance sx={{ fontSize: 18 }} />} iconPosition="start" label="Quỹ chung" />
+            <Tab icon={<Build sx={{ fontSize: 18 }} />} iconPosition="start" label="Bảo dưỡng" />
+            <Tab icon={<Assessment sx={{ fontSize: 18 }} />} iconPosition="start" label="Báo cáo" />
+            <Tab icon={<HowToVote sx={{ fontSize: 18 }} />} iconPosition="start" label="Bỏ phiếu" />
+            <Tab icon={<Analytics sx={{ fontSize: 18 }} />} iconPosition="start" label="Phân tích" />
+            <Tab icon={<History sx={{ fontSize: 18 }} />} iconPosition="start" label="Lịch sử" />
             <Tab icon={<PeopleOutline sx={{ fontSize: 18 }} />} iconPosition="start" label="Nhóm" />
           </Tabs>
         </Box>
@@ -534,8 +554,96 @@ export default function CoOwnerDashboard() {
           </Box>
         )}
 
-        {/* Tab 3: Group */}
+        {/* Tab 3: Payment Management */}
         {selectedTab === 3 && (
+          <Box>
+            <Typography variant="h5" fontWeight="bold" mb={3}>
+              Quản lý thanh toán
+            </Typography>
+            <PaymentManagement />
+          </Box>
+        )}
+
+        {/* Tab 4: Fund Management */}
+        {selectedTab === 4 && (
+          <Box>
+            <Typography variant="h5" fontWeight="bold" mb={3}>
+              Quản lý quỹ chung
+            </Typography>
+            <FundManagement />
+          </Box>
+        )}
+
+        {/* Tab 5: Maintenance Management */}
+        {selectedTab === 5 && (
+          <Box>
+            <Typography variant="h5" fontWeight="bold" mb={3}>
+              Quản lý bảo dưỡng
+            </Typography>
+            <MaintenanceManagement />
+          </Box>
+        )}
+
+        {/* Tab 6: Reports Management */}
+        {selectedTab === 6 && (
+          <Box>
+            <Typography variant="h5" fontWeight="bold" mb={3}>
+              Quản lý báo cáo
+            </Typography>
+            <ReportsManagement />
+            <Box mt={4}>
+              <Typography variant="h6" fontWeight="bold" mb={2}>
+                Báo cáo xe
+              </Typography>
+              <VehicleReportManagement />
+            </Box>
+          </Box>
+        )}
+
+        {/* Tab 7: Voting Management */}
+        {selectedTab === 7 && (
+          <Box>
+            <Typography variant="h5" fontWeight="bold" mb={3}>
+              Quản lý bỏ phiếu
+            </Typography>
+            <VotingManagement />
+            <Box mt={4}>
+              <Typography variant="h6" fontWeight="bold" mb={2}>
+                Bỏ phiếu bảo dưỡng
+              </Typography>
+              <MaintenanceVoteManagement />
+            </Box>
+            <Box mt={4}>
+              <Typography variant="h6" fontWeight="bold" mb={2}>
+                Bỏ phiếu nâng cấp xe
+              </Typography>
+              <VehicleUpgradeManagement />
+            </Box>
+          </Box>
+        )}
+
+        {/* Tab 8: Analytics Management */}
+        {selectedTab === 8 && (
+          <Box>
+            <Typography variant="h5" fontWeight="bold" mb={3}>
+              Phân tích sử dụng
+            </Typography>
+            <UsageAnalyticsManagement />
+          </Box>
+        )}
+
+        {/* Tab 9: History Management */}
+        {selectedTab === 9 && (
+          <Box>
+            <Typography variant="h5" fontWeight="bold" mb={3}>
+              Lịch sử sở hữu
+            </Typography>
+            <OwnershipHistoryManagement />
+          </Box>
+        )}
+
+        {/* Tab 10: Group Management */}
+        {selectedTab === 10 && (
           <Box>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
               <Typography variant="h5" fontWeight="bold">
@@ -634,6 +742,8 @@ export default function CoOwnerDashboard() {
             </Card>
           </Box>
         )}
+
+
       </Box>
 
       {/* Modal Đặt lịch mới */}

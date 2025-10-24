@@ -38,7 +38,9 @@ import {
   CheckCircle,
   SwapHoriz,
   History,
-  Analytics
+  Analytics,
+  Assessment,
+  Build
 } from '@mui/icons-material';// Import components
 import FileUploadManager from '../../components/common/FileUploadManager';
 import FundManagement from '../../components/common/FundManagement';
@@ -46,6 +48,8 @@ import MaintenanceVoteManagement from './MaintenanceVoteManagement';
 import OwnershipChangeManagement from './OwnershipChangeManagement';
 import OwnershipHistoryManagement from './OwnershipHistoryManagement';
 import UsageAnalyticsManagement from './UsageAnalyticsManagement';
+import VehicleReportManagement from './VehicleReportManagement';
+import VehicleUpgradeManagement from './VehicleUpgradeManagement';
 
 // Import APIs
 import vehicleApi from '../../api/vehicleApi';
@@ -360,6 +364,8 @@ function CoOwnerDashboard() {
           <Tab icon={<SwapHoriz />} label="Thay đổi sở hữu" />
           <Tab icon={<History />} label="Lịch sử sở hữu" />
           <Tab icon={<Analytics />} label="Phân tích sử dụng" />
+          <Tab icon={<Assessment />} label="Báo cáo xe" />
+          <Tab icon={<Build />} label="Nâng cấp xe" />
           <Tab icon={<Settings />} label="Cài đặt" />
         </Tabs>
       </Box>            {/* Tab Content */}
@@ -416,8 +422,18 @@ function CoOwnerDashboard() {
                     <UsageAnalyticsManagement />
                 )}
 
-                {/* Settings Tab */}
+                {/* Vehicle Reports Tab */}
                 {activeTab === 7 && (
+                    <VehicleReportManagement />
+                )}
+
+                {/* Vehicle Upgrades Tab */}
+                {activeTab === 8 && (
+                    <VehicleUpgradeManagement />
+                )}
+
+                {/* Settings Tab */}
+                {activeTab === 9 && (
                     <Card>
                         <CardContent>
                             <Typography variant="h6" gutterBottom>

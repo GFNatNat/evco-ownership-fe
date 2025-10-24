@@ -41,6 +41,8 @@ import MaintenanceVoteManagement from '../pages/CoOwner/MaintenanceVoteManagemen
 import OwnershipChangeManagement from '../pages/CoOwner/OwnershipChangeManagement';
 import OwnershipHistoryManagement from '../pages/CoOwner/OwnershipHistoryManagement';
 import UsageAnalyticsManagement from '../pages/CoOwner/UsageAnalyticsManagement';
+import VehicleReportManagement from '../pages/CoOwner/VehicleReportManagement';
+import VehicleUpgradeManagement from '../pages/CoOwner/VehicleUpgradeManagement';
 import VehicleVerification from '../pages/Staff/VehicleVerification';
 import Profile from '../pages/Profile/Profile';
 import AccessDenied from '../pages/Error/AccessDenied';
@@ -92,6 +94,8 @@ export default function AppRouter() {
           <Route path="/co-owner/ownership-change-management" element={<OwnershipChangeManagement />} />
           <Route path="/co-owner/ownership-history-management" element={<OwnershipHistoryManagement />} />
           <Route path="/co-owner/usage-analytics-management" element={<UsageAnalyticsManagement />} />
+          <Route path="/co-owner/vehicle-report-management" element={<VehicleReportManagement />} />
+          <Route path="/co-owner/vehicle-upgrade-management" element={<VehicleUpgradeManagement />} />
 
           <Route path="/staff/fleet" element={<Fleet />} />
           <Route path="/staff/contracts" element={<StaffContracts />} />
