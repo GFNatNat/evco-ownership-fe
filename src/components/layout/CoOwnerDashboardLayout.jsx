@@ -171,7 +171,7 @@ export default function CoOwnerDashboardLayout() {
             <Divider />
 
             {/* Navigation Menu */}
-            <Box sx={{ maxHeight: 'calc(100vh - 120px)', overflowY: 'auto' }}>
+            <Box sx={{ overflowY: 'auto', overflowX: 'hidden' }}>
                 {coOwnerNavigation.map((section) => (
                     <Box key={section.section}>
                         <Box sx={{ px: 2, py: 1 }}>
@@ -333,7 +333,9 @@ export default function CoOwnerDashboardLayout() {
                             width: drawerWidth,
                             boxSizing: 'border-box',
                             mt: '64px',
-                            height: 'calc(100vh - 64px)'
+                            height: 'calc(100vh - 64px)',
+                            overflowY: 'auto',
+                            overflowX: 'hidden'
                         }
                     }}
                     open

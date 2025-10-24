@@ -309,100 +309,100 @@ const NotificationManagement = () => {
                 )}
 
                 <Box>
-                        {/* Quick Stats */}
-                        <Grid container spacing={2} sx={{ mb: 3 }}>
-                            <Grid item xs={12} md={3}>
-                                <Card>
-                                    <CardContent>
-                                        <Box display="flex" alignItems="center" justifyContent="space-between">
-                                            <Box>
-                                                <Typography variant="h6" color="error">
-                                                    {unreadCount}
-                                                </Typography>
-                                                <Typography variant="body2" color="textSecondary">
-                                                    Chưa đọc
-                                                </Typography>
-                                            </Box>
-                                            <NotificationsActive color="error" />
+                    {/* Quick Stats */}
+                    <Grid container spacing={2} sx={{ mb: 3 }}>
+                        <Grid item xs={12} md={3}>
+                            <Card>
+                                <CardContent>
+                                    <Box display="flex" alignItems="center" justifyContent="space-between">
+                                        <Box>
+                                            <Typography variant="h6" color="error">
+                                                {unreadCount}
+                                            </Typography>
+                                            <Typography variant="body2" color="textSecondary">
+                                                Chưa đọc
+                                            </Typography>
                                         </Box>
-                                    </CardContent>
-                                </Card>
-                            </Grid>
-
-                            <Grid item xs={12} md={3}>
-                                <Card>
-                                    <CardContent>
-                                        <Box display="flex" alignItems="center" justifyContent="space-between">
-                                            <Box>
-                                                <Typography variant="h6" color="primary">
-                                                    {totalNotifications}
-                                                </Typography>
-                                                <Typography variant="body2" color="textSecondary">
-                                                    Tổng số
-                                                </Typography>
-                                            </Box>
-                                            <Notifications color="primary" />
-                                        </Box>
-                                    </CardContent>
-                                </Card>
-                            </Grid>
+                                        <NotificationsActive color="error" />
+                                    </Box>
+                                </CardContent>
+                            </Card>
                         </Grid>
 
-                        {/* Action Buttons */}
-                        <Paper sx={{ p: 2, mb: 2 }}>
-                            <Stack direction="row" spacing={2} alignItems="center">
-                                <FormControlLabel
-                                    control={
-                                        <Switch
-                                            checked={filters.includeRead}
-                                            onChange={(e) => setFilters(prev => ({ ...prev, includeRead: e.target.checked }))}
-                                        />
-                                    }
-                                    label="Hiển thị thông báo đã đọc"
-                                />
+                        <Grid item xs={12} md={3}>
+                            <Card>
+                                <CardContent>
+                                    <Box display="flex" alignItems="center" justifyContent="space-between">
+                                        <Box>
+                                            <Typography variant="h6" color="primary">
+                                                {totalNotifications}
+                                            </Typography>
+                                            <Typography variant="body2" color="textSecondary">
+                                                Tổng số
+                                            </Typography>
+                                        </Box>
+                                        <Notifications color="primary" />
+                                    </Box>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    </Grid>
 
-                                <Divider orientation="vertical" flexItem />
+                    {/* Action Buttons */}
+                    <Paper sx={{ p: 2, mb: 2 }}>
+                        <Stack direction="row" spacing={2} alignItems="center">
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        checked={filters.includeRead}
+                                        onChange={(e) => setFilters(prev => ({ ...prev, includeRead: e.target.checked }))}
+                                    />
+                                }
+                                label="Hiển thị thông báo đã đọc"
+                            />
 
-                                <Button
-                                    variant="outlined"
-                                    startIcon={<Refresh />}
-                                    onClick={() => {
-                                        loadNotifications();
-                                        loadUnreadCount();
-                                    }}
-                                >
-                                    Tải lại
-                                </Button>
+                            <Divider orientation="vertical" flexItem />
 
-                                <Button
-                                    variant="contained"
-                                    startIcon={<SelectAll />}
-                                    onClick={handleBatchMarkAsRead}
-                                    disabled={selectedNotifications.length === 0}
-                                >
-                                    Đánh dấu đã chọn ({selectedNotifications.length})
-                                </Button>
+                            <Button
+                                variant="outlined"
+                                startIcon={<Refresh />}
+                                onClick={() => {
+                                    loadNotifications();
+                                    loadUnreadCount();
+                                }}
+                            >
+                                Tải lại
+                            </Button>
 
-                                <Button
-                                    variant="contained"
-                                    color="success"
-                                    startIcon={<MarkEmailRead />}
-                                    onClick={handleMarkAllAsRead}
-                                    disabled={unreadCount === 0}
-                                >
-                                    Đánh dấu tất cả
-                                </Button>
-                            </Stack>
-                        </Paper>
+                            <Button
+                                variant="contained"
+                                startIcon={<SelectAll />}
+                                onClick={handleBatchMarkAsRead}
+                                disabled={selectedNotifications.length === 0}
+                            >
+                                Đánh dấu đã chọn ({selectedNotifications.length})
+                            </Button>
 
-                        {/* Notifications Table */}
-                        {loading ? (
-                            <Box display="flex" justifyContent="center" p={4}>
-                                <CircularProgress />
-                            </Box>
-                        ) : (
-                            <NotificationTable />
-                        )}
+                            <Button
+                                variant="contained"
+                                color="success"
+                                startIcon={<MarkEmailRead />}
+                                onClick={handleMarkAllAsRead}
+                                disabled={unreadCount === 0}
+                            >
+                                Đánh dấu tất cả
+                            </Button>
+                        </Stack>
+                    </Paper>
+
+                    {/* Notifications Table */}
+                    {loading ? (
+                        <Box display="flex" justifyContent="center" p={4}>
+                            <CircularProgress />
+                        </Box>
+                    ) : (
+                        <NotificationTable />
+                    )}
                 </Box>
             </Box>
         </LocalizationProvider>
