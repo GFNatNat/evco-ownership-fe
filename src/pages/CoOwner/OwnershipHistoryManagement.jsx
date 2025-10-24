@@ -101,16 +101,19 @@ function OwnershipHistoryManagement() {
     setLoading(true);
     try {
       // Load vehicles
-      const vehiclesResponse = await vehicleApi.getAll();
-      setVehicles(vehiclesResponse.data.data || []);
+      const vehiclesResponse = await vehicleApi.getAll().catch(() => ({ data: { data: [] } }));
+      const vehiclesData = vehiclesResponse?.data?.data || [];
+      setVehicles(Array.isArray(vehiclesData) ? vehiclesData : []);
 
       // Load my history
-      const myHistoryResponse = await ownershipHistoryApi.getMyHistory();
-      setMyHistory(myHistoryResponse.data.data || []);
+      const myHistoryResponse = await ownershipHistoryApi.getMyHistory().catch(() => ({ data: { data: [] } }));
+      const myHistoryData = myHistoryResponse?.data?.data || [];
+      setMyHistory(Array.isArray(myHistoryData) ? myHistoryData : []);
 
     } catch (err) {
       console.error('Error loading initial data:', err);
-      setError('Lỗi khi tải dữ liệu: ' + err.message);
+      setVehicles([]);
+      setMyHistory([]);
     } finally {
       setLoading(false);
     }
@@ -123,20 +126,24 @@ function OwnershipHistoryManagement() {
     setLoading(true);
     try {
       // Load history
-      const historyResponse = await ownershipHistoryApi.getVehicleHistory(selectedVehicle, filters);
-      setHistoryData(historyResponse.data.data || []);
+      const historyResponse = await ownershipHistoryApi.getVehicleHistory(selectedVehicle, filters).catch(() => ({ data: { data: [] } }));
+      const historyDataRes = historyResponse?.data?.data || [];
+      setHistoryData(Array.isArray(historyDataRes) ? historyDataRes : []);
 
       // Load timeline
-      const timelineResponse = await ownershipHistoryApi.getVehicleTimeline(selectedVehicle);
-      setTimelineData(timelineResponse.data.data || []);
+      const timelineResponse = await ownershipHistoryApi.getVehicleTimeline(selectedVehicle).catch(() => ({ data: { data: [] } }));
+      const timelineDataRes = timelineResponse?.data?.data || [];
+      setTimelineData(Array.isArray(timelineDataRes) ? timelineDataRes : []);
 
       // Load statistics
-      const statsResponse = await ownershipHistoryApi.getVehicleStatistics(selectedVehicle);
-      setStatisticsData(statsResponse.data.data);
+      const statsResponse = await ownershipHistoryApi.getVehicleStatistics(selectedVehicle).catch(() => ({ data: { data: null } }));
+      setStatisticsData(statsResponse?.data?.data || null);
 
     } catch (err) {
       console.error('Error loading vehicle data:', err);
-      setError('Lỗi khi tải dữ liệu xe: ' + err.message);
+      setHistoryData([]);
+      setTimelineData([]);
+      setStatisticsData(null);
     } finally {
       setLoading(false);
     }
@@ -156,10 +163,11 @@ function OwnershipHistoryManagement() {
     if (!selectedVehicle || !snapshotDialog.date) return;
 
     try {
-      const response = await ownershipHistoryApi.getOwnershipSnapshot(selectedVehicle, snapshotDialog.date);
-      setSnapshotData(response.data.data);
+      const response = await ownershipHistoryApi.getOwnershipSnapshot(selectedVehicle, snapshotDialog.date).catch(() => ({ data: { data: null } }));
+      setSnapshotData(response?.data?.data || null);
     } catch (err) {
-      setError('Lỗi khi tải snapshot: ' + err.message);
+      console.error('Lỗi khi tải snapshot:', err);
+      setSnapshotData(null);
     }
   };
 

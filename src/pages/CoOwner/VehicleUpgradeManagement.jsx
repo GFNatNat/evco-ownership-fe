@@ -207,7 +207,7 @@ const VehicleUpgradeManagement = () => {
         ...proposalForm,
         vehicleId: selectedVehicle,
         estimatedCost: parseFloat(proposalForm.estimatedCost),
-        estimatedDurationDays: proposalForm.estimatedDurationDays ? 
+        estimatedDurationDays: proposalForm.estimatedDurationDays ?
           parseInt(proposalForm.estimatedDurationDays) : undefined
       };
 
@@ -321,11 +321,11 @@ const VehicleUpgradeManagement = () => {
     if (field === 'vehicleId') {
       setSelectedVehicle(event.target.value);
     }
-    
+
     const form = field.startsWith('proposal') ? 'proposalForm' :
-                 field.startsWith('vote') ? 'voteForm' : 'executeForm';
+      field.startsWith('vote') ? 'voteForm' : 'executeForm';
     const actualField = field.replace(/^(proposal|vote|execute)\./, '');
-    
+
     if (form === 'proposalForm') {
       setProposalForm(prev => ({ ...prev, [actualField]: event.target.value }));
     } else if (form === 'voteForm') {
@@ -379,8 +379,8 @@ const VehicleUpgradeManagement = () => {
     const progress = vehicleUpgradeApi.calculateVotingProgress(proposal.votingProgress);
     const daysRemaining = vehicleUpgradeApi.getDaysRemaining(proposal.votingDeadline);
     const canVote = vehicleUpgradeApi.canUserVote({ votingInfo: proposal.votingProgress }, user?.id);
-    const canExecute = vehicleUpgradeApi.canUserExecute({ 
-      votingInfo: { status: 'Approved' }, 
+    const canExecute = vehicleUpgradeApi.canUserExecute({
+      votingInfo: { status: 'Approved' },
       proposerInfo: { proposerId: proposal.proposerId },
       executionInfo: { isExecuted: false }
     }, user?.id, user?.role === 'Admin');
@@ -398,17 +398,17 @@ const VehicleUpgradeManagement = () => {
                 <Chip
                   size="small"
                   label={statusInfo.label}
-                  sx={{ 
+                  sx={{
                     backgroundColor: statusInfo.bgColor,
                     color: statusInfo.color
                   }}
                 />
               </Box>
-              
+
               <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
                 {typeInfo.label} • {vehicleUpgradeApi.formatCurrency(proposal.estimatedCost)}
               </Typography>
-              
+
               <Typography variant="body2" sx={{ mb: 2 }}>
                 Đề xuất bởi: <strong>{proposal.proposerName}</strong>
               </Typography>
@@ -440,7 +440,7 @@ const VehicleUpgradeManagement = () => {
                 >
                   Chi tiết
                 </Button>
-                
+
                 {canVote && (
                   <Button
                     size="small"
@@ -465,17 +465,17 @@ const VehicleUpgradeManagement = () => {
                   </Button>
                 )}
 
-                {(user?.role === 'Admin' || proposal.proposerId === user?.id) && 
-                 ['Pending', 'Approved'].includes(proposal.status || proposal.votingProgress?.status) && (
-                  <Button
-                    size="small"
-                    startIcon={<Cancel />}
-                    onClick={() => handleCancel(proposal.proposalId)}
-                    color="error"
-                  >
-                    Hủy
-                  </Button>
-                )}
+                {(user?.role === 'Admin' || proposal.proposerId === user?.id) &&
+                  ['Pending', 'Approved'].includes(proposal.status || proposal.votingProgress?.status) && (
+                    <Button
+                      size="small"
+                      startIcon={<Cancel />}
+                      onClick={() => handleCancel(proposal.proposalId)}
+                      color="error"
+                    >
+                      Hủy
+                    </Button>
+                  )}
               </Box>
             </Grid>
           </Grid>
@@ -487,13 +487,13 @@ const VehicleUpgradeManagement = () => {
   const renderPendingTab = () => (
     <Box>
       {renderVehicleSelector()}
-      
+
       {selectedVehicle && (
         <Box>
           <Typography variant="h6" gutterBottom>
             Đề xuất đang chờ ({pendingProposals.length})
           </Typography>
-          
+
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
               <CircularProgress />
@@ -517,7 +517,7 @@ const VehicleUpgradeManagement = () => {
       <Typography variant="h6" gutterBottom>
         Lịch sử bỏ phiếu của tôi
       </Typography>
-      
+
       {myHistory ? (
         <Box>
           <Grid container spacing={3} sx={{ mb: 3 }}>
@@ -580,7 +580,7 @@ const VehicleUpgradeManagement = () => {
                 {myHistory.votingHistory.map((vote) => {
                   const typeInfo = vehicleUpgradeApi.getUpgradeTypeInfo(vote.upgradeType);
                   const statusInfo = vehicleUpgradeApi.getStatusInfo(vote.proposalStatus);
-                  
+
                   return (
                     <TableRow key={vote.proposalId}>
                       <TableCell>
@@ -621,7 +621,7 @@ const VehicleUpgradeManagement = () => {
                         <Chip
                           size="small"
                           label={statusInfo.label}
-                          sx={{ 
+                          sx={{
                             backgroundColor: statusInfo.bgColor,
                             color: statusInfo.color
                           }}
@@ -666,7 +666,7 @@ const VehicleUpgradeManagement = () => {
     return (
       <Box>
         {renderVehicleSelector()}
-        
+
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
             <Card>
@@ -735,9 +735,9 @@ const VehicleUpgradeManagement = () => {
                         dataKey="value"
                       >
                         {chartData.datasets[0].data.map((entry, index) => (
-                          <Cell 
-                            key={`cell-${index}`} 
-                            fill={chartData.datasets[0].backgroundColor[index]} 
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={chartData.datasets[0].backgroundColor[index]}
                           />
                         ))}
                       </Pie>
@@ -856,7 +856,7 @@ const VehicleUpgradeManagement = () => {
               ))}
             </TextField>
           </Grid>
-          
+
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth>
               <InputLabel>Chi phí ước tính</InputLabel>
@@ -959,8 +959,8 @@ const VehicleUpgradeManagement = () => {
       </DialogContent>
       <DialogActions>
         <Button onClick={() => setProposeDialog(false)}>Hủy</Button>
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           onClick={handleProposeUpgrade}
           disabled={loading}
         >
@@ -971,10 +971,10 @@ const VehicleUpgradeManagement = () => {
   );
 
   const renderVoteDialog = () => (
-    <Dialog 
-      open={voteDialog.open} 
-      onClose={() => setVoteDialog({ open: false, proposal: null })} 
-      maxWidth="sm" 
+    <Dialog
+      open={voteDialog.open}
+      onClose={() => setVoteDialog({ open: false, proposal: null })}
+      maxWidth="sm"
       fullWidth
     >
       <DialogTitle>Bỏ phiếu cho đề xuất</DialogTitle>
@@ -1026,8 +1026,8 @@ const VehicleUpgradeManagement = () => {
         <Button onClick={() => setVoteDialog({ open: false, proposal: null })}>
           Hủy
         </Button>
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           onClick={handleVote}
           disabled={loading}
           color={voteForm.isApprove ? 'success' : 'error'}
@@ -1039,10 +1039,10 @@ const VehicleUpgradeManagement = () => {
   );
 
   const renderExecuteDialog = () => (
-    <Dialog 
-      open={executeDialog.open} 
-      onClose={() => setExecuteDialog({ open: false, proposal: null })} 
-      maxWidth="sm" 
+    <Dialog
+      open={executeDialog.open}
+      onClose={() => setExecuteDialog({ open: false, proposal: null })}
+      maxWidth="sm"
       fullWidth
     >
       <DialogTitle>Đánh dấu đã thực hiện</DialogTitle>
@@ -1051,7 +1051,7 @@ const VehicleUpgradeManagement = () => {
           <Grid container spacing={3} sx={{ mt: 1 }}>
             <Grid item xs={12}>
               <Alert severity="info">
-                Đề xuất: <strong>{executeDialog.proposal.title}</strong><br/>
+                Đề xuất: <strong>{executeDialog.proposal.title}</strong><br />
                 Chi phí ước tính: <strong>{vehicleUpgradeApi.formatCurrency(executeDialog.proposal.estimatedCost)}</strong>
               </Alert>
             </Grid>
@@ -1097,8 +1097,8 @@ const VehicleUpgradeManagement = () => {
         <Button onClick={() => setExecuteDialog({ open: false, proposal: null })}>
           Hủy
         </Button>
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           onClick={handleExecute}
           disabled={loading}
           color="success"
@@ -1115,26 +1115,26 @@ const VehicleUpgradeManagement = () => {
         <Build /> Quản lý nâng cấp xe
       </Typography>
 
-      <Tabs 
-        value={tabValue} 
-        onChange={handleTabChange} 
+      <Tabs
+        value={tabValue}
+        onChange={handleTabChange}
         sx={{ mb: 3 }}
         variant="scrollable"
         scrollButtons="auto"
       >
-        <Tab 
-          icon={<Schedule />} 
+        <Tab
+          icon={<Schedule />}
           label="Đề xuất đang chờ"
           iconPosition="start"
         />
-        <Tab 
-          icon={<History />} 
-          label="Lịch sử của tôi" 
+        <Tab
+          icon={<History />}
+          label="Lịch sử của tôi"
           iconPosition="start"
         />
-        <Tab 
-          icon={<Assessment />} 
-          label="Thống kê" 
+        <Tab
+          icon={<Assessment />}
+          label="Thống kê"
           iconPosition="start"
         />
       </Tabs>

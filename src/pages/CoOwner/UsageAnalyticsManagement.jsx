@@ -244,7 +244,7 @@ function UsageAnalyticsManagement() {
         default:
           throw new Error('Invalid comparison type');
       }
-      
+
       setComparisonData({ type, data: response.data.data });
     } catch (err) {
       setError('Lỗi khi so sánh: ' + err.message);
@@ -256,7 +256,7 @@ function UsageAnalyticsManagement() {
   // Handle export data
   const handleExportData = (data, type) => {
     const exportData = usageAnalyticsApi.prepareExportData(data, type);
-    
+
     // Convert to CSV
     const headers = Object.keys(exportData[0] || {});
     const csvContent = [
@@ -283,7 +283,7 @@ function UsageAnalyticsManagement() {
           <FilterList sx={{ mr: 1 }} />
           Bộ lọc phân tích
         </Typography>
-        
+
         <Grid container spacing={2}>
           <Grid item xs={12} md={3}>
             <FormControl fullWidth>
@@ -501,7 +501,7 @@ function UsageAnalyticsManagement() {
                           <TableCell>{formatted.formattedOwnershipPercentage}</TableCell>
                           <TableCell>{formatted.formattedUsagePercentage}</TableCell>
                           <TableCell>
-                            <Chip 
+                            <Chip
                               label={formatted.formattedDelta}
                               color={formatted.deltaColor}
                               size="small"
@@ -510,7 +510,7 @@ function UsageAnalyticsManagement() {
                           <TableCell>{formatted.formattedUsageValue}</TableCell>
                           <TableCell>{coOwner.totalBookings}</TableCell>
                           <TableCell>
-                            <Chip 
+                            <Chip
                               label={usageAnalyticsApi.getUsagePatternLabel(coOwner.usagePattern)}
                               size="small"
                             />
@@ -541,7 +541,7 @@ function UsageAnalyticsManagement() {
                 <Typography variant="h6" gutterBottom>
                   Xu hướng sử dụng theo thời gian
                 </Typography>
-                
+
                 <Box sx={{ width: '100%', height: 400 }}>
                   <ResponsiveContainer>
                     <LineChart data={trendsData.trendData}>
@@ -593,7 +593,7 @@ function UsageAnalyticsManagement() {
               <Typography variant="h6" gutterBottom>
                 Tóm tắt lịch sử sử dụng
               </Typography>
-              
+
               <Grid container spacing={2}>
                 <Grid item xs={6} md={3}>
                   <Box textAlign="center">
@@ -719,7 +719,7 @@ function UsageAnalyticsManagement() {
                         <TableCell>{record.purpose}</TableCell>
                         <TableCell>{usageAnalyticsApi.formatCurrency(record.cost)}</TableCell>
                         <TableCell>
-                          <Chip 
+                          <Chip
                             label={record.status}
                             color={record.status === 'Completed' ? 'success' : 'default'}
                             size="small"
@@ -772,7 +772,7 @@ function UsageAnalyticsManagement() {
               <Typography variant="h6" gutterBottom>
                 Tóm tắt chung
               </Typography>
-              
+
               <Grid container spacing={2}>
                 <Grid item xs={6} md={3}>
                   <Box textAlign="center">
@@ -816,7 +816,7 @@ function UsageAnalyticsManagement() {
           <Typography variant="h6" gutterBottom>
             Chi tiết các nhóm
           </Typography>
-          
+
           {groupSummary.groupSummaries?.map((group, index) => (
             <Accordion key={index}>
               <AccordionSummary expandIcon={<ExpandMore />}>
@@ -824,7 +824,7 @@ function UsageAnalyticsManagement() {
                   <Typography variant="h6">
                     {group.vehicleName} ({group.licensePlate})
                   </Typography>
-                  <Chip 
+                  <Chip
                     label={`${group.usageBalance}`}
                     color={group.usageBalance === 'Balanced' ? 'success' : 'warning'}
                     size="small"
@@ -858,7 +858,7 @@ function UsageAnalyticsManagement() {
                       <strong>Mức độ hài hòa:</strong> {group.groupHarmony}
                     </Typography>
                   </Grid>
-                  
+
                   {group.coOwners && (
                     <Grid item xs={12}>
                       <Typography variant="body2" gutterBottom>
@@ -918,7 +918,7 @@ function UsageAnalyticsManagement() {
             <Typography variant="h6" gutterBottom>
               Công cụ so sánh
             </Typography>
-            
+
             <Grid container spacing={2}>
               <Grid item xs={12} md={4}>
                 <Button
@@ -1034,7 +1034,7 @@ function UsageAnalyticsManagement() {
                           <TableCell>{coOwner.actualUsage}</TableCell>
                           <TableCell>{coOwner.usagePercentage?.toFixed(2)}%</TableCell>
                           <TableCell>
-                            <Chip 
+                            <Chip
                               label={`${coOwner.varianceFromExpected > 0 ? '+' : ''}${coOwner.varianceFromExpected?.toFixed(1)}`}
                               color={Math.abs(coOwner.varianceFromExpected) <= 5 ? 'success' : 'warning'}
                               size="small"
@@ -1137,7 +1137,7 @@ function UsageAnalyticsManagement() {
                           <TableCell>{booking.durationHours} giờ</TableCell>
                           <TableCell>{booking.distanceTravelled} km</TableCell>
                           <TableCell>
-                            <Chip 
+                            <Chip
                               label={booking.status}
                               color={booking.status === 'Completed' ? 'success' : 'default'}
                               size="small"
@@ -1227,8 +1227,8 @@ function UsageAnalyticsManagement() {
 
       {/* Alerts */}
       {error && (
-        <Alert 
-          severity="error" 
+        <Alert
+          severity="error"
           onClose={() => setError('')}
           sx={{ mt: 2 }}
         >
