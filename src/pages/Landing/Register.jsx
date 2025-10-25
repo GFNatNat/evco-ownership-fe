@@ -44,7 +44,7 @@ export default function Register() {
 
     try {
       const result = await register(form);
-      if (result.success) {
+      if (result.ok) {
         setSuccess(true);
         setTimeout(() => nav('/login'), 2000);
       } else {

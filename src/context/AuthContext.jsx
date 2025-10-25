@@ -120,12 +120,16 @@ export const AuthProvider = ({ children }) => {
   // ✅ Kiểm tra đăng nhập khi tải trang
   useEffect(() => {
     const t = localStorage.getItem('accessToken');
+    const r = localStorage.getItem('role');
     if (t) {
       setToken(t);
       axiosClient.defaults.headers.Authorization = `Bearer ${t}`;
     }
-    const r = localStorage.getItem('role');
     if (r) setRole(r);
+    // Nếu có cả token và role thì set lại user
+    if (t && r) {
+      setUser({ email: '', role: r });
+    }
   }, []);
 
   return (
