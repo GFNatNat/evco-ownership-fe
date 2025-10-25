@@ -1,3 +1,9 @@
+// ========================= ĐỊNH NGHĨA ROUTE VÀ PHÂN QUYỀN =========================
+// - Mỗi nhóm route (Admin, Staff, CoOwner) đều bọc bằng PrivateRoute với roles phù hợp
+// - Có component RoleRedirect để chuyển hướng về dashboard đúng với role
+// - Các route /dashboard, /dashboard/role sẽ tự động chuyển về dashboard đúng role
+// - Nếu truy cập sai quyền, sẽ bị chặn bởi PrivateRoute
+// ==================================================================================
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 

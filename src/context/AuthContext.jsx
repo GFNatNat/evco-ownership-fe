@@ -1,3 +1,12 @@
+// ========================= PHÂN QUYỀN NGƯỜI DÙNG =========================
+// - Backend trả về user.roles là mảng chuỗi, ví dụ: ["Admin"], ["CoOwner"], ["Staff"]
+// - FE luôn lấy user.roles[0], chuẩn hóa viết hoa chữ cái đầu (Admin, Staff, CoOwner)
+// - Nếu role không hợp lệ, FE mặc định là CoOwner (an toàn)
+// - Role được lưu vào localStorage và state FE, dùng cho kiểm tra truy cập
+// - Khi reload, FE lấy lại role từ localStorage, chuẩn hóa lại
+// - Tất cả kiểm tra phân quyền đều dùng đúng format chuỗi này
+// - Nếu backend/JWT trả về role khác, FE vẫn an toàn (mặc định CoOwner)
+// ========================================================================
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axiosClient from '../api/axiosClient';
 import authApi from '../api/authApi';
@@ -33,7 +42,7 @@ export const AuthProvider = ({ children }) => {
       const res = await authApi.login(payload);
       const d = res?.data || {};
 
-      // đọc token theo format backend ASP.NET của bạn
+      // Lấy token
       const t =
         d.token ||
         d.accessToken ||
@@ -45,19 +54,24 @@ export const AuthProvider = ({ children }) => {
 
       if (!t) throw new Error('Không nhận được token từ API');
 
-      // role (nếu có)
-      const r =
-        d.role ||
-        d.user?.role ||
-        d.data?.role ||
-        d.result?.role ||
-        'CoOwner';
+      // Lấy user object đúng vị trí
+      const userObj = d.user || d.data?.user || {};
+      console.log('DEBUG: d.user =', d.user, '| d.data.user =', d.data?.user, '| userObj =', userObj, '| userObj.roles =', userObj.roles);
+
+      // Lấy role không phân biệt hoa thường và log ra role thực tế
+      const roleStrRaw = userObj.roles?.[0] || 'CoOwner';
+      // Chuẩn hóa: luôn viết hoa chữ cái đầu, còn lại thường
+      const capitalize = (s) => s && typeof s === 'string' ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : 'CoOwner';
+      let r = capitalize(roleStrRaw);
+      // Nếu không phải Admin/Staff/CoOwner thì mặc định là CoOwner
+      if (!['Admin', 'Staff', 'CoOwner'].includes(r)) r = 'CoOwner';
+      console.log('DEBUG: roleStrRaw from API =', roleStrRaw, '| mapped FE role =', r);
 
       localStorage.setItem('accessToken', t);
       localStorage.setItem('role', r);
       setToken(t);
       setRole(r);
-      setUser({ email, role: r });
+      setUser({ email: userObj.email || email, role: r });
 
       return { ok: true, role: r };
     } catch (err) {
@@ -120,7 +134,11 @@ export const AuthProvider = ({ children }) => {
   // ✅ Kiểm tra đăng nhập khi tải trang
   useEffect(() => {
     const t = localStorage.getItem('accessToken');
-    const r = localStorage.getItem('role');
+    let r = localStorage.getItem('role');
+    // Chuẩn hóa role khi reload
+    const capitalize = (s) => s && typeof s === 'string' ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : 'CoOwner';
+    r = capitalize(r);
+    if (!['Admin', 'Staff', 'CoOwner'].includes(r)) r = 'CoOwner';
     if (t) {
       setToken(t);
       axiosClient.defaults.headers.Authorization = `Bearer ${t}`;

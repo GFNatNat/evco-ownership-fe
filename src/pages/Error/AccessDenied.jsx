@@ -1,3 +1,7 @@
+// ========================= XỬ LÝ KHI BỊ CHẶN PHÂN QUYỀN =========================
+// - Khi bị chặn, FE xác định role hiện tại và hiển thị nút về đúng dashboard tương ứng
+// - Đảm bảo UX tốt: người dùng luôn có đường quay về dashboard hợp lệ
+// =================================================================================
 import React from 'react';
 import { Container, Typography, Button, Box } from '@mui/material';
 import ReportProblemIcon from '@mui/icons-material/ReportProblem';

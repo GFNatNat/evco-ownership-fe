@@ -23,23 +23,23 @@ import {
     Divider
 } from '@mui/material';
 import {
-  DirectionsCar,
-  PeopleAlt,
-  AccountBalance,
-  CloudUpload,
-  HowToVote,
-  Build,
-  Notifications,
-  Settings,
+    DirectionsCar,
+    PeopleAlt,
+    AccountBalance,
+    CloudUpload,
+    HowToVote,
+    Build,
+    Notifications,
+    Settings,
 
-  BarChart,
-  Info,
-  Warning,
-  CheckCircle,
-  SwapHoriz,
-  History,
-  Analytics,
-  Assessment
+    BarChart,
+    Info,
+    Warning,
+    CheckCircle,
+    SwapHoriz,
+    History,
+    Analytics,
+    Assessment
 } from '@mui/icons-material';// Import components
 import FileUploadManager from '../../components/common/FileUploadManager';
 import FundManagement from '../../components/common/FundManagement';
@@ -52,7 +52,7 @@ import VehicleUpgradeManagement from './VehicleUpgradeManagement';
 
 // Import APIs
 import vehicleApi from '../../api/vehicleApi';
-import coOwnerApi from '../../api/coOwnerApi';
+import coOwnerApi from '../../api/coowner';
 import groupApi from '../../api/groupApi';
 
 /**
@@ -86,15 +86,15 @@ function CoOwnerDashboard() {
         setLoading(true);
         try {
             // Load user's vehicles
-            const vehiclesResponse = await coOwnerApi.getVehicles();
+            const vehiclesResponse = await coOwnerApi.vehicles.getMy();
             const vehicles = vehiclesResponse.data.data || [];
 
-            // Load user's groups  
-            const groupsResponse = await coOwnerApi.getGroups();
+            // Load user's groups
+            const groupsResponse = await coOwnerApi.groups.getMy();
             const groups = groupsResponse.data.data || [];
 
             // Load notifications
-            const notificationsResponse = await coOwnerApi.getNotifications();
+            const notificationsResponse = await coOwnerApi.notifications.getMy();
             const notifications = notificationsResponse.data.data || [];
 
             setDashboardData({
@@ -354,20 +354,20 @@ function CoOwnerDashboard() {
             </Typography>
 
             {/* Tab Navigation */}
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs value={activeTab} onChange={handleTabChange}>
-          <Tab icon={<BarChart />} label="Tổng quan" />
-          <Tab icon={<AccountBalance />} label="Quản lý quỹ" />
-          <Tab icon={<CloudUpload />} label="Quản lý file" />
-          <Tab icon={<HowToVote />} label="Bỏ phiếu bảo trì" />
-          <Tab icon={<SwapHoriz />} label="Thay đổi sở hữu" />
-          <Tab icon={<History />} label="Lịch sử sở hữu" />
-          <Tab icon={<Analytics />} label="Phân tích sử dụng" />
-          <Tab icon={<Assessment />} label="Báo cáo xe" />
-          <Tab icon={<Build />} label="Nâng cấp xe" />
-          <Tab icon={<Settings />} label="Cài đặt" />
-        </Tabs>
-      </Box>            {/* Tab Content */}
+            <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+                <Tabs value={activeTab} onChange={handleTabChange}>
+                    <Tab icon={<BarChart />} label="Tổng quan" />
+                    <Tab icon={<AccountBalance />} label="Quản lý quỹ" />
+                    <Tab icon={<CloudUpload />} label="Quản lý file" />
+                    <Tab icon={<HowToVote />} label="Bỏ phiếu bảo trì" />
+                    <Tab icon={<SwapHoriz />} label="Thay đổi sở hữu" />
+                    <Tab icon={<History />} label="Lịch sử sở hữu" />
+                    <Tab icon={<Analytics />} label="Phân tích sử dụng" />
+                    <Tab icon={<Assessment />} label="Báo cáo xe" />
+                    <Tab icon={<Build />} label="Nâng cấp xe" />
+                    <Tab icon={<Settings />} label="Cài đặt" />
+                </Tabs>
+            </Box>            {/* Tab Content */}
             <Box>
                 {/* Overview Tab */}
                 {activeTab === 0 && renderOverview()}
