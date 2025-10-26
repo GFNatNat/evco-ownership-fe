@@ -4,13 +4,14 @@ import axiosClient from './axiosClient';
  * Contract API - README 15 Compliant Implementation  
  * Handles electronic contract management for co-ownership agreements
  * All endpoints follow exact README 15 specifications
+// All endpoints updated to use capitalized controller names (e.g., /api/Contract) to match Swagger
  */
 
 const contractApi = {
   // ===== README 15 COMPLIANCE - 11 ENDPOINTS =====
 
-  // 1. Create electronic contract - POST /api/contract (README 15 compliant)
-  create: (data) => axiosClient.post('/api/contract', {
+  // 1. Create electronic contract - POST /api/Contract (README 15 compliant)
+  create: (data) => axiosClient.post('/api/Contract', {
     vehicleId: data.vehicleId,
     templateType: data.templateType,
     title: data.title,
@@ -24,11 +25,11 @@ const contractApi = {
     attachmentUrls: data.attachmentUrls
   }),
 
-  // 2. Get contract details - GET /api/contract/{contractId} (README 15 compliant)
-  getById: (contractId) => axiosClient.get(`/api/contract/${contractId}`),
+  // 2. Get contract details - GET /api/Contract/{contractId} (README 15 compliant)
+  getById: (contractId) => axiosClient.get(`/api/Contract/${contractId}`),
 
-  // 3. Get contracts list - GET /api/contract (README 15 compliant)
-  list: (params) => axiosClient.get('/api/contract', {
+  // 3. Get contracts list - GET /api/Contract (README 15 compliant)
+  list: (params) => axiosClient.get('/api/Contract', {
     params: {
       vehicleId: params?.vehicleId,
       templateType: params?.templateType,
@@ -47,8 +48,8 @@ const contractApi = {
     }
   }),
 
-  // 4. Sign contract - POST /api/contract/{contractId}/sign (README 15 compliant)
-  sign: (contractId, data) => axiosClient.post(`/api/contract/${contractId}/sign`, {
+  // 4. Sign contract - POST /api/Contract/{contractId}/sign (README 15 compliant)
+  sign: (contractId, data) => axiosClient.post(`/api/Contract/${contractId}/sign`, {
     signature: data.signature,
     ipAddress: data.ipAddress,
     deviceInfo: data.deviceInfo,
@@ -57,35 +58,35 @@ const contractApi = {
     signerNotes: data.signerNotes
   }),
 
-  // 5. Decline contract - POST /api/contract/{contractId}/decline (README 15 compliant)
-  decline: (contractId, data) => axiosClient.post(`/api/contract/${contractId}/decline`, {
+  // 5. Decline contract - POST /api/Contract/{contractId}/decline (README 15 compliant)
+  decline: (contractId, data) => axiosClient.post(`/api/Contract/${contractId}/decline`, {
     reason: data.reason,
     suggestedChanges: data.suggestedChanges
   }),
 
-  // 6. Terminate contract - POST /api/contract/{contractId}/terminate (README 15 compliant)
-  terminate: (contractId, data) => axiosClient.post(`/api/contract/${contractId}/terminate`, {
+  // 6. Terminate contract - POST /api/Contract/{contractId}/terminate (README 15 compliant)
+  terminate: (contractId, data) => axiosClient.post(`/api/Contract/${contractId}/terminate`, {
     reason: data.reason,
     effectiveDate: data.effectiveDate,
     notes: data.notes
   }),
 
-  // 7. Get contract templates - GET /api/contract/templates (README 15 compliant)
-  getTemplates: () => axiosClient.get('/api/contract/templates'),
+  // 7. Get contract templates - GET /api/Contract/templates (README 15 compliant)
+  getTemplates: () => axiosClient.get('/api/Contract/templates'),
 
-  // 8. Get specific template - GET /api/contract/templates/{templateType} (README 15 compliant)
-  getTemplate: (templateType) => axiosClient.get(`/api/contract/templates/${templateType}`),
+  // 8. Get specific template - GET /api/Contract/templates/{templateType} (README 15 compliant)
+  getTemplate: (templateType) => axiosClient.get(`/api/Contract/templates/${templateType}`),
 
-  // 9. Download contract PDF - GET /api/contract/{contractId}/download (README 15 compliant)
-  download: (contractId) => axiosClient.get(`/api/contract/${contractId}/download`, {
+  // 9. Download contract PDF - GET /api/Contract/{contractId}/download (README 15 compliant)
+  download: (contractId) => axiosClient.get(`/api/Contract/${contractId}/download`, {
     responseType: 'blob'
   }),
 
-  // 10. Get pending signature contracts - GET /api/contract/pending-signature (README 15 compliant)
-  getPendingSignature: () => axiosClient.get('/api/contract/pending-signature'),
+  // 10. Get pending signature contracts - GET /api/Contract/pending-signature (README 15 compliant)
+  getPendingSignature: () => axiosClient.get('/api/Contract/pending-signature'),
 
-  // 11. Get signed contracts - GET /api/contract/signed (README 15 compliant)
-  getSigned: (params) => axiosClient.get('/api/contract/signed', {
+  // 11. Get signed contracts - GET /api/Contract/signed (README 15 compliant)
+  getSigned: (params) => axiosClient.get('/api/Contract/signed', {
     params: {
       vehicleId: params?.vehicleId
     }
@@ -233,10 +234,10 @@ const contractApi = {
   },
 
   // Get contracts dashboard summary
-  getDashboardSummary: () => axiosClient.get('/api/contract/dashboard-summary'),
+  getDashboardSummary: () => axiosClient.get('/api/Contract/dashboard-summary'),
 
   // Search contracts
-  searchContracts: (query, filters = {}) => axiosClient.get('/api/contract/search', {
+  searchContracts: (query, filters = {}) => axiosClient.get('/api/Contract/search', {
     params: {
       query: query,
       ...filters
@@ -244,21 +245,21 @@ const contractApi = {
   }),
 
   // Get contract activity log
-  getActivityLog: (contractId) => axiosClient.get(`/api/contract/${contractId}/activity-log`),
+  getActivityLog: (contractId) => axiosClient.get(`/api/Contract/${contractId}/activity-log`),
 
   // Update contract (draft only)
-  update: (contractId, data) => axiosClient.put(`/api/contract/${contractId}`, data),
+  update: (contractId, data) => axiosClient.put(`/api/Contract/${contractId}`, data),
 
   // Delete contract (draft only)
-  delete: (contractId) => axiosClient.delete(`/api/contract/${contractId}`),
+  delete: (contractId) => axiosClient.delete(`/api/Contract/${contractId}`),
 
   // Send reminder to signatories
-  sendSignatureReminder: (contractId, userIds) => axiosClient.post(`/api/contract/${contractId}/send-reminder`, {
+  sendSignatureReminder: (contractId, userIds) => axiosClient.post(`/api/Contract/${contractId}/send-reminder`, {
     userIds: userIds
   }),
 
   // Export contracts to Excel/PDF
-  exportContracts: (filters, format = 'excel') => axiosClient.get('/api/contract/export', {
+  exportContracts: (filters, format = 'excel') => axiosClient.get('/api/Contract/export', {
     params: { ...filters, format },
     responseType: 'blob'
   })

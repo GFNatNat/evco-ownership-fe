@@ -4,13 +4,14 @@ import axiosClient from './axiosClient';
  * Notification API - README 11 Compliant Implementation
  * Handles user notifications and admin notification management
  * All endpoints follow exact README 11 specifications
+// All endpoints updated to use capitalized controller names (e.g., /api/Notification) to match Swagger
  */
 
 const notificationApi = {
     // ===== README 11 COMPLIANCE - 7 ENDPOINTS =====
 
     // 1. Get notifications for current user - GET /api/notification (README 11 compliant)
-    getNotifications: (params) => axiosClient.get('/api/notification', {
+    getNotifications: (params) => axiosClient.get('/api/Notification', {
         params: {
             pageIndex: params?.pageIndex || 1,
             pageSize: params?.pageSize || 10,
@@ -24,7 +25,7 @@ const notificationApi = {
     }),
 
     // 2. Get my notifications with pagination - GET /api/notification/my-notifications (README 11 compliant)
-    getMyNotifications: (params) => axiosClient.get('/api/notification/my-notifications', {
+    getMyNotifications: (params) => axiosClient.get('/api/Notification/my-notifications', {
         params: {
             pageIndex: params?.pageIndex || 1,
             pageSize: params?.pageSize || 10,
@@ -38,18 +39,18 @@ const notificationApi = {
     }),
 
     // 3. Mark single notification as read - PUT /api/notification/{id}/read (README 11 compliant)
-    markAsRead: (notificationId) => axiosClient.put(`/api/notification/${notificationId}/read`),
+    markAsRead: (notificationId) => axiosClient.put(`/api/Notification/${notificationId}/read`),
 
     // 4. Mark multiple notifications as read - PUT /api/notification/read-multiple (README 11 compliant)
-    markMultipleRead: (notificationIds) => axiosClient.put('/api/notification/read-multiple', {
+    markMultipleRead: (notificationIds) => axiosClient.put('/api/Notification/read-multiple', {
         notificationIds: Array.isArray(notificationIds) ? notificationIds : [notificationIds]
     }),
 
     // 5. Mark all notifications as read - PUT /api/notification/read-all (README 11 compliant)
-    markAllRead: () => axiosClient.put('/api/notification/read-all'),
+    markAllRead: () => axiosClient.put('/api/Notification/read-all'),
 
     // 6. Send notification to user (Admin only) - POST /api/notification/send-to-user (README 11 compliant)
-    sendToUser: (data) => axiosClient.post('/api/notification/send-to-user', {
+    sendToUser: (data) => axiosClient.post('/api/Notification/send-to-user', {
         userId: data.userId,
         title: data.title,
         message: data.message,
@@ -64,7 +65,7 @@ const notificationApi = {
     }),
 
     // 7. Create notification (Admin only) - POST /api/notification/create (README 11 compliant)
-    createNotification: (data) => axiosClient.post('/api/notification/create', {
+    createNotification: (data) => axiosClient.post('/api/Notification/create', {
         title: data.title,
         message: data.message,
         notificationType: data.notificationType || 'General',
@@ -83,23 +84,23 @@ const notificationApi = {
     // ===== BACKWARD COMPATIBILITY METHODS =====
 
     // Legacy: Get unread count
-    getUnreadCount: () => axiosClient.get('/api/notification/unread-count'),
+    getUnreadCount: () => axiosClient.get('/api/Notification/unread-count'),
 
     // Legacy: Mark notification as read (old method name)
-    markNotificationAsRead: (userNotificationId) => axiosClient.put('/api/notification/mark-read', {
+    markNotificationAsRead: (userNotificationId) => axiosClient.put('/api/Notification/mark-read', {
         userNotificationId: userNotificationId
     }),
 
     // Legacy: Mark multiple as read (old method name)
-    markMultipleAsRead: (userNotificationIds) => axiosClient.put('/api/notification/mark-multiple-read', {
+    markMultipleAsRead: (userNotificationIds) => axiosClient.put('/api/Notification/mark-multiple-read', {
         userNotificationIds: userNotificationIds
     }),
 
     // Legacy: Mark all as read (old method name)
-    markAllNotificationsAsRead: () => axiosClient.put('/api/notification/mark-all-read'),
+    markAllNotificationsAsRead: () => axiosClient.put('/api/Notification/mark-all-read'),
 
     // Legacy: Send notification to user (old method name)
-    sendNotificationToUser: (data) => axiosClient.post('/api/notification/send-to-user', {
+    sendNotificationToUser: (data) => axiosClient.post('/api/Notification/send-to-user', {
         userId: data.userId,
         notificationType: data.notificationType,
         additionalData: data.additionalData

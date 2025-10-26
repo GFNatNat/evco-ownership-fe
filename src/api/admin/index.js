@@ -4,62 +4,62 @@ import axiosClient from '../axiosClient';
 const adminApi = {
   // Users Management
   users: {
-    getAll: () => axiosClient.get('/api/admin/users'),
-    getById: (id) => axiosClient.get(`/api/admin/users/${id}`),
-    create: (userData) => axiosClient.post('/api/admin/users', userData),
-    update: (id, userData) => axiosClient.put(`/api/admin/users/${id}`, userData),
-    delete: (id) => axiosClient.delete(`/api/admin/users/${id}`),
-    activate: (id) => axiosClient.patch(`/api/admin/users/${id}/activate`),
-    deactivate: (id) => axiosClient.patch(`/api/admin/users/${id}/deactivate`),
-    searchUsers: (query) => axiosClient.get(`/api/admin/users/search?q=${query}`)
+    getAll: () => axiosClient.get('/api/User'),
+    getById: (id) => axiosClient.get(`/api/User/${id}`),
+    create: (userData) => axiosClient.post('/api/User', userData),
+    update: (id, userData) => axiosClient.put(`/api/User/${id}`, userData),
+    delete: (id) => axiosClient.delete(`/api/User/${id}`),
+    activate: (id) => axiosClient.patch(`/api/User/${id}/activate`),
+    deactivate: (id) => axiosClient.patch(`/api/User/${id}/deactivate`),
+    searchUsers: (query) => axiosClient.get(`/api/User/search?q=${query}`)
   },
 
   // License Management
   licenses: {
-    getAll: () => axiosClient.get('/api/admin/licenses'),
-    getById: (id) => axiosClient.get(`/api/admin/licenses/${id}`),
-    approve: (id) => axiosClient.patch(`/api/admin/licenses/${id}/approve`),
-    reject: (id, reason) => axiosClient.patch(`/api/admin/licenses/${id}/reject`, { reason }),
-    getPending: () => axiosClient.get('/api/admin/licenses/pending'),
-    getExpiring: () => axiosClient.get('/api/admin/licenses/expiring')
+    getAll: () => axiosClient.get('/api/License'),
+    getById: (id) => axiosClient.get(`/api/License/${id}`),
+    approve: (id) => axiosClient.patch(`/api/License/${id}/approve`),
+    reject: (id, reason) => axiosClient.patch(`/api/License/${id}/reject`, { reason }),
+    getPending: () => axiosClient.get('/api/License/pending'),
+    getExpiring: () => axiosClient.get('/api/License/expiring')
   },
 
   // Groups Management
   groups: {
-    getAll: () => axiosClient.get('/api/admin/groups'),
-    getById: (id) => axiosClient.get(`/api/admin/groups/${id}`),
-    getAnalytics: () => axiosClient.get('/api/admin/groups/analytics'),
-    dissolve: (id, reason) => axiosClient.patch(`/api/admin/groups/${id}/dissolve`, { reason }),
-    getDisputes: (groupId) => axiosClient.get(`/api/admin/groups/${groupId}/disputes`)
+    getAll: () => axiosClient.get('/api/Group'),
+    getById: (id) => axiosClient.get(`/api/Group/${id}`),
+    getAnalytics: () => axiosClient.get('/api/Group/analytics'),
+    dissolve: (id, reason) => axiosClient.patch(`/api/Group/${id}/dissolve`, { reason }),
+    getDisputes: (groupId) => axiosClient.get(`/api/Group/${groupId}/disputes`)
   },
 
   // Reports & Analytics
   reports: {
-    getDashboardStats: () => axiosClient.get('/api/admin/reports/dashboard'),
-    getFinancialReport: (period) => axiosClient.get(`/api/admin/reports/financial?period=${period}`),
-    getUserActivity: (period) => axiosClient.get(`/api/admin/reports/users/activity?period=${period}`),
-    getVehicleUtilization: () => axiosClient.get('/api/admin/reports/vehicles/utilization'),
-    getRevenueAnalytics: () => axiosClient.get('/api/admin/reports/revenue'),
-    exportReport: (type, period) => axiosClient.get(`/api/admin/reports/export/${type}?period=${period}`, {
+    getDashboardStats: () => axiosClient.get('/api/Report/dashboard'),
+    getFinancialReport: (period) => axiosClient.get(`/api/Report/financial?period=${period}`),
+    getUserActivity: (period) => axiosClient.get(`/api/Report/users/activity?period=${period}`),
+    getVehicleUtilization: () => axiosClient.get('/api/Report/vehicles/utilization'),
+    getRevenueAnalytics: () => axiosClient.get('/api/Report/revenue'),
+    exportReport: (type, period) => axiosClient.get(`/api/Report/export/${type}?period=${period}`, {
       responseType: 'blob'
     })
   },
 
   // System Settings
   settings: {
-    get: () => axiosClient.get('/api/admin/settings'),
-    update: (settings) => axiosClient.put('/api/admin/settings', settings),
-    getSystemHealth: () => axiosClient.get('/api/admin/settings/health'),
-    getAuditLogs: (page = 1, limit = 20) => axiosClient.get(`/api/admin/settings/audit-logs?page=${page}&limit=${limit}`)
+    get: () => axiosClient.get('/api/Settings'),
+    update: (settings) => axiosClient.put('/api/Settings', settings),
+    getSystemHealth: () => axiosClient.get('/api/Settings/health'),
+    getAuditLogs: (page = 1, limit = 20) => axiosClient.get(`/api/Settings/audit-logs?page=${page}&limit=${limit}`)
   },
 
   // Platform Analytics
   analytics: {
-    getOverview: () => axiosClient.get('/api/admin/analytics/overview'),
-    getUserGrowth: (period) => axiosClient.get(`/api/admin/analytics/users/growth?period=${period}`),
-    getVehicleStats: () => axiosClient.get('/api/admin/analytics/vehicles'),
-    getRevenueMetrics: () => axiosClient.get('/api/admin/analytics/revenue'),
-    getPerformanceMetrics: () => axiosClient.get('/api/admin/analytics/performance')
+    getOverview: () => axiosClient.get('/api/Analytics/overview'),
+    getUserGrowth: (period) => axiosClient.get(`/api/Analytics/users/growth?period=${period}`),
+    getVehicleStats: () => axiosClient.get('/api/Analytics/vehicles'),
+    getRevenueMetrics: () => axiosClient.get('/api/Analytics/revenue'),
+    getPerformanceMetrics: () => axiosClient.get('/api/Analytics/performance')
   }
 };
 

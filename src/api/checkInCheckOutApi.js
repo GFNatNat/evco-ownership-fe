@@ -4,13 +4,14 @@ import axiosClient from './axiosClient';
  * CheckInCheckOut API - README 14 Compliant Implementation
  * Handles vehicle check-in/check-out operations with QR codes and manual processes
  * All endpoints follow exact README 14 specifications
+// All endpoints updated to use capitalized controller names (e.g., /api/CheckInCheckOut) to match Swagger
  */
 
 const checkInCheckOutApi = {
     // ===== README 14 COMPLIANCE - 8 ENDPOINTS =====
 
     // 1. QR Code Check-In - POST /api/checkincheckout/qr-checkin (README 14 compliant)
-    qrCheckIn: (data) => axiosClient.post('/api/checkincheckout/qr-checkin', {
+    qrCheckIn: (data) => axiosClient.post('/api/CheckInCheckOut/qr-checkin', {
         qrCodeData: data.qrCodeData,
         conditionReport: {
             conditionType: data.conditionReport?.conditionType || 1,
@@ -24,7 +25,7 @@ const checkInCheckOutApi = {
     }),
 
     // 2. QR Code Check-Out - POST /api/checkincheckout/qr-checkout (README 14 compliant)
-    qrCheckOut: (data) => axiosClient.post('/api/checkincheckout/qr-checkout', {
+    qrCheckOut: (data) => axiosClient.post('/api/CheckInCheckOut/qr-checkout', {
         qrCodeData: data.qrCodeData,
         conditionReport: {
             conditionType: data.conditionReport?.conditionType || 2,
@@ -39,10 +40,10 @@ const checkInCheckOutApi = {
     }),
 
     // 3. Generate QR Code - GET /api/checkincheckout/generate-qr/{bookingId} (README 14 compliant)
-    generateQRCode: (bookingId) => axiosClient.get(`/api/checkincheckout/generate-qr/${bookingId}`),
+    generateQRCode: (bookingId) => axiosClient.get(`/api/CheckInCheckOut/generate-qr/${bookingId}`),
 
     // 4. Manual Check-In - POST /api/checkincheckout/manual-checkin (README 14 compliant)
-    manualCheckIn: (data) => axiosClient.post('/api/checkincheckout/manual-checkin', {
+    manualCheckIn: (data) => axiosClient.post('/api/CheckInCheckOut/manual-checkin', {
         bookingId: data.bookingId,
         vehicleStationId: data.vehicleStationId,
         conditionReport: {
@@ -58,7 +59,7 @@ const checkInCheckOutApi = {
     }),
 
     // 5. Manual Check-Out - POST /api/checkincheckout/manual-checkout (README 14 compliant)
-    manualCheckOut: (data) => axiosClient.post('/api/checkincheckout/manual-checkout', {
+    manualCheckOut: (data) => axiosClient.post('/api/CheckInCheckOut/manual-checkout', {
         bookingId: data.bookingId,
         vehicleStationId: data.vehicleStationId,
         conditionReport: {
@@ -74,13 +75,13 @@ const checkInCheckOutApi = {
     }),
 
     // 6. Validate Check-In Eligibility - GET /api/checkincheckout/validate-checkin/{bookingId} (README 14 compliant)
-    validateCheckInEligibility: (bookingId) => axiosClient.get(`/api/checkincheckout/validate-checkin/${bookingId}`),
+    validateCheckInEligibility: (bookingId) => axiosClient.get(`/api/CheckInCheckOut/validate-checkin/${bookingId}`),
 
     // 7. Validate Check-Out Eligibility - GET /api/checkincheckout/validate-checkout/{bookingId} (README 14 compliant)
-    validateCheckOutEligibility: (bookingId) => axiosClient.get(`/api/checkincheckout/validate-checkout/${bookingId}`),
+    validateCheckOutEligibility: (bookingId) => axiosClient.get(`/api/CheckInCheckOut/validate-checkout/${bookingId}`),
 
     // 8. Get Check-In/Check-Out History - GET /api/checkincheckout/history/{bookingId} (README 14 compliant)
-    getHistory: (bookingId) => axiosClient.get(`/api/checkincheckout/history/${bookingId}`),
+    getHistory: (bookingId) => axiosClient.get(`/api/CheckInCheckOut/history/${bookingId}`),
 
     // ===== UTILITY METHODS FOR FRONTEND INTEGRATION =====
 
@@ -131,13 +132,13 @@ const checkInCheckOutApi = {
     },
 
     // Get vehicle stations
-    getVehicleStations: () => axiosClient.get('/api/checkincheckout/stations'),
+    getVehicleStations: () => axiosClient.get('/api/CheckInCheckOut/stations'),
 
     // Get station by ID
-    getStationById: (stationId) => axiosClient.get(`/api/checkincheckout/stations/${stationId}`),
+    getStationById: (stationId) => axiosClient.get(`/api/CheckInCheckOut/stations/${stationId}`),
 
     // Create damage report
-    createDamageReport: (data) => axiosClient.post('/api/checkincheckout/damage-report', {
+    createDamageReport: (data) => axiosClient.post('/api/CheckInCheckOut/damage-report', {
         bookingId: data.bookingId,
         damages: data.damages,
         reportedBy: data.reportedBy,
@@ -155,7 +156,7 @@ const checkInCheckOutApi = {
         });
         formData.append('bookingId', bookingId);
 
-        return axiosClient.post('/api/checkincheckout/upload-photos', formData, {
+        return axiosClient.post('/api/CheckInCheckOut/upload-photos', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
@@ -163,15 +164,15 @@ const checkInCheckOutApi = {
     },
 
     // Get check-in/check-out status
-    getBookingStatus: (bookingId) => axiosClient.get(`/api/checkincheckout/booking/${bookingId}/status`),
+    getBookingStatus: (bookingId) => axiosClient.get(`/api/CheckInCheckOut/booking/${bookingId}/status`),
 
     // Cancel check-in (if allowed)
-    cancelCheckIn: (bookingId, reason) => axiosClient.post(`/api/checkincheckout/cancel-checkin/${bookingId}`, {
+    cancelCheckIn: (bookingId, reason) => axiosClient.post(`/api/CheckInCheckOut/cancel-checkin/${bookingId}`, {
         reason: reason
     }),
 
     // Get damage types for dropdown
-    getDamageTypes: () => axiosClient.get('/api/checkincheckout/damage-types'),
+    getDamageTypes: () => axiosClient.get('/api/CheckInCheckOut/damage-types'),
 
     // Format condition report for display
     formatConditionReport: (report) => ({

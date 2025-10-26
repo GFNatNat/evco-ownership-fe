@@ -4,28 +4,29 @@ import axiosClient from './axiosClient';
  * File Upload API - README 19 Compliant Implementation
  * Manages file upload, download, info, and deletion operations
  * All endpoints follow exact README 19 specifications
+// All endpoints updated to use capitalized controller names (e.g., /api/FileUpload) to match Swagger
  */
 
 const fileUploadApi = {
   // ===== README 19 COMPLIANCE - 4 ENDPOINTS =====
 
   // 1. Upload file - POST /api/fileupload/upload (README 19 compliant)
-  upload: (formData) => axiosClient.post('/api/fileupload/upload', formData, {
+  upload: (formData) => axiosClient.post('/api/FileUpload/upload', formData, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }
   }),
 
   // 2. Download file - GET /api/fileupload/{id}/download (README 19 compliant)
-  download: (fileId) => axiosClient.get(`/api/fileupload/${fileId}/download`, {
+  download: (fileId) => axiosClient.get(`/api/FileUpload/${fileId}/download`, {
     responseType: 'blob'
   }),
 
   // 3. Get file info - GET /api/fileupload/{id}/info (README 19 compliant)
-  getInfo: (fileId) => axiosClient.get(`/api/fileupload/${fileId}/info`),
+  getInfo: (fileId) => axiosClient.get(`/api/FileUpload/${fileId}/info`),
 
   // 4. Delete file - DELETE /api/fileupload/{id} (README 19 compliant)
-  delete: (fileId) => axiosClient.delete(`/api/fileupload/${fileId}`),
+  delete: (fileId) => axiosClient.delete(`/api/FileUpload/${fileId}`),
 
   // ===== LEGACY SUPPORT & UTILITY METHODS =====
 
@@ -201,7 +202,7 @@ const fileUploadApi = {
   uploadWithProgress: (file, metadata = {}, onProgress) => {
     const formData = fileUploadApi.createFormData(file, metadata);
 
-    return axiosClient.post('/api/fileupload/upload', formData, {
+    return axiosClient.post('/api/FileUpload/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       },

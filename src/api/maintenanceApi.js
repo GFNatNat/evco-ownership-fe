@@ -1,10 +1,11 @@
+// All endpoints updated to use capitalized controller names (e.g., /api/Maintenance) to match Swagger
 import axiosClient from './axiosClient';
 
 const maintenanceApi = {
     // ===== README 09 COMPLIANCE - CORE METHODS =====
 
     // 1. Create maintenance record - POST /api/maintenance
-    create: (data) => axiosClient.post('/api/maintenance', {
+    create: (data) => axiosClient.post('/api/Maintenance', {
         vehicleId: data.vehicleId,
         maintenanceType: data.maintenanceType,     // 0-5: RoutineMaintenance, EmergencyRepair, PreventiveMaintenance, Upgrade, Inspection, Warranty
         description: data.description,
@@ -21,10 +22,10 @@ const maintenanceApi = {
     }),
 
     // 2. Get maintenance by ID - GET /api/maintenance/{id}
-    getById: (id) => axiosClient.get(`/api/maintenance/${id}`),
+    getById: (id) => axiosClient.get(`/api/Maintenance/${id}`),
 
     // 3. Get vehicle maintenances - GET /api/maintenance/vehicle/{vehicleId}
-    getByVehicleId: (vehicleId, params) => axiosClient.get(`/api/maintenance/vehicle/${vehicleId}`, {
+    getByVehicleId: (vehicleId, params) => axiosClient.get(`/api/Maintenance/vehicle/${vehicleId}`, {
         params: {
             pageIndex: params?.pageIndex || 1,
             pageSize: params?.pageSize || 10
@@ -32,10 +33,10 @@ const maintenanceApi = {
     }),
 
     // 4. Get vehicle maintenance history - GET /api/maintenance/vehicle/{vehicleId}/history
-    getVehicleHistory: (vehicleId) => axiosClient.get(`/api/maintenance/vehicle/${vehicleId}/history`),
+    getVehicleHistory: (vehicleId) => axiosClient.get(`/api/Maintenance/vehicle/${vehicleId}/history`),
 
     // 5. Get all maintenances (Staff/Admin) - GET /api/maintenance
-    getAll: (params) => axiosClient.get('/api/maintenance', {
+    getAll: (params) => axiosClient.get('/api/Maintenance', {
         params: {
             pageIndex: params?.pageIndex || 1,
             pageSize: params?.pageSize || 10
@@ -43,7 +44,7 @@ const maintenanceApi = {
     }),
 
     // 6. Update maintenance - PUT /api/maintenance/{id}
-    update: (id, data) => axiosClient.put(`/api/maintenance/${id}`, {
+    update: (id, data) => axiosClient.put(`/api/Maintenance/${id}`, {
         description: data.description,
         cost: data.cost,
         serviceProvider: data.serviceProvider,
@@ -56,21 +57,21 @@ const maintenanceApi = {
     }),
 
     // 7. Mark as paid - POST /api/maintenance/{id}/mark-paid
-    markAsPaid: (id) => axiosClient.post(`/api/maintenance/${id}/mark-paid`),
+    markAsPaid: (id) => axiosClient.post(`/api/Maintenance/${id}/mark-paid`),
 
     // 8. Delete maintenance (Admin only) - DELETE /api/maintenance/{id}
-    delete: (id) => axiosClient.delete(`/api/maintenance/${id}`),
+    delete: (id) => axiosClient.delete(`/api/Maintenance/${id}`),
 
     // 9. Get maintenance statistics (Staff/Admin) - GET /api/maintenance/statistics
-    getStatistics: () => axiosClient.get('/api/maintenance/statistics'),
+    getStatistics: () => axiosClient.get('/api/Maintenance/statistics'),
 
     // 10. Get vehicle maintenance statistics - GET /api/maintenance/vehicle/{vehicleId}/statistics
-    getVehicleStatistics: (vehicleId) => axiosClient.get(`/api/maintenance/vehicle/${vehicleId}/statistics`),
+    getVehicleStatistics: (vehicleId) => axiosClient.get(`/api/Maintenance/vehicle/${vehicleId}/statistics`),
 
     // ===== ADDITIONAL HELPER METHODS =====
 
     // Get maintenance by type
-    getByType: (maintenanceType, params) => axiosClient.get('/api/maintenance', {
+    getByType: (maintenanceType, params) => axiosClient.get('/api/Maintenance', {
         params: {
             maintenanceType,
             pageIndex: params?.pageIndex || 1,
@@ -79,7 +80,7 @@ const maintenanceApi = {
     }),
 
     // Get maintenance by date range
-    getByDateRange: (startDate, endDate, params) => axiosClient.get('/api/maintenance', {
+    getByDateRange: (startDate, endDate, params) => axiosClient.get('/api/Maintenance', {
         params: {
             startDate,
             endDate,
@@ -89,7 +90,7 @@ const maintenanceApi = {
     }),
 
     // Get unpaid maintenances
-    getUnpaidMaintenances: (params) => axiosClient.get('/api/maintenance', {
+    getUnpaidMaintenances: (params) => axiosClient.get('/api/Maintenance', {
         params: {
             isPaid: false,
             pageIndex: params?.pageIndex || 1,
@@ -98,7 +99,7 @@ const maintenanceApi = {
     }),
 
     // Get emergency maintenances
-    getEmergencyMaintenances: (params) => axiosClient.get('/api/maintenance', {
+    getEmergencyMaintenances: (params) => axiosClient.get('/api/Maintenance', {
         params: {
             isEmergency: true,
             pageIndex: params?.pageIndex || 1,
@@ -107,10 +108,10 @@ const maintenanceApi = {
     }),
 
     // Get maintenance summary for dashboard
-    getSummary: () => axiosClient.get('/api/maintenance/summary'),
+    getSummary: () => axiosClient.get('/api/Maintenance/summary'),
 
     // Get maintenance due soon
-    getDueSoon: (days = 30) => axiosClient.get('/api/maintenance/due-soon', {
+    getDueSoon: (days = 30) => axiosClient.get('/api/Maintenance/due-soon', {
         params: { days }
     }),
 
@@ -120,7 +121,7 @@ const maintenanceApi = {
         formData.append('receipt', file);
         formData.append('maintenanceId', maintenanceId);
 
-        return axiosClient.post('/api/maintenance/upload-receipt', formData, {
+        return axiosClient.post('/api/Maintenance/upload-receipt', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
@@ -128,7 +129,7 @@ const maintenanceApi = {
     },
 
     // Export maintenance data
-    exportData: (params) => axiosClient.get('/api/maintenance/export', {
+    exportData: (params) => axiosClient.get('/api/Maintenance/export', {
         params,
         responseType: 'blob'
     }),

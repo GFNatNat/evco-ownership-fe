@@ -4,27 +4,27 @@ const reportApi = {
   // ===== README 10 COMPLIANCE - CORE METHODS =====
 
   // 1. Create monthly report - POST /api/report/monthly (README 10 compliant)
-  createMonthlyReport: (data) => axiosClient.post('/api/report/monthly', {
+  createMonthlyReport: (data) => axiosClient.post('/api/reports/monthly', {
     vehicleId: data.vehicleId,
     year: data.year,
     month: data.month
   }),
 
   // 2. Create quarterly report - POST /api/report/quarterly (README 10 compliant)
-  createQuarterlyReport: (data) => axiosClient.post('/api/report/quarterly', {
+  createQuarterlyReport: (data) => axiosClient.post('/api/reports/quarterly', {
     vehicleId: data.vehicleId,
     year: data.year,
     quarter: data.quarter
   }),
 
   // 3. Create yearly report - POST /api/report/yearly (README 10 compliant)
-  createYearlyReport: (data) => axiosClient.post('/api/report/yearly', {
+  createYearlyReport: (data) => axiosClient.post('/api/reports/yearly', {
     vehicleId: data.vehicleId,
     year: data.year
   }),
 
   // 4. Export report (PDF/Excel) - POST /api/report/export (README 10 compliant)
-  exportReport: (data) => axiosClient.post('/api/report/export', {
+  exportReport: (data) => axiosClient.post('/api/reports/export', {
     vehicleId: data.vehicleId,
     year: data.year,
     month: data.month,
@@ -34,16 +34,16 @@ const reportApi = {
   }),
 
   // 5. Get available periods - GET /api/report/vehicle/{vehicleId}/available-periods (README 10 compliant)
-  getAvailablePeriods: (vehicleId) => axiosClient.get(`/api/report/vehicle/${vehicleId}/available-periods`),
+  getAvailablePeriods: (vehicleId) => axiosClient.get(`/api/reports/vehicle/${vehicleId}/available-periods`),
 
   // 6. Get current month report - GET /api/report/vehicle/{vehicleId}/current-month (README 10 compliant)
-  getCurrentMonthReport: (vehicleId) => axiosClient.get(`/api/report/vehicle/${vehicleId}/current-month`),
+  getCurrentMonthReport: (vehicleId) => axiosClient.get(`/api/reports/vehicle/${vehicleId}/current-month`),
 
   // 7. Get current quarter report - GET /api/report/vehicle/{vehicleId}/current-quarter (README 10 compliant)
-  getCurrentQuarterReport: (vehicleId) => axiosClient.get(`/api/report/vehicle/${vehicleId}/current-quarter`),
+  getCurrentQuarterReport: (vehicleId) => axiosClient.get(`/api/reports/vehicle/${vehicleId}/current-quarter`),
 
   // 8. Get current year report - GET /api/report/vehicle/{vehicleId}/current-year (README 10 compliant)
-  getCurrentYearReport: (vehicleId) => axiosClient.get(`/api/report/vehicle/${vehicleId}/current-year`),
+  getCurrentYearReport: (vehicleId) => axiosClient.get(`/api/reports/vehicle/${vehicleId}/current-year`),
 
   // ===== LEGACY METHODS FOR BACKWARD COMPATIBILITY =====
   financial: (params) => axiosClient.get('/api/Report/financial', { params }),

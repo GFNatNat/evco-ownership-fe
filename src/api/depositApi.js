@@ -4,23 +4,24 @@ import axiosClient from './axiosClient';
  * Deposit API - README 16 Compliant Implementation
  * Manages deposit transactions for vehicle co-ownership
  * All endpoints follow exact README 16 specifications
+// All endpoints updated to use capitalized controller names (e.g., /api/Deposit) to match Swagger
  */
 
 const depositApi = {
     // ===== README 16 COMPLIANCE - 9 ENDPOINTS =====
 
     // 1. Create a new deposit - POST /api/deposit (README 16 compliant)
-    create: (data) => axiosClient.post('/api/deposit', {
+    create: (data) => axiosClient.post('/api/Deposit', {
         amount: data.amount,
         depositMethod: data.depositMethod, // 0: CreditCard, 1: EWallet, 2: OnlineBanking, 3: QRCode
         description: data.description
     }),
 
     // 2. Get deposit by ID - GET /api/deposit/{id} (README 16 compliant)
-    getById: (id) => axiosClient.get(`/api/deposit/${id}`),
+    getById: (id) => axiosClient.get(`/api/Deposit/${id}`),
 
     // 3. Get user's deposit history - GET /api/deposit/my-deposits (README 16 compliant)
-    getMyDeposits: (params) => axiosClient.get('/api/deposit/my-deposits', {
+    getMyDeposits: (params) => axiosClient.get('/api/Deposit/my-deposits', {
         params: {
             depositMethod: params?.depositMethod,
             status: params?.status,
@@ -36,7 +37,7 @@ const depositApi = {
     }),
 
     // 4. Get all deposits (Admin/Staff) - GET /api/deposit (README 16 compliant)
-    getAll: (params) => axiosClient.get('/api/deposit', {
+    getAll: (params) => axiosClient.get('/api/Deposit', {
         params: {
             depositMethod: params?.depositMethod,
             status: params?.status,
@@ -53,19 +54,19 @@ const depositApi = {
     }),
 
     // 5. Cancel a deposit - POST /api/deposit/{id}/cancel (README 16 compliant)
-    cancel: (id) => axiosClient.post(`/api/deposit/${id}/cancel`),
+    cancel: (id) => axiosClient.post(`/api/Deposit/${id}/cancel`),
 
     // 6. Get user's deposit statistics - GET /api/deposit/my-statistics (README 16 compliant)
-    getMyStatistics: () => axiosClient.get('/api/deposit/my-statistics'),
+    getMyStatistics: () => axiosClient.get('/api/Deposit/my-statistics'),
 
     // 7. Get payment methods - GET /api/deposit/payment-methods (README 16 compliant)
-    getPaymentMethods: () => axiosClient.get('/api/deposit/payment-methods'),
+    getPaymentMethods: () => axiosClient.get('/api/Deposit/payment-methods'),
 
     // 8. Payment gateway callback - GET /api/deposit/callback (README 16 compliant)
-    handleCallback: (params) => axiosClient.get('/api/deposit/callback', { params }),
+    handleCallback: (params) => axiosClient.get('/api/Deposit/callback', { params }),
 
     // 9. Verify callback (POST) - POST /api/deposit/verify-callback (README 16 compliant)
-    verifyCallback: (data) => axiosClient.post('/api/deposit/verify-callback', {
+    verifyCallback: (data) => axiosClient.post('/api/Deposit/verify-callback', {
         depositId: data.depositId,
         gatewayTransactionId: data.gatewayTransactionId,
         isSuccess: data.isSuccess,

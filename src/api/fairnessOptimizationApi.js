@@ -4,13 +4,14 @@ import axiosClient from './axiosClient';
  * Fairness Optimization API - README 18 Compliant Implementation
  * Provides AI-powered fairness analysis and cost optimization features
  * All endpoints follow exact README 18 specifications
+// All endpoints updated to use capitalized controller names (e.g., /api/FairnessOptimization) to match Swagger
  */
 
 const fairnessOptimizationApi = {
     // ===== README 18 COMPLIANCE - 4 ENDPOINTS =====
 
     // 1. Create fairness report - GET /api/fairnessoptimization/vehicle/{vehicleId}/fairness-report (README 18 compliant)
-    getFairnessReport: (vehicleId, params) => axiosClient.get(`/api/fairnessoptimization/vehicle/${vehicleId}/fairness-report`, {
+    getFairnessReport: (vehicleId, params) => axiosClient.get(`/api/FairnessOptimization/vehicle/${vehicleId}/fairness-report`, {
         params: {
             startDate: params?.startDate,
             endDate: params?.endDate,
@@ -19,7 +20,7 @@ const fairnessOptimizationApi = {
     }),
 
     // 2. Get schedule suggestions - GET /api/fairnessoptimization/vehicle/{vehicleId}/schedule-suggestions (README 18 compliant)
-    getScheduleSuggestions: (vehicleId, params) => axiosClient.get(`/api/fairnessoptimization/vehicle/${vehicleId}/schedule-suggestions`, {
+    getScheduleSuggestions: (vehicleId, params) => axiosClient.get(`/api/FairnessOptimization/vehicle/${vehicleId}/schedule-suggestions`, {
         params: {
             startDate: params?.startDate,
             endDate: params?.endDate,
@@ -29,7 +30,7 @@ const fairnessOptimizationApi = {
     }),
 
     // 3. Get maintenance suggestions - GET /api/fairnessoptimization/vehicle/{vehicleId}/maintenance-suggestions (README 18 compliant)
-    getMaintenanceSuggestions: (vehicleId, params) => axiosClient.get(`/api/fairnessoptimization/vehicle/${vehicleId}/maintenance-suggestions`, {
+    getMaintenanceSuggestions: (vehicleId, params) => axiosClient.get(`/api/FairnessOptimization/vehicle/${vehicleId}/maintenance-suggestions`, {
         params: {
             includePredictive: params?.includePredictive !== false, // default: true
             lookaheadDays: params?.lookaheadDays || 30 // default: 30, max: 365
@@ -37,7 +38,7 @@ const fairnessOptimizationApi = {
     }),
 
     // 4. Get cost saving recommendations - GET /api/fairnessoptimization/vehicle/{vehicleId}/cost-saving-recommendations (README 18 compliant)
-    getCostSavingRecommendations: (vehicleId, params) => axiosClient.get(`/api/fairnessoptimization/vehicle/${vehicleId}/cost-saving-recommendations`, {
+    getCostSavingRecommendations: (vehicleId, params) => axiosClient.get(`/api/FairnessOptimization/vehicle/${vehicleId}/cost-saving-recommendations`, {
         params: {
             analysisPeriodDays: params?.analysisPeriodDays || 90, // default: 90, min: 7, max: 365
             includeFundOptimization: params?.includeFundOptimization !== false, // default: true

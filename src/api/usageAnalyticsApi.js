@@ -7,7 +7,7 @@ import axiosClient from './axiosClient';
  */
 const usageAnalyticsApi = {
   // Base endpoint
-  baseURL: '/api/usageanalytics',
+  baseURL: '/api/UsageAnalytics',
 
   /**
    * Get usage vs ownership comparison
@@ -15,7 +15,7 @@ const usageAnalyticsApi = {
    */
   getUsageVsOwnership: (vehicleId, params = {}) => {
     const { startDate, endDate, usageMetric } = params;
-    
+
     const queryParams = {};
     if (startDate) queryParams.startDate = startDate;
     if (endDate) queryParams.endDate = endDate;
@@ -32,7 +32,7 @@ const usageAnalyticsApi = {
    */
   getUsageVsOwnershipTrends: (vehicleId, params = {}) => {
     const { startDate, endDate, granularity } = params;
-    
+
     const queryParams = {};
     if (startDate) queryParams.startDate = startDate;
     if (endDate) queryParams.endDate = endDate;
@@ -49,7 +49,7 @@ const usageAnalyticsApi = {
    */
   getCoOwnerUsageDetail: (vehicleId, coOwnerId, params = {}) => {
     const { startDate, endDate } = params;
-    
+
     const queryParams = {};
     if (startDate) queryParams.startDate = startDate;
     if (endDate) queryParams.endDate = endDate;
@@ -65,7 +65,7 @@ const usageAnalyticsApi = {
    */
   getMyUsageHistory: (params = {}) => {
     const { startDate, endDate, vehicleId, pageIndex = 1, pageSize = 20 } = params;
-    
+
     const queryParams = { pageIndex, pageSize };
     if (startDate) queryParams.startDate = startDate;
     if (endDate) queryParams.endDate = endDate;
@@ -82,7 +82,7 @@ const usageAnalyticsApi = {
    */
   getGroupUsageSummary: (params = {}) => {
     const { startDate, endDate } = params;
-    
+
     const queryParams = {};
     if (startDate) queryParams.startDate = startDate;
     if (endDate) queryParams.endDate = endDate;
@@ -98,7 +98,7 @@ const usageAnalyticsApi = {
    */
   compareCoOwners: (params = {}) => {
     const { vehicleId, coOwnerIds, startDate, endDate, metric } = params;
-    
+
     const queryParams = {};
     if (vehicleId) queryParams.vehicleId = vehicleId;
     if (coOwnerIds && Array.isArray(coOwnerIds)) queryParams.coOwnerIds = coOwnerIds.join(',');
@@ -117,7 +117,7 @@ const usageAnalyticsApi = {
    */
   compareVehicles: (params = {}) => {
     const { vehicleIds, startDate, endDate, metric } = params;
-    
+
     const queryParams = {};
     if (vehicleIds && Array.isArray(vehicleIds)) queryParams.vehicleIds = vehicleIds.join(',');
     if (startDate) queryParams.startDate = startDate;
@@ -134,15 +134,15 @@ const usageAnalyticsApi = {
    * GET /compare/periods
    */
   compareTimePeriods: (params = {}) => {
-    const { 
-      vehicleId, 
-      period1Start, 
-      period1End, 
-      period2Start, 
-      period2End, 
-      granularity 
+    const {
+      vehicleId,
+      period1Start,
+      period1End,
+      period2Start,
+      period2End,
+      granularity
     } = params;
-    
+
     const queryParams = {};
     if (vehicleId) queryParams.vehicleId = vehicleId;
     if (period1Start) queryParams.period1Start = period1Start;
@@ -295,7 +295,7 @@ const usageAnalyticsApi = {
    */
   calculateUsageEfficiency: (usageData) => {
     const { usagePercentage, ownershipPercentage } = usageData;
-    
+
     if (!usagePercentage || !ownershipPercentage || ownershipPercentage === 0) {
       return 0;
     }
@@ -313,7 +313,7 @@ const usageAnalyticsApi = {
    */
   generateUsageInsights: (usageData) => {
     const insights = [];
-    
+
     if (!usageData || !Array.isArray(usageData.coOwnersData)) {
       return insights;
     }

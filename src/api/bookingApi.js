@@ -1,3 +1,4 @@
+// All endpoints updated to use capitalized controller names (e.g., /api/Booking) to match Swagger
 import axiosClient from './axiosClient';
 
 const bookingApi = {

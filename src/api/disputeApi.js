@@ -4,13 +4,14 @@ import axiosClient from './axiosClient';
  * Dispute API - README 17 Compliant Implementation
  * Manages disputes related to bookings, cost sharing, and group decisions
  * All endpoints follow exact README 17 specifications
+// All endpoints updated to use capitalized controller names (e.g., /api/Dispute) to match Swagger
  */
 
 const disputeApi = {
   // ===== README 17 COMPLIANCE - 8 ENDPOINTS =====
 
   // 1. Raise a booking dispute - POST /api/dispute/booking (README 17 compliant)
-  raiseBookingDispute: (data) => axiosClient.post('/api/dispute/booking', {
+  raiseBookingDispute: (data) => axiosClient.post('/api/Dispute/booking', {
     bookingId: data.bookingId,
     vehicleId: data.vehicleId,
     title: data.title,
@@ -23,7 +24,7 @@ const disputeApi = {
   }),
 
   // 2. Raise a cost sharing dispute - POST /api/dispute/cost-sharing (README 17 compliant)
-  raiseCostSharingDispute: (data) => axiosClient.post('/api/dispute/cost-sharing', {
+  raiseCostSharingDispute: (data) => axiosClient.post('/api/Dispute/cost-sharing', {
     vehicleId: data.vehicleId,
     maintenanceCostId: data.maintenanceCostId,
     title: data.title,
@@ -38,7 +39,7 @@ const disputeApi = {
   }),
 
   // 3. Raise a group decision dispute - POST /api/dispute/group-decision (README 17 compliant)
-  raiseGroupDecisionDispute: (data) => axiosClient.post('/api/dispute/group-decision', {
+  raiseGroupDecisionDispute: (data) => axiosClient.post('/api/Dispute/group-decision', {
     vehicleId: data.vehicleId,
     vehicleUpgradeProposalId: data.vehicleUpgradeProposalId,
     title: data.title,
@@ -52,10 +53,10 @@ const disputeApi = {
   }),
 
   // 4. Get dispute by ID - GET /api/dispute/{disputeId} (README 17 compliant)
-  getById: (disputeId) => axiosClient.get(`/api/dispute/${disputeId}`),
+  getById: (disputeId) => axiosClient.get(`/api/Dispute/${disputeId}`),
 
   // 5. Get list of disputes - GET /api/dispute (README 17 compliant)
-  list: (params) => axiosClient.get('/api/dispute', {
+  list: (params) => axiosClient.get('/api/Dispute', {
     params: {
       vehicleId: params?.vehicleId,
       disputeType: params?.disputeType, // Booking, CostSharing, GroupDecision
@@ -71,7 +72,7 @@ const disputeApi = {
   }),
 
   // 6. Respond to a dispute - POST /api/dispute/{disputeId}/respond (README 17 compliant)
-  respond: (disputeId, data) => axiosClient.post(`/api/dispute/${disputeId}/respond`, {
+  respond: (disputeId, data) => axiosClient.post(`/api/Dispute/${disputeId}/respond`, {
     message: data.message,
     evidenceUrls: data.evidenceUrls || [],
     agreesWithDispute: data.agreesWithDispute,
@@ -79,14 +80,14 @@ const disputeApi = {
   }),
 
   // 7. Update dispute status (Admin) - PUT /api/dispute/{disputeId}/status (README 17 compliant)
-  updateStatus: (disputeId, data) => axiosClient.put(`/api/dispute/${disputeId}/status`, {
+  updateStatus: (disputeId, data) => axiosClient.put(`/api/Dispute/${disputeId}/status`, {
     status: data.status, // Open, UnderReview, Resolved, Rejected
     resolutionNotes: data.resolutionNotes,
     actionsRequired: data.actionsRequired
   }),
 
   // 8. Withdraw a dispute - POST /api/dispute/{disputeId}/withdraw (README 17 compliant)
-  withdraw: (disputeId, data) => axiosClient.post(`/api/dispute/${disputeId}/withdraw`, {
+  withdraw: (disputeId, data) => axiosClient.post(`/api/Dispute/${disputeId}/withdraw`, {
     reason: data.reason
   }),
 

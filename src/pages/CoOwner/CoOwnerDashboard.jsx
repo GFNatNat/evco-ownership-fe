@@ -85,16 +85,15 @@ function CoOwnerDashboard() {
     const loadDashboardData = async () => {
         setLoading(true);
         try {
-            // Load user's vehicles
-            const vehiclesResponse = await coOwnerApi.vehicles.getMy();
+            const vehiclesResponse = await coOwnerApi.getVehicles();
             const vehicles = vehiclesResponse.data.data || [];
 
-            // Load user's groups
-            const groupsResponse = await coOwnerApi.groups.getMy();
+            // Load user's groups  
+            const groupsResponse = await coOwnerApi.getGroups();
             const groups = groupsResponse.data.data || [];
 
             // Load notifications
-            const notificationsResponse = await coOwnerApi.notifications.getMy();
+            const notificationsResponse = await coOwnerApi.getNotifications();
             const notifications = notificationsResponse.data.data || [];
 
             setDashboardData({

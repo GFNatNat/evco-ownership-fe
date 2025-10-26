@@ -4,13 +4,14 @@ import axiosClient from './axiosClient';
  * MaintenanceVote API - README 21 Compliant Implementation
  * Manages maintenance voting operations including proposals, voting, and approvals
  * All endpoints follow exact README 21 specifications
+// All endpoints updated to use capitalized controller names (e.g., /api/MaintenanceVote) to match Swagger
  */
 
 const maintenanceVoteApi = {
   // ===== README 21 COMPLIANCE - 6 ENDPOINTS =====
 
   // 1. Propose maintenance expenditure - POST /api/maintenance-vote/propose (README 21 compliant)
-  propose: (data) => axiosClient.post('/api/maintenance-vote/propose', {
+  propose: (data) => axiosClient.post('/api/MaintenanceVote/propose', {
     vehicleId: data.vehicleId,
     maintenanceCostId: data.maintenanceCostId,
     reason: data.reason,
@@ -19,16 +20,16 @@ const maintenanceVoteApi = {
   }),
 
   // 2. Vote on proposal - POST /api/maintenance-vote/{fundUsageId}/vote (README 21 compliant)
-  vote: (fundUsageId, data) => axiosClient.post(`/api/maintenance-vote/${fundUsageId}/vote`, {
+  vote: (fundUsageId, data) => axiosClient.post(`/api/MaintenanceVote/${fundUsageId}/vote`, {
     approve: data.approve, // true/false
     comments: data.comments
   }),
 
   // 3. Get proposal details - GET /api/maintenance-vote/{fundUsageId} (README 21 compliant)
-  getProposalDetails: (fundUsageId) => axiosClient.get(`/api/maintenance-vote/${fundUsageId}`),
+  getProposalDetails: (fundUsageId) => axiosClient.get(`/api/MaintenanceVote/${fundUsageId}`),
 
   // 4. Get pending proposals for vehicle - GET /api/maintenance-vote/vehicle/{vehicleId}/pending (README 21 compliant)
-  getPendingProposals: (vehicleId, params) => axiosClient.get(`/api/maintenance-vote/vehicle/${vehicleId}/pending`, {
+  getPendingProposals: (vehicleId, params) => axiosClient.get(`/api/MaintenanceVote/vehicle/${vehicleId}/pending`, {
     params: {
       pageNumber: params?.pageNumber || 1,
       pageSize: params?.pageSize || 20
@@ -36,7 +37,7 @@ const maintenanceVoteApi = {
   }),
 
   // 5. Get user voting history - GET /api/maintenance-vote/my-voting-history (README 21 compliant)
-  getMyVotingHistory: (params) => axiosClient.get('/api/maintenance-vote/my-voting-history', {
+  getMyVotingHistory: (params) => axiosClient.get('/api/MaintenanceVote/my-voting-history', {
     params: {
       pageNumber: params?.pageNumber || 1,
       pageSize: params?.pageSize || 20
@@ -44,7 +45,7 @@ const maintenanceVoteApi = {
   }),
 
   // 6. Cancel proposal - DELETE /api/maintenance-vote/{fundUsageId}/cancel (README 21 compliant)
-  cancelProposal: (fundUsageId, cancelReason) => axiosClient.delete(`/api/maintenance-vote/${fundUsageId}/cancel`, {
+  cancelProposal: (fundUsageId, cancelReason) => axiosClient.delete(`/api/MaintenanceVote/${fundUsageId}/cancel`, {
     data: { cancelReason }
   }),
 

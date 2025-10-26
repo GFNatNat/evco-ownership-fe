@@ -7,7 +7,7 @@ import axiosClient from './axiosClient';
  */
 const ownershipHistoryApi = {
   // Base endpoint
-  baseURL: '/api/ownershiphistory',
+  baseURL: '/api/OwnershipHistory',
 
   /**
    * Get vehicle ownership history
@@ -15,7 +15,7 @@ const ownershipHistoryApi = {
    */
   getVehicleHistory: (vehicleId, filters = {}) => {
     const { changeType, startDate, endDate, coOwnerId, offset = 0, limit = 50 } = filters;
-    
+
     const params = { offset, limit };
     if (changeType) params.changeType = changeType;
     if (startDate) params.startDate = startDate;
@@ -62,7 +62,7 @@ const ownershipHistoryApi = {
   },
 
   // Helper functions for filtering and formatting
-  
+
   /**
    * Available change types for filtering
    */
@@ -151,7 +151,7 @@ const ownershipHistoryApi = {
    */
   calculateChangeImpact: (oldPercentage, newPercentage) => {
     if (oldPercentage === null || newPercentage === null) return null;
-    
+
     const change = newPercentage - oldPercentage;
     const changePercentage = oldPercentage > 0 ? (change / oldPercentage) * 100 : 0;
 
@@ -169,11 +169,11 @@ const ownershipHistoryApi = {
    */
   groupByTimePeriod: (records, period = 'month') => {
     const groups = {};
-    
+
     records.forEach(record => {
       const date = new Date(record.changeDate);
       let key;
-      
+
       switch (period) {
         case 'day':
           key = date.toISOString().split('T')[0];
@@ -192,13 +192,13 @@ const ownershipHistoryApi = {
         default:
           key = date.toISOString().split('T')[0];
       }
-      
+
       if (!groups[key]) {
         groups[key] = [];
       }
       groups[key].push(record);
     });
-    
+
     return groups;
   },
 

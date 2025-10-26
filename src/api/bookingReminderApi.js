@@ -4,37 +4,38 @@ import axiosClient from './axiosClient';
  * BookingReminder API - README 13 Compliant Implementation
  * Handles booking reminder configuration and notifications
  * All endpoints follow exact README 13 specifications
+// All endpoints updated to use capitalized controller names (e.g., /api/BookingReminder) to match Swagger
  */
 
 const bookingReminderApi = {
     // ===== README 13 COMPLIANCE - 5 ENDPOINTS =====
 
     // 1. Configure booking reminder - POST /api/booking-reminder/configure (README 13 compliant)
-    configure: (data) => axiosClient.post('/api/booking-reminder/configure', {
+    configure: (data) => axiosClient.post('/api/BookingReminder/configure', {
         hoursBeforeBooking: data.hoursBeforeBooking || 24,
         enabled: data.enabled !== undefined ? data.enabled : true
     }),
 
     // 2. Get reminder preferences - GET /api/booking-reminder/preferences (README 13 compliant)
-    getPreferences: () => axiosClient.get('/api/booking-reminder/preferences'),
+    getPreferences: () => axiosClient.get('/api/BookingReminder/preferences'),
 
     // 3. Get upcoming bookings - GET /api/booking-reminder/upcoming (README 13 compliant)
-    getUpcomingBookings: (params) => axiosClient.get('/api/booking-reminder/upcoming', {
+    getUpcomingBookings: (params) => axiosClient.get('/api/BookingReminder/upcoming', {
         params: {
             daysAhead: params?.daysAhead || 7
         }
     }),
 
     // 4. Send manual reminder - POST /api/booking-reminder/send/{bookingId} (README 13 compliant)
-    sendManualReminder: (bookingId) => axiosClient.post(`/api/booking-reminder/send/${bookingId}`),
+    sendManualReminder: (bookingId) => axiosClient.post(`/api/BookingReminder/send/${bookingId}`),
 
     // 5. Get reminder statistics (Admin) - GET /api/booking-reminder/statistics (README 13 compliant)
-    getStatistics: () => axiosClient.get('/api/booking-reminder/statistics'),
+    getStatistics: () => axiosClient.get('/api/BookingReminder/statistics'),
 
     // ===== UTILITY METHODS FOR FRONTEND INTEGRATION =====
 
     // Update reminder settings
-    updateSettings: (settings) => axiosClient.put('/api/booking-reminder/preferences', {
+    updateSettings: (settings) => axiosClient.put('/api/BookingReminder/preferences', {
         hoursBeforeBooking: settings.hoursBeforeBooking,
         enabled: settings.enabled,
         emailNotifications: settings.emailNotifications || true,
@@ -43,12 +44,12 @@ const bookingReminderApi = {
     }),
 
     // Enable/disable reminders
-    toggleReminders: (enabled) => axiosClient.patch('/api/booking-reminder/toggle', {
+    toggleReminders: (enabled) => axiosClient.patch('/api/BookingReminder/toggle', {
         enabled: enabled
     }),
 
     // Get reminder history for user
-    getReminderHistory: (params) => axiosClient.get('/api/booking-reminder/history', {
+    getReminderHistory: (params) => axiosClient.get('/api/BookingReminder/history', {
         params: {
             pageIndex: params?.pageIndex || 1,
             pageSize: params?.pageSize || 20,
@@ -61,10 +62,10 @@ const bookingReminderApi = {
     }),
 
     // Check if reminder can be sent
-    canSendReminder: (bookingId) => axiosClient.get(`/api/booking-reminder/can-send/${bookingId}`),
+    canSendReminder: (bookingId) => axiosClient.get(`/api/BookingReminder/can-send/${bookingId}`),
 
     // Get reminders for specific vehicle
-    getVehicleReminders: (vehicleId, params) => axiosClient.get(`/api/booking-reminder/vehicle/${vehicleId}/reminders`, {
+    getVehicleReminders: (vehicleId, params) => axiosClient.get(`/api/BookingReminder/vehicle/${vehicleId}/reminders`, {
         params: {
             status: params?.status,
             fromDate: params?.fromDate,
@@ -113,10 +114,10 @@ const bookingReminderApi = {
     }),
 
     // Get reminder notification preferences
-    getNotificationPreferences: () => axiosClient.get('/api/booking-reminder/notification-preferences'),
+    getNotificationPreferences: () => axiosClient.get('/api/BookingReminder/notification-preferences'),
 
     // Update notification preferences
-    updateNotificationPreferences: (preferences) => axiosClient.put('/api/booking-reminder/notification-preferences', {
+    updateNotificationPreferences: (preferences) => axiosClient.put('/api/BookingReminder/notification-preferences', {
         emailEnabled: preferences.emailEnabled || true,
         pushEnabled: preferences.pushEnabled || true,
         smsEnabled: preferences.smsEnabled || false,

@@ -4,16 +4,17 @@ import axiosClient from './axiosClient';
  * Fund API - README 20 Compliant Implementation
  * Manages vehicle fund operations including balance, additions, usages, and budget analysis
  * All endpoints follow exact README 20 specifications
+// All endpoints updated to use capitalized controller names (e.g., /api/Fund) to match Swagger
  */
 
 const fundApi = {
   // ===== README 20 COMPLIANCE - 9 ENDPOINTS =====
 
   // 1. Get fund balance - GET /api/fund/balance/{vehicleId} (README 20 compliant)
-  getBalance: (vehicleId) => axiosClient.get(`/api/fund/balance/${vehicleId}`),
+  getBalance: (vehicleId) => axiosClient.get(`/api/Fund/balance/${vehicleId}`),
 
   // 2. Get fund additions - GET /api/fund/additions/{vehicleId} (README 20 compliant)
-  getAdditions: (vehicleId, params) => axiosClient.get(`/api/fund/additions/${vehicleId}`, {
+  getAdditions: (vehicleId, params) => axiosClient.get(`/api/Fund/additions/${vehicleId}`, {
     params: {
       pageNumber: params?.pageNumber || 1,
       pageSize: params?.pageSize || 20
@@ -21,7 +22,7 @@ const fundApi = {
   }),
 
   // 3. Get fund usages - GET /api/fund/usages/{vehicleId} (README 20 compliant)
-  getUsages: (vehicleId, params) => axiosClient.get(`/api/fund/usages/${vehicleId}`, {
+  getUsages: (vehicleId, params) => axiosClient.get(`/api/Fund/usages/${vehicleId}`, {
     params: {
       pageNumber: params?.pageNumber || 1,
       pageSize: params?.pageSize || 20
@@ -29,14 +30,14 @@ const fundApi = {
   }),
 
   // 4. Get fund summary - GET /api/fund/summary/{vehicleId} (README 20 compliant)
-  getSummary: (vehicleId, params) => axiosClient.get(`/api/fund/summary/${vehicleId}`, {
+  getSummary: (vehicleId, params) => axiosClient.get(`/api/Fund/summary/${vehicleId}`, {
     params: {
       monthsToAnalyze: params?.monthsToAnalyze || 6
     }
   }),
 
   // 5. Create fund usage - POST /api/fund/usage (README 20 compliant)
-  createUsage: (data) => axiosClient.post('/api/fund/usage', {
+  createUsage: (data) => axiosClient.post('/api/Fund/usage', {
     vehicleId: data.vehicleId,
     usageType: data.usageType, // 0: Maintenance, 1: Insurance, 2: Fuel, 3: Parking, 4: Other
     amount: data.amount,
@@ -46,7 +47,7 @@ const fundApi = {
   }),
 
   // 6. Update fund usage - PUT /api/fund/usage/{usageId} (README 20 compliant)
-  updateUsage: (usageId, data) => axiosClient.put(`/api/fund/usage/${usageId}`, {
+  updateUsage: (usageId, data) => axiosClient.put(`/api/Fund/usage/${usageId}`, {
     usageType: data.usageType,
     amount: data.amount,
     description: data.description,
@@ -55,10 +56,10 @@ const fundApi = {
   }),
 
   // 7. Delete fund usage (refund) - DELETE /api/fund/usage/{usageId} (README 20 compliant)
-  deleteUsage: (usageId) => axiosClient.delete(`/api/fund/usage/${usageId}`),
+  deleteUsage: (usageId) => axiosClient.delete(`/api/Fund/usage/${usageId}`),
 
   // 8. Get category usages - GET /api/fund/category/{vehicleId}/usages/{category} (README 20 compliant)
-  getCategoryUsages: (vehicleId, category, params) => axiosClient.get(`/api/fund/category/${vehicleId}/usages/${category}`, {
+  getCategoryUsages: (vehicleId, category, params) => axiosClient.get(`/api/Fund/category/${vehicleId}/usages/${category}`, {
     params: {
       startDate: params?.startDate,
       endDate: params?.endDate
@@ -66,7 +67,7 @@ const fundApi = {
   }),
 
   // 9. Get category budget analysis - GET /api/fund/category/{vehicleId}/analysis (README 20 compliant)
-  getCategoryAnalysis: (vehicleId) => axiosClient.get(`/api/fund/category/${vehicleId}/analysis`),
+  getCategoryAnalysis: (vehicleId) => axiosClient.get(`/api/Fund/category/${vehicleId}/analysis`),
 
   // ===== UTILITY METHODS FOR FRONTEND INTEGRATION =====
 
