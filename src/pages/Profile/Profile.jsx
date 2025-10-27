@@ -2,7 +2,7 @@ import React from 'react';
 import {
     Card, CardContent, Typography, Grid, TextField, Button,
     Stack, Snackbar, Alert, Avatar, Divider, Box, Tabs, Tab,
-    Switch, FormControlLabel, IconButton, Chip
+    Switch, FormControlLabel, IconButton, Chip, MenuItem
 } from '@mui/material';
 import { PhotoCamera, Security, Notifications, Edit, DirectionsCar, Assessment } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
@@ -12,6 +12,7 @@ import licenseApi from '../../api/licenseApi';
 import fileUploadApi from '../../api/fileUploadApi';
 
 export default function Profile() {
+    // Tách profile (dữ liệu gốc) và profileDraft (form nhập liệu)
     const { user, setUser } = useAuth();
     const [tabValue, setTabValue] = React.useState(0);
     const [profile, setProfile] = React.useState({
@@ -24,6 +25,23 @@ export default function Profile() {
         gender: '',
         profilePictureUrl: '',
     });
+    // Khởi tạo profileDraft từ localStorage nếu có, nếu không sẽ set sau khi loadProfile
+    const [profileDraft, setProfileDraft] = React.useState(() => {
+        try {
+            const saved = localStorage.getItem('profileDraft');
+            if (saved) return JSON.parse(saved);
+        } catch { }
+        return null; // Sẽ set sau khi loadProfile
+    });
+    // Khi nhập liệu chỉ update profileDraft
+    const handleProfileChange = React.useCallback((e) => {
+        const { name, value } = e.target;
+        setProfileDraft((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    }, []);
+    const [profileErrors, setProfileErrors] = React.useState({});
     const [passwordForm, setPasswordForm] = React.useState({
         currentPassword: '',
         newPassword: '',
@@ -50,28 +68,68 @@ export default function Profile() {
     const [licenseForm, setLicenseForm] = React.useState({
         licenseNumber: '',
         issueDate: '',
+        issuedBy: '',
         firstName: '',
-        lastName: ''
+        lastName: '',
+        dateOfBirth: '',
+        licenseImage: null
     });
     const [loading, setLoading] = React.useState(false);
     const [message, setMessage] = React.useState('');
     const [error, setError] = React.useState('');
 
-    // Load profile data
+    // Prevent setProfile from overwriting user input while typing
+    const isFirstLoad = React.useRef(true);
     React.useEffect(() => {
+        const loadProfile = async () => {
+            try {
+                const res = await profileApi.getProfile();
+                if (res.data && isFirstLoad.current) {
+                    let firstName = '', lastName = '';
+                    if (res.data.fullName && typeof res.data.fullName === 'string') {
+                        const arr = res.data.fullName.trim().split(/\s+/);
+                        if (arr.length === 1) {
+                            firstName = arr[0];
+                            lastName = '';
+                        } else if (arr.length > 1) {
+                            firstName = arr[0];
+                            lastName = arr.slice(1).join(' ');
+                        }
+                    } else {
+                        firstName = res.data.firstName ?? '';
+                        lastName = res.data.lastName ?? '';
+                    }
+                    const loadedProfile = {
+                        firstName,
+                        lastName,
+                        email: res.data.email ?? '',
+                        phoneNumber: res.data.phoneNumber ?? '',
+                        address: res.data.address ?? '',
+                        dateOfBirth: res.data.dateOfBirth ?? '',
+                        gender: res.data.gender ?? '',
+                        profilePictureUrl: res.data.profilePictureUrl ?? '',
+                    };
+                    setProfile(loadedProfile);
+                    // Nếu profileDraft chưa có (null) thì mới set từ BE
+                    setProfileDraft((prev) => prev === null ? loadedProfile : prev);
+                    isFirstLoad.current = false;
+                }
+            } catch (err) {
+                setError('Không thể tải thông tin profile');
+            }
+        };
         loadProfile();
     }, []);
-
-    const loadProfile = async () => {
-        try {
-            const res = await profileApi.getProfile();
-            if (res.data) {
-                setProfile(res.data);
-            }
-        } catch (err) {
-            setError('Không thể tải thông tin profile');
-        }
-    };
+    // Debounce lưu localStorage khi profileDraft thay đổi
+    React.useEffect(() => {
+        if (!profileDraft) return;
+        const timeout = setTimeout(() => {
+            try {
+                localStorage.setItem('profileDraft', JSON.stringify(profileDraft));
+            } catch { }
+        }, 400);
+        return () => clearTimeout(timeout);
+    }, [profileDraft]);
 
     // These endpoints are not in the API specification, commented out for now
     // Will need to implement when backend API is ready
@@ -87,15 +145,52 @@ export default function Profile() {
     //     }
     // };
 
+    const validateProfile = () => {
+        const errors = {};
+        if (!profileDraft.firstName || !String(profileDraft.firstName).trim()) errors.firstName = 'Vui lòng nhập tên';
+        if (!profileDraft.lastName || !String(profileDraft.lastName).trim()) errors.lastName = 'Vui lòng nhập họ';
+        if (!profileDraft.phoneNumber || !String(profileDraft.phoneNumber).trim()) errors.phoneNumber = 'Vui lòng nhập số điện thoại';
+        // Optionally validate phone format, date, etc.
+        return errors;
+    };
+
     const updateProfile = async () => {
-        setLoading(true);
         setMessage('');
         setError('');
+        const errors = validateProfile();
+        setProfileErrors(errors);
+        if (Object.keys(errors).length > 0) {
+            setError('Vui lòng kiểm tra lại thông tin.');
+            return;
+        }
+        setLoading(true);
         try {
-            await profileApi.updateProfile(profile);
+            // Gửi đúng schema BE yêu cầu
+            const payload = {
+                firstName: profileDraft.firstName?.trim() || '',
+                lastName: profileDraft.lastName?.trim() || '',
+                phoneNumber: profileDraft.phoneNumber?.trim() || '',
+                dateOfBirth: profileDraft.dateOfBirth || '',
+                address: profileDraft.address || ''
+            };
+            await profileApi.updateProfile(payload);
+            setProfile((prev) => ({
+                ...prev,
+                firstName: profileDraft.firstName,
+                lastName: profileDraft.lastName,
+                phoneNumber: profileDraft.phoneNumber,
+                address: profileDraft.address,
+                dateOfBirth: profileDraft.dateOfBirth,
+                gender: profileDraft.gender,
+            }));
+            setUser((prev) => ({
+                ...prev,
+                firstName: profileDraft.firstName,
+                lastName: profileDraft.lastName,
+                phoneNumber: profileDraft.phoneNumber
+            }));
+            try { localStorage.removeItem('profileDraft'); } catch { }
             setMessage('Cập nhật thông tin thành công');
-            // Update user in context if needed
-            setUser({ ...user, ...profile });
         } catch (err) {
             setError(err?.response?.data?.message || 'Cập nhật thất bại');
         } finally {
@@ -134,7 +229,9 @@ export default function Profile() {
 
         try {
             const res = await profileApi.uploadProfilePicture(formData);
-            setProfile({ ...profile, profilePictureUrl: res.data.profileImageUrl || res.data.url });
+            // Chỉ update trường profilePictureUrl, không set lại toàn bộ object
+            setProfileDraft((prev) => ({ ...prev, profilePictureUrl: res.data.profileImageUrl || res.data.url }));
+            setProfile((prev) => ({ ...prev, profilePictureUrl: res.data.profileImageUrl || res.data.url }));
             setMessage('Cập nhật ảnh đại diện thành công');
         } catch (err) {
             setError('Upload ảnh đại diện thất bại');
@@ -169,34 +266,60 @@ export default function Profile() {
     const verifyLicense = async () => {
         setMessage('');
         setError('');
+        // Validate bắt buộc nhập đủ trường
+        if (!licenseForm.licenseNumber || !licenseForm.issueDate || !licenseForm.issuedBy || !licenseForm.firstName || !licenseForm.lastName || !licenseForm.dateOfBirth || !licenseForm.licenseImage) {
+            setError('Vui lòng nhập đầy đủ tất cả các trường và tải lên ảnh giấy phép.');
+            return;
+        }
         try {
-            // Upload license using new licenseApi
-            const uploadData = new FormData();
-            uploadData.append('licenseNumber', licenseForm.licenseNumber);
-            uploadData.append('issueDate', licenseForm.issueDate);
-            uploadData.append('firstName', licenseForm.firstName);
-            uploadData.append('lastName', licenseForm.lastName);
-
-            const res = await licenseApi.upload(uploadData);
-            if (res.data) {
-                setMessage('Tải lên giấy phép lái xe thành công. Đang chờ xác minh.');
+            const formData = new FormData();
+            formData.append('LicenseNumber', licenseForm.licenseNumber);
+            formData.append('IssueDate', licenseForm.issueDate);
+            formData.append('IssuedBy', licenseForm.issuedBy);
+            formData.append('FirstName', licenseForm.firstName);
+            formData.append('LastName', licenseForm.lastName);
+            formData.append('DateOfBirth', licenseForm.dateOfBirth);
+            formData.append('LicenseImage', licenseForm.licenseImage);
+            const res = await licenseApi.verify(formData);
+            if (res && res.data && res.data.StatusCode === 200) {
+                setMessage(res.data.Message || 'Xác minh giấy phép thành công. Đang chờ xác nhận.');
                 setLicenseForm({
                     licenseNumber: '',
                     issueDate: '',
+                    issuedBy: '',
                     firstName: '',
-                    lastName: ''
+                    lastName: '',
+                    dateOfBirth: '',
+                    licenseImage: null
                 });
+            } else {
+                setError(res?.data?.Message || 'Xác minh giấy phép thất bại');
             }
         } catch (err) {
-            setError(err?.response?.data?.message || 'Tải lên giấy phép thất bại');
+            // Hiển thị rõ lỗi trả về từ BE
+            const msg = err?.response?.data?.Message || err?.response?.data?.Error || err?.message || 'Xác minh giấy phép thất bại';
+            setError(msg);
         }
     };
 
-    const TabPanel = ({ children, value, index }) => (
-        <div role="tabpanel" hidden={value !== index}>
-            {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-        </div>
-    );
+    // Stable TabPanel to prevent remounting
+    function TabPanel(props) {
+        const { children, value, index, ...other } = props;
+        return (
+            <div
+                role="tabpanel"
+                hidden={value !== index}
+                id={`profile-tabpanel-${index}`}
+                aria-labelledby={`profile-tab-${index}`}
+                {...other}
+            >
+                {value === index ? <Box sx={{ p: 3 }}>{children}</Box> : null}
+            </div>
+        );
+    }
+
+    // Nếu profileDraft chưa khởi tạo xong thì không render form
+    if (!profileDraft) return null;
 
     return (
         <Grid container spacing={3}>
@@ -214,9 +337,9 @@ export default function Profile() {
                             <Box position="relative">
                                 <Avatar
                                     sx={{ width: 100, height: 100 }}
-                                    src={profile.profilePictureUrl}
+                                    src={profileDraft.profilePictureUrl}
                                 >
-                                    {profile.firstName?.charAt(0)?.toUpperCase()}
+                                    {profileDraft.firstName?.charAt(0)?.toUpperCase()}
                                 </Avatar>
                                 <IconButton
                                     sx={{
@@ -240,7 +363,7 @@ export default function Profile() {
                                 </IconButton>
                             </Box>
                             <Box>
-                                <Typography variant="h6">{profile.firstName} {profile.lastName}</Typography>
+                                <Typography variant="h6">{profileDraft.firstName} {profileDraft.lastName}</Typography>
                                 <Typography variant="body2" color="text.secondary">
                                     {user?.role}
                                 </Typography>
@@ -280,24 +403,33 @@ export default function Profile() {
                                 <TextField
                                     fullWidth
                                     label="Tên"
-                                    value={profile.firstName}
-                                    onChange={(e) => setProfile({ ...profile, firstName: e.target.value })}
+                                    name="firstName"
+                                    value={typeof profileDraft.firstName === 'string' ? profileDraft.firstName : ''}
+                                    onChange={handleProfileChange}
+                                    error={!!profileErrors.firstName}
+                                    helperText={profileErrors.firstName}
+                                    inputProps={{ autoComplete: 'off', spellCheck: false }}
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     fullWidth
                                     label="Họ"
-                                    value={profile.lastName}
-                                    onChange={(e) => setProfile({ ...profile, lastName: e.target.value })}
+                                    name="lastName"
+                                    value={typeof profileDraft.lastName === 'string' ? profileDraft.lastName : ''}
+                                    onChange={handleProfileChange}
+                                    error={!!profileErrors.lastName}
+                                    helperText={profileErrors.lastName}
+                                    inputProps={{ autoComplete: 'off', spellCheck: false }}
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     fullWidth
                                     label="Email"
-                                    value={profile.email}
-                                    onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                                    name="email"
+                                    value={profileDraft.email}
+                                    onChange={handleProfileChange}
                                     disabled
                                 />
                             </Grid>
@@ -305,17 +437,21 @@ export default function Profile() {
                                 <TextField
                                     fullWidth
                                     label="Số điện thoại"
-                                    value={profile.phoneNumber}
-                                    onChange={(e) => setProfile({ ...profile, phoneNumber: e.target.value })}
+                                    name="phoneNumber"
+                                    value={profileDraft.phoneNumber ?? ''}
+                                    onChange={handleProfileChange}
+                                    error={!!profileErrors.phoneNumber}
+                                    helperText={profileErrors.phoneNumber}
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     fullWidth
                                     label="Ngày sinh"
+                                    name="dateOfBirth"
                                     type="date"
-                                    value={profile.dateOfBirth}
-                                    onChange={(e) => setProfile({ ...profile, dateOfBirth: e.target.value })}
+                                    value={profileDraft.dateOfBirth}
+                                    onChange={handleProfileChange}
                                     InputLabelProps={{ shrink: true }}
                                 />
                             </Grid>
@@ -324,24 +460,25 @@ export default function Profile() {
                                     fullWidth
                                     select
                                     label="Giới tính"
-                                    value={profile.gender}
-                                    onChange={(e) => setProfile({ ...profile, gender: e.target.value })}
-                                    SelectProps={{ native: true }}
+                                    name="gender"
+                                    value={profileDraft.gender ?? ''}
+                                    onChange={handleProfileChange}
                                 >
-                                    <option value="">Chọn giới tính</option>
-                                    <option value="Male">Nam</option>
-                                    <option value="Female">Nữ</option>
-                                    <option value="Other">Khác</option>
+                                    <MenuItem value="">Chọn giới tính</MenuItem>
+                                    <MenuItem value="Male">Nam</MenuItem>
+                                    <MenuItem value="Female">Nữ</MenuItem>
+                                    <MenuItem value="Other">Khác</MenuItem>
                                 </TextField>
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
                                     fullWidth
                                     label="Địa chỉ"
+                                    name="address"
                                     multiline
                                     rows={2}
-                                    value={profile.address}
-                                    onChange={(e) => setProfile({ ...profile, address: e.target.value })}
+                                    value={profileDraft.address}
+                                    onChange={handleProfileChange}
                                 />
                             </Grid>
                             <Grid item xs={12}>
@@ -349,6 +486,8 @@ export default function Profile() {
                                     variant="contained"
                                     onClick={updateProfile}
                                     disabled={loading}
+                                    startIcon={loading ? <span className="MuiCircularProgress-root MuiCircularProgress-indeterminate" style={{ width: 20, height: 20, marginRight: 8 }}><svg className="MuiCircularProgress-svg" viewBox="22 22 44 44"><circle className="MuiCircularProgress-circle" cx="44" cy="44" r="20.2" fill="none" strokeWidth="3.6" /></svg></span> : null}
+                                    sx={{ minWidth: 180, fontWeight: 'bold', fontSize: 16, py: 1.2 }}
                                 >
                                     {loading ? 'Đang cập nhật...' : 'Cập nhật thông tin'}
                                 </Button>
@@ -614,6 +753,14 @@ export default function Profile() {
                                 <Grid item xs={12} sm={6}>
                                     <TextField
                                         fullWidth
+                                        label="Nơi cấp"
+                                        value={licenseForm.issuedBy}
+                                        onChange={(e) => setLicenseForm({ ...licenseForm, issuedBy: e.target.value })}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
                                         label="Tên"
                                         value={licenseForm.firstName}
                                         onChange={(e) => setLicenseForm({ ...licenseForm, firstName: e.target.value })}
@@ -626,6 +773,38 @@ export default function Profile() {
                                         value={licenseForm.lastName}
                                         onChange={(e) => setLicenseForm({ ...licenseForm, lastName: e.target.value })}
                                     />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Ngày sinh"
+                                        type="date"
+                                        value={licenseForm.dateOfBirth}
+                                        onChange={(e) => setLicenseForm({ ...licenseForm, dateOfBirth: e.target.value })}
+                                        InputLabelProps={{ shrink: true }}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <Button
+                                        variant="outlined"
+                                        component="label"
+                                    >
+                                        Tải ảnh giấy phép
+                                        <input
+                                            type="file"
+                                            hidden
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                                const file = e.target.files[0];
+                                                if (file) setLicenseForm((prev) => ({ ...prev, licenseImage: file }));
+                                            }}
+                                        />
+                                    </Button>
+                                    {licenseForm.licenseImage && (
+                                        <Typography variant="caption" color="text.secondary">
+                                            {licenseForm.licenseImage.name}
+                                        </Typography>
+                                    )}
                                 </Grid>
                                 <Grid item xs={12}>
                                     <Button

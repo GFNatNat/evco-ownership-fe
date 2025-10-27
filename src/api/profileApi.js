@@ -11,8 +11,11 @@ const profileApi = {
 
     // 3. PUT /api/profile - Update current user profile
     updateProfile: (data) => axiosClient.put('/api/Profile', {
-        fullName: data.fullName,
-        phoneNumber: data.phoneNumber
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phone: data.phoneNumber,
+        dateOfBirth: data.dateOfBirth,
+        address: data.address
     }),
 
     // 4. PUT /api/profile/change-password - Change password

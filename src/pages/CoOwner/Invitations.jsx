@@ -56,10 +56,11 @@ export default function Invitations() {
     const loadMyVehicles = async () => {
         try {
             const res = await vehicleApi.getMyVehicles();
-            const data = Array.isArray(res.data) ? res.data : res.data?.data || [];
-            setMyVehicles(data);
+            const data = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+            setMyVehicles(Array.isArray(data) ? data : []);
         } catch (err) {
             console.error('❌ Error loading vehicles:', err);
+            setMyVehicles([]);
         }
     };
 

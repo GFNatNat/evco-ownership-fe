@@ -45,12 +45,14 @@ export default function VehicleAvailability() {
         setLoading(true);
         try {
             const response = await vehicleApi.getMyVehicles();
-            setMyVehicles(response.data || []);
-            if (response.data?.length > 0) {
-                setSelectedVehicle(response.data[0]);
+            const data = Array.isArray(response.data) ? response.data : (response.data?.data || []);
+            setMyVehicles(Array.isArray(data) ? data : []);
+            if (Array.isArray(data) && data.length > 0) {
+                setSelectedVehicle(data[0]);
             }
         } catch (err) {
             setError('Không thể tải danh sách xe của bạn');
+            setMyVehicles([]);
         } finally {
             setLoading(false);
         }

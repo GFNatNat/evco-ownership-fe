@@ -81,9 +81,18 @@ const BookingManagement = () => {
                 r.status === 'fulfilled' ? r.value : { data: null }
             );
 
-            setBookings(bookingsRes.data?.bookings || bookingsRes.data || []);
-            setVehicles(vehiclesRes.data || []);
-            setConflicts(conflictsRes.data?.conflicts || conflictsRes.data || []);
+            // Always set bookings as an array
+            let safeBookings = bookingsRes.data?.bookings || bookingsRes.data;
+            if (!Array.isArray(safeBookings)) safeBookings = safeBookings ? [safeBookings] : [];
+            setBookings(safeBookings);
+            // Always set vehicles as an array
+            let safeVehicles = vehiclesRes.data;
+            if (!Array.isArray(safeVehicles)) safeVehicles = safeVehicles ? [safeVehicles] : [];
+            setVehicles(safeVehicles);
+            // Always set conflicts as an array
+            let safeConflicts = conflictsRes.data?.conflicts || conflictsRes.data;
+            if (!Array.isArray(safeConflicts)) safeConflicts = safeConflicts ? [safeConflicts] : [];
+            setConflicts(safeConflicts);
             setSlotRequests(slotsRes.data?.requests || slotsRes.data || []);
         } catch (error) {
             console.error('Error loading data:', error);
@@ -156,7 +165,7 @@ const BookingManagement = () => {
                     <Grid item xs={12} sm={8}>
                         <Typography variant="h6" gutterBottom>
                             <BookingIcon sx={{ fontSize: 20, mr: 1, verticalAlign: 'middle' }} />
-                            {vehicles.find(v => v.id === booking.vehicleId)?.name || 'Xe không xác định'}
+                            {(Array.isArray(vehicles) ? vehicles : []).find(v => v.id === booking.vehicleId)?.name || 'Xe không xác định'}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" gutterBottom>
                             <TimeIcon sx={{ fontSize: 16, mr: 1, verticalAlign: 'middle' }} />

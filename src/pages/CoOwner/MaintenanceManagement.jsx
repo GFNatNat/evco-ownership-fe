@@ -73,7 +73,10 @@ const MaintenanceManagement = () => {
         try {
             const vehiclesRes = await vehicleApi.getMyVehicles().catch(() => ({ data: [] }));
 
-            setVehicles(vehiclesRes.data || []);
+            // Always set vehicles as an array
+            let safeVehicles = vehiclesRes.data;
+            if (!Array.isArray(safeVehicles)) safeVehicles = safeVehicles ? [safeVehicles] : [];
+            setVehicles(safeVehicles);
 
             if (vehiclesRes.data?.length > 0) {
                 const firstVehicleId = vehiclesRes.data[0].id;
@@ -376,7 +379,7 @@ const MaintenanceManagement = () => {
                                 loadVehicleMaintenances(e.target.value);
                             }}
                         >
-                            {vehicles.map(vehicle => (
+                            {(Array.isArray(vehicles) ? vehicles : []).map(vehicle => (
                                 <MenuItem key={vehicle.id} value={vehicle.id}>
                                     {vehicle.name || vehicle.licensePlate}
                                 </MenuItem>

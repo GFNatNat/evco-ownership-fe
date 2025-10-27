@@ -9,12 +9,16 @@ const licenseApi = {
     // 2. GET /api/license/{licenseId} - Get specific license details
     getById: (licenseId) => axiosClient.get(`/api/License/${licenseId}`),
 
-    // 3. POST /api/license/upload - Upload new license
-    upload: (formData) => axiosClient.post('/api/License/upload', formData, {
+
+    // 3. POST /api/License/verify - Verify a driving license (multipart/form-data)
+    verify: (formData) => axiosClient.post('/api/License/verify', formData, {
         headers: {
             'Content-Type': 'multipart/form-data'
         }
     }),
+
+    // 4. POST /api/License/register - Register a verified license
+    register: (data) => axiosClient.post('/api/License/register', data),
 
     // 4. PUT /api/license/{licenseId}/verify - Verify license (Admin only)
     verify: (licenseId, data) => axiosClient.put(`/api/License/${licenseId}/verify`, {

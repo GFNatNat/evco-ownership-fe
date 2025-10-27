@@ -66,7 +66,10 @@ export default function AccountOwnership() {
       );
 
       setProfile(profileRes.data || { verified: false, completionRate: 0, documents: [] });
-      setAvailableVehicles(vehiclesRes.data || []);
+      // Ensure availableVehicles is always an array
+      let safeAvailableVehicles = vehiclesRes.data;
+      if (!Array.isArray(safeAvailableVehicles)) safeAvailableVehicles = safeAvailableVehicles ? [safeAvailableVehicles] : [];
+      setAvailableVehicles(safeAvailableVehicles);
       setMyOwnerships(ownershipsRes.data || []);
       setOwnershipRequests(requestsRes.data || []);
 

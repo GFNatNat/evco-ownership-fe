@@ -78,6 +78,7 @@ import VehicleReportManagement from '../pages/CoOwner/VehicleReportManagement';
 import VehicleUpgradeManagement from '../pages/CoOwner/VehicleUpgradeManagement';
 import BookingReminderManagementCoOwner from '../pages/CoOwner/BookingReminderManagement';
 import CheckInCheckOutManagement from '../pages/CoOwner/CheckInCheckOutManagement';
+import GroupPage from '../pages/CoOwner/GroupPage';
 
 // Profile pages
 import Profile from '../pages/Profile/Profile';
@@ -170,7 +171,7 @@ export default function AppRouter() {
           <Route path="/coowner/vehicle-report-management" element={<VehicleReportManagement />} />
           <Route path="/coowner/vehicle-upgrade-management" element={<VehicleUpgradeManagement />} />
           <Route path="/coowner/history" element={<OwnershipHistoryManagement />} />
-          <Route path="/coowner/group" element={<AccountOwnership />} />
+          <Route path="/coowner/group" element={<GroupPage />} />
         </Route>
       </Route>
 
