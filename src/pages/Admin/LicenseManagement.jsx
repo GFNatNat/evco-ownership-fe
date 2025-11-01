@@ -10,7 +10,7 @@ import {
     Visibility, Check, Close, Search, FilterList,
     CloudDownload, Description, VerifiedUser
 } from '@mui/icons-material';
-import licenseApi from '../../api/licenseApi';
+import adminApi from '../../api/admin';
 
 export default function LicenseManagement() {
     const [licenses, setLicenses] = useState([]);
@@ -35,7 +35,10 @@ export default function LicenseManagement() {
     const loadLicenses = async () => {
         setLoading(true);
         try {
-            const params = {};
+            const params = {
+                pageIndex: 1,
+                pageSize: 100
+            };
             if (filters.status !== 'all') {
                 params.status = filters.status;
             }
@@ -43,7 +46,7 @@ export default function LicenseManagement() {
                 params.search = filters.search;
             }
 
-            const response = await licenseApi.getAll(params).catch(() => ({ data: { items: [] } }));
+            const response = await adminApi.licenses.getAll(params).catch(() => ({ data: { items: [] } }));
             setLicenses(response.data?.items || []);
             console.log('✅ Loaded licenses:', response.data?.items?.length || 0);
         } catch (err) {
@@ -56,7 +59,7 @@ export default function LicenseManagement() {
 
     const handleViewLicense = async (licenseId) => {
         try {
-            const response = await licenseApi.getById(licenseId).catch(() => ({ data: null }));
+            const response = await adminApi.licenses.getById(licenseId).catch(() => ({ data: null }));
             if (response.data) {
                 setSelectedLicense(response.data);
                 setVerificationForm({
@@ -77,12 +80,20 @@ export default function LicenseManagement() {
         if (!selectedLicense) return;
 
         try {
-            await licenseApi.verify(selectedLicense.id, verificationForm);
-            setMessage('Xác minh giấy phép thành công');
+            if (verificationForm.status === 'approved') {
+                await adminApi.licenses.approve(selectedLicense.id, verificationForm.notes);
+                setMessage('Phê duyệt giấy phép thành công');
+            } else if (verificationForm.status === 'rejected') {
+                await adminApi.licenses.reject(selectedLicense.id, verificationForm.notes);
+                setMessage('Từ chối giấy phép thành công');
+            }
+
             setDialogOpen(false);
             loadLicenses();
+            console.log('✅ License verification completed:', selectedLicense.id);
         } catch (err) {
-            setError('Xác minh giấy phép thất bại');
+            console.error('❌ Failed to verify license:', err);
+            setError('Không thể xác minh giấy phép');
         }
     };
 

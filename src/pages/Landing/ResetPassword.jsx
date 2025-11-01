@@ -7,8 +7,8 @@ export default function ResetPassword() {
   const [searchParams] = useSearchParams();
   const [form, setForm] = React.useState({
     email: searchParams.get('email') || '',
-    token: searchParams.get('token') || '',
-    password: '',
+    otp: '', // Changed from token to otp
+    newPassword: '', // Changed from password to newPassword
     confirmPassword: ''
   });
   const [message, setMessage] = React.useState('');
@@ -20,12 +20,41 @@ export default function ResetPassword() {
     const errors = {};
     if (!form.email.trim()) errors.email = 'Email không được để trống';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errors.email = 'Email không hợp lệ';
-    if (!form.token.trim()) errors.token = 'Token không được để trống';
-    if (!form.password) errors.password = 'Mật khẩu không được để trống';
-    if (form.password.length < 6) errors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
-    if (form.password !== form.confirmPassword) errors.confirmPassword = 'Mật khẩu không khớp';
+    if (!form.otp.trim()) errors.otp = 'OTP không được để trống';
+    if (!form.newPassword) errors.newPassword = 'Mật khẩu không được để trống';
+
+    // Enhanced password validation
+    const passwordError = validatePassword(form.newPassword);
+    if (passwordError) errors.newPassword = passwordError;
+
+    if (form.newPassword !== form.confirmPassword) errors.confirmPassword = 'Mật khẩu không khớp';
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
+  };
+
+  const validatePassword = (password) => {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    if (password.length < minLength) {
+      return 'Mật khẩu phải có ít nhất 8 ký tự';
+    }
+    if (!hasUpperCase) {
+      return 'Mật khẩu phải chứa ít nhất một chữ cái viết hoa';
+    }
+    if (!hasLowerCase) {
+      return 'Mật khẩu phải chứa ít nhất một chữ cái viết thường';
+    }
+    if (!hasNumbers) {
+      return 'Mật khẩu phải chứa ít nhất một số';
+    }
+    if (!hasSpecialChar) {
+      return 'Mật khẩu phải chứa ít nhất một ký tự đặc biệt';
+    }
+    return null;
   };
 
   const submit = async () => {
@@ -64,26 +93,27 @@ export default function ResetPassword() {
             required
           />
           <TextField
-            label="Token xác thực"
-            value={form.token}
+            label="OTP xác thực"
+            value={form.otp}
             onChange={(e) => {
-              setForm({ ...form, token: e.target.value });
-              if (validationErrors.token) setValidationErrors({ ...validationErrors, token: '' });
+              setForm({ ...form, otp: e.target.value });
+              if (validationErrors.otp) setValidationErrors({ ...validationErrors, otp: '' });
             }}
-            error={!!validationErrors.token}
-            helperText={validationErrors.token}
+            error={!!validationErrors.otp}
+            helperText={validationErrors.otp}
+            placeholder="Nhập mã OTP 6 số từ email"
             required
           />
           <TextField
             type="password"
             label="Mật khẩu mới"
-            value={form.password}
+            value={form.newPassword}
             onChange={(e) => {
-              setForm({ ...form, password: e.target.value });
-              if (validationErrors.password) setValidationErrors({ ...validationErrors, password: '' });
+              setForm({ ...form, newPassword: e.target.value });
+              if (validationErrors.newPassword) setValidationErrors({ ...validationErrors, newPassword: '' });
             }}
-            error={!!validationErrors.password}
-            helperText={validationErrors.password}
+            error={!!validationErrors.newPassword}
+            helperText={validationErrors.newPassword}
             required
           />
           <TextField

@@ -1,70 +1,125 @@
-// Staff-specific API endpoints
 import axiosClient from '../axiosClient';
 
 const staffApi = {
-  // Fleet Management
-  fleet: {
-    getAll: () => axiosClient.get('/api/Vehicle'),
-    getById: (id) => axiosClient.get(`/api/Vehicle/${id}`),
-    updateStatus: (id, status) => axiosClient.patch(`/api/Vehicle/${id}/status`, { status }),
-    scheduleInspection: (id, date) => axiosClient.post(`/api/Maintenance`, { vehicleId: id, date }),
-    getMaintenanceHistory: (id) => axiosClient.get(`/api/Maintenance/vehicle/${id}/history`)
+  // Group Management
+  groups: {
+    getAll: (params = {}) => {
+      const queryParams = new URLSearchParams();
+      if (params.status) queryParams.append('status', params.status);
+      if (params.pageIndex) queryParams.append('pageIndex', params.pageIndex.toString());
+      if (params.pageSize) queryParams.append('pageSize', params.pageSize.toString());
+      if (params.search) queryParams.append('search', params.search);
+      return axiosClient.get(`/staff/groups?${queryParams}`);
+    },
+    getById: (id) => axiosClient.get(`/staff/groups/${id}`),
+    getGroupMembers: (groupId) => axiosClient.get(`/staff/groups/${groupId}/members`),
+    getGroupVehicles: (groupId) => axiosClient.get(`/staff/groups/${groupId}/vehicles`),
+    getGroupBookings: (groupId, status) => {
+      const params = status ? `?status=${status}` : '';
+      return axiosClient.get(`/staff/groups/${groupId}/bookings${params}`);
+    }
   },
 
-  // Vehicle Verification
-  verification: {
-    getPendingVerifications: () => axiosClient.get('/api/License'),
-    getVerificationById: (id) => axiosClient.get(`/api/License/${id}`),
-    approveVehicle: (id, notes) => axiosClient.patch(`/api/License/${id}/approve`, { notes }),
-    rejectVehicle: (id, reason) => axiosClient.patch(`/api/License/${id}/reject`, { reason }),
-    requestAdditionalDocs: (id, documents) => axiosClient.patch(`/api/License/${id}/request-docs`, { documents })
-  },
-
-  // Contracts Management
+  // Contract Management
   contracts: {
-    getAll: () => axiosClient.get('/api/Contract'),
-    getById: (id) => axiosClient.get(`/api/Contract/${id}`),
-    create: (contractData) => axiosClient.post('/api/Contract', contractData),
-    update: (id, contractData) => axiosClient.put(`/api/Contract/${id}`, contractData),
-    getTemplate: (type) => axiosClient.get(`/api/Contract/templates/${type}`),
-    sendForSigning: (id) => axiosClient.post(`/api/Contract/${id}/sign`)
+    getAll: (params = {}) => {
+      const queryParams = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, value.toString());
+        }
+      });
+      return axiosClient.get(`/staff/contracts?${queryParams}`);
+    },
+    getById: (id) => axiosClient.get(`/staff/contracts/${id}`),
+    create: (contractData) => axiosClient.post('/staff/contracts', contractData),
+    update: (id, updates) => axiosClient.patch(`/staff/contracts/${id}`, updates),
+    approve: (id, notes) => axiosClient.patch(`/staff/contracts/${id}/approve`, { notes }),
+    reject: (id, reason) => axiosClient.patch(`/staff/contracts/${id}/reject`, { reason }),
+    getTemplate: (type) => axiosClient.get(`/staff/contracts/template/${type}`),
+    generateContract: (contractRequest) => axiosClient.post('/staff/contracts/generate', contractRequest)
   },
 
   // Check-in/Check-out Management
-  checkin: {
-    getActiveRentals: () => axiosClient.get('/api/CheckInCheckOut/history'),
-    processCheckin: (rentalId, checkinData) => axiosClient.post(`/api/CheckInCheckOut/manual-checkin`, { rentalId, ...checkinData }),
-    processCheckout: (rentalId, checkoutData) => axiosClient.post(`/api/CheckInCheckOut/manual-checkout`, { rentalId, ...checkoutData }),
-    getVehicleCondition: (vehicleId) => axiosClient.get(`/api/Vehicle/${vehicleId}/condition`),
-    reportDamage: (vehicleId, damageReport) => axiosClient.post(`/api/Vehicle/${vehicleId}/damage`, damageReport)
+  checkInOut: {
+    checkIn: (request) => axiosClient.post('/staff/check-in', request),
+    checkOut: (request) => axiosClient.post('/staff/check-out', request),
+    getPendingCheckIns: () => axiosClient.get('/staff/check-ins/pending'),
+    getPendingCheckOuts: () => axiosClient.get('/staff/check-outs/pending'),
+    getCheckInHistory: (vehicleId, page = 1) =>
+      axiosClient.get(`/staff/check-ins/history?vehicleId=${vehicleId}&page=${page}`),
+    approveCheckIn: (checkInId, notes) => axiosClient.patch(`/staff/check-ins/${checkInId}/approve`, { notes }),
+    rejectCheckIn: (checkInId, reason) => axiosClient.patch(`/staff/check-ins/${checkInId}/reject`, { reason }),
+    approveCheckOut: (checkOutId, notes) => axiosClient.patch(`/staff/check-outs/${checkOutId}/approve`, { notes }),
+    rejectCheckOut: (checkOutId, reason) => axiosClient.patch(`/staff/check-outs/${checkOutId}/reject`, { reason })
   },
 
-  // Services Management
-  services: {
-    getAll: () => axiosClient.get('/api/Service'),
-    getById: (id) => axiosClient.get(`/api/Service/${id}`),
-    scheduleService: (serviceData) => axiosClient.post('/api/Service', serviceData),
-    updateServiceStatus: (id, status) => axiosClient.patch(`/api/Service/${id}/status`, { status }),
-    getServiceProviders: () => axiosClient.get('/api/Service/providers'),
-    assignTechnician: (serviceId, technicianId) => axiosClient.patch(`/api/Service/${serviceId}/assign`, { technicianId })
+  // Maintenance Management
+  maintenance: {
+    getTasks: (status) => {
+      const params = status ? `?status=${status}` : '';
+      return axiosClient.get(`/staff/maintenance${params}`);
+    },
+    getTaskById: (taskId) => axiosClient.get(`/staff/maintenance/${taskId}`),
+    createTask: (taskData) => axiosClient.post('/staff/maintenance', taskData),
+    assignTask: (taskId, staffId) => axiosClient.patch(`/staff/maintenance/${taskId}/assign`, { staffId }),
+    updateStatus: (taskId, status, notes) => axiosClient.patch(`/staff/maintenance/${taskId}/status`, { status, notes }),
+    createReport: (report) => axiosClient.post('/staff/maintenance/report', report),
+    getMaintenanceHistory: (vehicleId) => axiosClient.get(`/staff/maintenance/history/${vehicleId}`),
+    scheduleMaintenace: (scheduleData) => axiosClient.post('/staff/maintenance/schedule', scheduleData)
   },
 
-  // Disputes Handling
+  // Dispute Management
   disputes: {
-    getAssignedDisputes: () => axiosClient.get('/api/Dispute'),
-    getDisputeById: (id) => axiosClient.get(`/api/Dispute/${id}`),
-    updateDisputeStatus: (id, status, notes) => axiosClient.patch(`/api/Dispute/${id}/status`, { status, notes }),
-    addResolutionNote: (id, note) => axiosClient.post(`/api/Dispute/${id}/notes`, { note }),
-    escalateDispute: (id, reason) => axiosClient.post(`/api/Dispute/${id}/escalate`, { reason }),
-    closeDispute: (id, resolution) => axiosClient.patch(`/api/Dispute/${id}/close`, { resolution })
+    getAll: (status) => {
+      const params = status ? `?status=${status}` : '';
+      return axiosClient.get(`/staff/disputes${params}`);
+    },
+    getById: (disputeId) => axiosClient.get(`/staff/disputes/${disputeId}`),
+    assign: (disputeId, staffId) => axiosClient.patch(`/staff/disputes/${disputeId}/assign`, { staffId }),
+    updateStatus: (disputeId, status, notes) => axiosClient.patch(`/staff/disputes/${disputeId}/status`, { status, notes }),
+    resolve: (disputeId, resolution) => axiosClient.post(`/staff/disputes/${disputeId}/resolve`, resolution),
+    escalate: (disputeId, reason) => axiosClient.post(`/staff/disputes/${disputeId}/escalate`, { reason }),
+    addNote: (disputeId, note) => axiosClient.post(`/staff/disputes/${disputeId}/notes`, { note }),
+    getDisputeHistory: (disputeId) => axiosClient.get(`/staff/disputes/${disputeId}/history`)
   },
 
-  // Dashboard Data
+  // Vehicle Management
+  vehicles: {
+    getAll: (params = {}) => {
+      const queryParams = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, value.toString());
+        }
+      });
+      return axiosClient.get(`/staff/vehicles?${queryParams}`);
+    },
+    getById: (vehicleId) => axiosClient.get(`/staff/vehicles/${vehicleId}`),
+    verify: (vehicleId, verificationData) => axiosClient.post(`/staff/vehicles/${vehicleId}/verify`, verificationData),
+    approve: (vehicleId, notes) => axiosClient.patch(`/staff/vehicles/${vehicleId}/approve`, { notes }),
+    reject: (vehicleId, reason) => axiosClient.patch(`/staff/vehicles/${vehicleId}/reject`, { reason }),
+    updateStatus: (vehicleId, status, notes) => axiosClient.patch(`/staff/vehicles/${vehicleId}/status`, { status, notes }),
+    getInspectionHistory: (vehicleId) => axiosClient.get(`/staff/vehicles/${vehicleId}/inspections`)
+  },
+
+  // Profile Management
+  profile: {
+    get: () => axiosClient.get('/staff/profile'),
+    update: (profileData) => axiosClient.put('/staff/profile', profileData),
+    changePassword: (passwordData) => axiosClient.post('/staff/profile/change-password', passwordData),
+    getWorkSchedule: () => axiosClient.get('/staff/profile/work-schedule'),
+    updateWorkSchedule: (schedule) => axiosClient.put('/staff/profile/work-schedule', schedule),
+    getPerformanceMetrics: () => axiosClient.get('/staff/profile/performance'),
+    getAssignedTasks: () => axiosClient.get('/staff/profile/assigned-tasks')
+  },
+
+  // Dashboard
   dashboard: {
-    getStats: () => axiosClient.get('/api/Dashboard/stats'),
-    getRecentActivities: () => axiosClient.get('/api/Dashboard/activities'),
-    getPendingTasks: () => axiosClient.get('/api/Dashboard/tasks'),
-    getWorkload: () => axiosClient.get('/api/Dashboard/workload')
+    getData: () => axiosClient.get('/staff/dashboard'),
+    getWorkload: () => axiosClient.get('/staff/dashboard/workload'),
+    getRecentActivity: () => axiosClient.get('/staff/dashboard/recent-activity'),
+    getStats: () => axiosClient.get('/staff/dashboard/stats')
   }
 };
 

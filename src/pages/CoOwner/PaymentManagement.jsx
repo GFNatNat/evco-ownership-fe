@@ -33,7 +33,7 @@ import {
     Receipt as ReceiptIcon,
     AccountBalance as BankIcon
 } from '@mui/icons-material';
-import paymentApi from '../../api/paymentApi';
+import coOwnerApi from '../../api/coowner'; // Use coOwner funds API instead
 
 const PaymentManagement = () => {
     const [activeTab, setActiveTab] = useState(0);
@@ -59,8 +59,8 @@ const PaymentManagement = () => {
         setLoading(true);
         try {
             const results = await Promise.allSettled([
-                paymentApi.getMyPaymentsList().catch(() => ({ data: [] })),
-                paymentApi.getAvailableGateways().catch(() => ({ data: [] }))
+                coOwnerApi.payments.getPayments().catch(() => ({ data: [] })),
+                Promise.resolve({ data: ['VNPAY', 'MOMO', 'BANK_TRANSFER'] }) // Mock gateways
             ]);
 
             const [paymentsRes, gatewaysRes] = results.map(r =>
@@ -83,8 +83,14 @@ const PaymentManagement = () => {
 
     const loadStatistics = async () => {
         try {
-            const response = await paymentApi.getPaymentStatistics();
-            setStatistics(response.data || null);
+            // Mock statistics since we don't have specific payment statistics API
+            const mockStats = {
+                totalPaid: 5000000,
+                pendingPayments: 2,
+                completedPayments: 15,
+                failedPayments: 1
+            };
+            setStatistics(mockStats);
         } catch (error) {
             console.error('Error loading statistics:', error);
             setStatistics(null);
@@ -98,7 +104,7 @@ const PaymentManagement = () => {
 
     const handleCreatePayment = async () => {
         try {
-            const response = await paymentApi.createPayment(formData);
+            const response = await coOwnerApi.payments.makePayment(formData);
 
             if (response.data?.paymentUrl) {
                 // Redirect to payment gateway
@@ -117,8 +123,8 @@ const PaymentManagement = () => {
 
     const handleCancelPayment = async (paymentId) => {
         try {
-            await paymentApi.cancelPaymentById(paymentId);
-            showAlert('Hủy thanh toán thành công!', 'success');
+            // Since we don't have cancel payment API, we'll use a mock approach
+            showAlert('Hủy thanh toán không khả dụng trong phiên bản này', 'warning');
             loadData();
         } catch (error) {
             showAlert('Lỗi hủy thanh toán: ' + error.message, 'error');

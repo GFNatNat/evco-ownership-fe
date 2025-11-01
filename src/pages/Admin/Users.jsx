@@ -6,7 +6,7 @@ import {
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { MoreVert, Add, Edit, Delete, Block, CheckCircle, People, Warning } from '@mui/icons-material';
-import userApi from '../../api/userApi';
+import adminApi from '../../api/admin';
 
 export default function Users() {
     const [users, setUsers] = React.useState([]);
@@ -32,7 +32,10 @@ export default function Users() {
     const loadUsers = async () => {
         setLoading(true);
         try {
-            const res = await userApi.getAll();
+            const res = await adminApi.users.getAll({
+                pageIndex: 1,
+                pageSize: 100
+            });
             const data = Array.isArray(res.data) ? res.data : res.data?.items || [];
             setUsers(data.map((user, index) => ({ id: user.id || index, ...user })));
         } catch (err) {
@@ -43,10 +46,10 @@ export default function Users() {
     };
 
     const handleCreate = () => {
-        setError('Tạo người dùng mới không có trong User API. Người dùng phải đăng ký qua Auth API (/register).');
-        // setSelectedUser(null);
-        // setForm({ fullName: '', email: '', phone: '', role: 'CoOwner', password: '' });
-        // setOpenDialog(true);
+        // Re-enable user creation since API now supports it
+        setSelectedUser(null);
+        setForm({ fullName: '', email: '', phone: '', role: 'CoOwner', password: '' });
+        setOpenDialog(true);
     };
 
     const handleEdit = (user) => {
@@ -66,19 +69,26 @@ export default function Users() {
         setMessage('');
         try {
             if (selectedUser) {
-                // Update user - only basic info allowed per API spec
-                await userApi.update(selectedUser.id, {
+                // Update user - using correct endpoint
+                await adminApi.users.update(selectedUser.id, {
                     fullName: form.fullName,
                     phoneNumber: form.phone,
-                    address: '', // Optional
-                    dateOfBirth: '' // Optional
+                    email: form.email // Allow email updates
                 });
                 setMessage('Cập nhật người dùng thành công');
                 setOpenDialog(false);
                 await loadUsers();
             } else {
-                // Create user not available in User API - must use Auth API register
-                setError('Tạo người dùng mới phải thông qua trang đăng ký. User API chỉ hỗ trợ cập nhật thông tin.');
+                // Create user - now supported in admin API
+                await adminApi.users.create({
+                    email: form.email,
+                    fullName: form.fullName,
+                    phoneNumber: form.phone,
+                    password: form.password
+                });
+                setMessage('Tạo người dùng mới thành công');
+                setOpenDialog(false);
+                await loadUsers();
             }
         } catch (err) {
             setError(err?.response?.data?.message || 'Thao tác thất bại');

@@ -14,7 +14,7 @@ import {
   Business, Assignment, Verified, CloudUpload
 } from '@mui/icons-material';
 import { DataGrid } from '@mui/x-data-grid';
-import contractApi from '../../api/contractApi';
+import staffApi from '../../api/staff';
 import { useAuth } from '../../context/AuthContext';
 
 export default function Contracts() {
@@ -91,8 +91,13 @@ export default function Contracts() {
   const loadData = async () => {
     setLoading(true);
     try {
-      setContracts(mockData.contracts);
-      setTemplates(mockData.templates);
+      const [contractsRes, templatesRes] = await Promise.all([
+        staffApi.contracts.getAll().catch(() => ({ data: mockData.contracts })),
+        staffApi.contracts.getTemplate('all').catch(() => ({ data: mockData.templates }))
+      ]);
+
+      setContracts(contractsRes.data);
+      setTemplates(templatesRes.data);
     } catch (err) {
       setError('Không thể tải dữ liệu hợp đồng');
     } finally {

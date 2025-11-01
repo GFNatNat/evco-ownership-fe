@@ -10,10 +10,7 @@ import {
 //   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 // } from 'recharts';
 import { Download, TrendingUp, AccountBalance, DirectionsCar, Group } from '@mui/icons-material';
-import reportApi from '../../api/reportApi';
-import userApi from '../../api/userApi';
-import vehicleApi from '../../api/vehicleApi';
-import paymentApi from '../../api/paymentApi';
+import adminApi from '../../api/admin';
 
 export default function Reports() {
   const [selectedReport, setSelectedReport] = React.useState('overview');
@@ -61,22 +58,20 @@ export default function Reports() {
 
   const loadOverviewData = async () => {
     try {
-      const [userStats, vehicleStats, paymentStats] = await Promise.all([
-        userApi.getStatistics(),
-        vehicleApi.getStatistics(),
-        paymentApi.getPaymentAnalytics(dateRange)
-      ]);
+      // Use proper admin reports API from documentation
+      const systemReports = await adminApi.reports.getSystemReports();
+      const dashboardStats = await adminApi.reports.getDashboardStats();
 
       setReportData(prev => ({
         ...prev,
         overview: {
-          users: userStats.data,
-          vehicles: vehicleStats.data,
-          payments: paymentStats.data
+          systemReports: systemReports.data,
+          dashboardStats: dashboardStats.data
         }
       }));
+      console.log('✅ Loaded system reports successfully');
     } catch (err) {
-      console.error('Failed to load overview data:', err);
+      console.error('❌ Failed to load overview data:', err);
     }
   };
 

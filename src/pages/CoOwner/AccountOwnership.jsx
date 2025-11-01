@@ -11,10 +11,10 @@ import {
   Group, Payment, Verified, CloudUpload, Description, Security
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
-import coOwnerApi from '../../api/coOwnerApi';
+import coOwnerApi from '../../api/coowner';
 import fileUploadApi from '../../api/fileUploadApi';
 import licenseApi from '../../api/licenseApi';
-import vehicleApi from '../../api/vehicleApi';
+import { handleMultipleApiCalls, extractResponseData } from '../../utils/apiResponseHandler';
 
 export default function AccountOwnership() {
   const { user } = useAuth();
@@ -53,35 +53,48 @@ export default function AccountOwnership() {
   const loadInitialData = async () => {
     setLoading(true);
     try {
-      // Load data with individual error handling
-      const results = await Promise.allSettled([
-        coOwnerApi.getProfile().catch(() => ({ data: { verified: false, completionRate: 0, documents: [] } })),
-        vehicleApi.getAvailable().catch(() => ({ data: [] })),
-        coOwnerApi.getOwnerships().catch(() => ({ data: [] })),
-        coOwnerApi.getOwnershipRequests().catch(() => ({ data: [] }))
-      ]);
+      // Load data with individual error handling using utility functions
+      const apiCalls = [
+        () => coOwnerApi.profile.get(),
+        () => coOwnerApi.vehicles.getAvailable(),
+        () => coOwnerApi.getOwnerships(),
+        () => coOwnerApi.getOwnershipRequests()
+      ];
 
-      const [profileRes, vehiclesRes, ownershipsRes, requestsRes] = results.map(r =>
-        r.status === 'fulfilled' ? r.value : { data: null }
-      );
+      const fallbackData = [
+        { verified: false, completionRate: 0, documents: [] },
+        [],
+        [],
+        []
+      ];
 
-      setProfile(profileRes.data || { verified: false, completionRate: 0, documents: [] });
-      // Ensure availableVehicles is always an array
-      let safeAvailableVehicles = vehiclesRes.data;
-      if (!Array.isArray(safeAvailableVehicles)) safeAvailableVehicles = safeAvailableVehicles ? [safeAvailableVehicles] : [];
+      const responses = await handleMultipleApiCalls(apiCalls, fallbackData);
+
+      const [profileRes, vehiclesRes, ownershipsRes, requestsRes] = responses;
+
+      // Extract data safely using utility function
+      setProfile(extractResponseData(profileRes, { verified: false, completionRate: 0, documents: [] }));
+      setVehicles(extractResponseData(vehiclesRes, []));
+      setOwnerships(extractResponseData(ownershipsRes, []));
+      setOwnershipRequests(extractResponseData(requestsRes, []));
+
+      let safeAvailableVehicles = vehiclesRes && Array.isArray(vehiclesRes.data) ? vehiclesRes.data : (vehiclesRes && vehiclesRes.data ? [vehiclesRes.data] : []);
       setAvailableVehicles(safeAvailableVehicles);
-      setMyOwnerships(ownershipsRes.data || []);
-      setOwnershipRequests(requestsRes.data || []);
+
+      setMyOwnerships(ownershipsRes && Array.isArray(ownershipsRes.data) ? ownershipsRes.data : []);
+      setOwnershipRequests(requestsRes && Array.isArray(requestsRes.data) ? requestsRes.data : []);
 
       // Calculate completion rate
-      const completionRate = calculateProfileCompletion(profileRes.data);
+      const completionRate = calculateProfileCompletion(safeProfile);
       setProfile(prev => ({ ...prev, completionRate }));
 
     } catch (err) {
       console.error('Error loading data:', err);
       // Don't show error for 404, just use empty data
-      if (err?.response?.status !== 404) {
+      if (err && err.response && typeof err.response.status !== 'undefined' && err.response.status !== 404) {
         setError('Không thể tải một số dữ liệu. Vui lòng thử lại.');
+      } else if (!err || !err.response) {
+        setError('Lỗi không xác định khi tải dữ liệu.');
       }
     } finally {
       setLoading(false);
@@ -116,7 +129,15 @@ export default function AccountOwnership() {
       setOwnershipForm({ vehicleId: '', ownershipPercentage: 25, investmentAmount: 0, notes: '' });
       await loadInitialData();
     } catch (err) {
-      setError(err.response?.data?.message || 'Gửi yêu cầu thất bại');
+      let msg = 'Gửi yêu cầu thất bại';
+      if (err && err.response && err.response.data && typeof err.response.data.message === 'string') {
+        msg = err.response.data.message;
+      } else if (err && err.message) {
+        msg = 'Lỗi: ' + err.message;
+      } else if (!err) {
+        msg = 'Lỗi không xác định khi gửi yêu cầu.';
+      }
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -130,7 +151,15 @@ export default function AccountOwnership() {
       setMessage('Hủy yêu cầu thành công');
       await loadInitialData();
     } catch (err) {
-      setError('Hủy yêu cầu thất bại');
+      let msg = 'Hủy yêu cầu thất bại';
+      if (err && err.response && err.response.data && typeof err.response.data.message === 'string') {
+        msg = err.response.data.message;
+      } else if (err && err.message) {
+        msg = 'Lỗi: ' + err.message;
+      } else if (!err) {
+        msg = 'Lỗi không xác định khi hủy yêu cầu.';
+      }
+      setError(msg);
     }
   };
 
@@ -362,7 +391,13 @@ function ProfileVerificationStep({ profile, onUpdate }) {
   const loadDocuments = async () => {
     try {
       const res = await coOwnerApi.getDocuments();
-      setDocuments(res.data || []);
+      if (res && Array.isArray(res.data)) {
+        setDocuments(res.data);
+      } else if (res && res.data) {
+        setDocuments([res.data]);
+      } else {
+        setDocuments([]);
+      }
     } catch (err) {
       console.error('Failed to load documents:', err);
     }
@@ -374,11 +409,12 @@ function ProfileVerificationStep({ profile, onUpdate }) {
 
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('documentType', documentType);
+      const formData = fileUploadApi.createFormData(file, {
+        documentType,
+        category: 'ownership'
+      });
 
-      await coOwnerApi.uploadDocument(formData);
+      await fileUploadApi.upload(formData);
       await loadDocuments();
       await onUpdate();
     } catch (err) {

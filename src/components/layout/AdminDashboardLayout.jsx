@@ -10,9 +10,8 @@ import {
     DirectionsCar as DirectionsCarIcon, Assessment as AssessmentIcon,
     Settings as SettingsIcon, ExitToApp as ExitToAppIcon,
     VerifiedUser as LicenseIcon, Group as GroupIcon,
-    AccountCircle as AccountCircleIcon, CheckCircle as CheckCircleIcon,
-    NotificationImportant as ReminderIcon, Upgrade as UpgradeIcon,
-    Analytics as AnalyticsIcon, SupervisorAccount as SupervisorIcon
+    AccountCircle as AccountCircleIcon, Notifications as NotificationsIcon,
+    History as HistoryIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
 import NotificationCenter from '../common/NotificationCenter';
@@ -47,15 +46,14 @@ const adminNavigation = [
         section: 'Báo cáo & Phân tích',
         items: [
             { to: '/admin/reports', label: 'Báo cáo tài chính', icon: <AssessmentIcon /> },
-            { to: '/admin/vehicle-reports-management', label: 'Quản lý Báo cáo xe', icon: <AssessmentIcon /> },
-            { to: '/admin/fairness-optimization-monitoring', label: 'Giám sát Tối ưu', icon: <AnalyticsIcon /> },
-            { to: '/admin/analytics', label: 'Phân tích hệ thống', icon: <AssessmentIcon /> }
+            { to: '/admin/audit-logs', label: 'Nhật ký hệ thống', icon: <HistoryIcon /> }
         ]
     },
     {
         section: 'Cấu hình',
         items: [
-            { to: '/admin/settings', label: 'Cấu hình hệ thống', icon: <SettingsIcon /> }
+            { to: '/admin/settings', label: 'Cấu hình hệ thống', icon: <SettingsIcon /> },
+            { to: '/admin/notifications', label: 'Quản lý thông báo', icon: <NotificationsIcon /> }
         ]
     }
 ];

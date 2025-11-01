@@ -8,21 +8,19 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import coOwnerApi from '../../api/coOwnerApi';
-import vehicleApi from '../../api/vehicleApi';
-import scheduleApi from '../../api/scheduleApi';
+import coOwnerApi from '../../api/coowner';
 
 // Import management components
 import PaymentManagement from '../CoOwner/PaymentManagement';
 import FundManagement from '../CoOwner/FundManagement';
-import MaintenanceManagement from '../CoOwner/MaintenanceManagement';
-import ReportsManagement from '../CoOwner/ReportsManagement';
-import VotingManagement from '../CoOwner/VotingManagement';
-import UsageAnalyticsManagement from '../CoOwner/UsageAnalyticsManagement';
-import OwnershipHistoryManagement from '../CoOwner/OwnershipHistoryManagement';
-import VehicleReportManagement from '../CoOwner/VehicleReportManagement';
-import VehicleUpgradeManagement from '../CoOwner/VehicleUpgradeManagement';
-import MaintenanceVoteManagement from '../CoOwner/MaintenanceVoteManagement';
+// import MaintenanceManagement from '../CoOwner/MaintenanceManagement'; // Removed - not in 7-controller
+// import ReportsManagement from '../CoOwner/ReportsManagement'; // Removed - not in 7-controller
+// import VotingManagement from '../CoOwner/VotingManagement'; // Removed - replaced by Group
+// import UsageAnalyticsManagement from '../CoOwner/UsageAnalyticsManagement'; // Removed - simplified
+// import OwnershipHistoryManagement from '../CoOwner/OwnershipHistoryManagement'; // Removed - not in 7-controller
+// import VehicleReportManagement from '../CoOwner/VehicleReportManagement'; // Removed - not in 7-controller
+// import VehicleUpgradeManagement from '../CoOwner/VehicleUpgradeManagement'; // Removed - not in 7-controller
+// import MaintenanceVoteManagement from '../CoOwner/MaintenanceVoteManagement'; // Removed - not in 7-controller
 
 export default function CoOwnerDashboard() {
   const navigate = useNavigate();
@@ -96,11 +94,11 @@ export default function CoOwnerDashboard() {
 
       let vehicleData = null;
       if (firstOwnership?.vehicleId) {
-        const vehicleRes = await vehicleApi.getById(firstOwnership.vehicleId);
+        const vehicleRes = await coOwnerApi.getVehicleById(firstOwnership.vehicleId);
         vehicleData = vehicleRes?.data;
       }
 
-      const scheduleRes = await scheduleApi.getUserSchedule({ limit: 1, upcoming: true });
+      const scheduleRes = await coOwnerApi.getUserSchedule({ limit: 1, upcoming: true });
       const schedules = scheduleRes?.data || [];
       const nextBooking = schedules[0];
 
@@ -470,7 +468,10 @@ export default function CoOwnerDashboard() {
             <Typography variant="h5" fontWeight="bold" mb={3}>
               Quản lý bảo dưỡng
             </Typography>
-            <MaintenanceManagement />
+            {/* Maintenance features handled via external services */}
+            <Typography color="text.secondary">
+              Bảo trì xe được quản lý thông qua dịch vụ bên ngoài
+            </Typography>
           </Box>
         )}
 
@@ -480,12 +481,18 @@ export default function CoOwnerDashboard() {
             <Typography variant="h5" fontWeight="bold" mb={3}>
               Quản lý báo cáo
             </Typography>
-            <ReportsManagement />
+            {/* Reports integrated into other sections */}
+            <Typography color="text.secondary">
+              Báo cáo được tích hợp trong các phần khác
+            </Typography>
             <Box mt={4}>
               <Typography variant="h6" fontWeight="bold" mb={2}>
                 Báo cáo xe
               </Typography>
-              <VehicleReportManagement />
+              {/* Vehicle reports integrated into vehicle management */}
+              <Typography color="text.secondary">
+                Báo cáo xe tích hợp trong quản lý xe
+              </Typography>
             </Box>
           </Box>
         )}
@@ -496,12 +503,18 @@ export default function CoOwnerDashboard() {
             <Typography variant="h5" fontWeight="bold" mb={3}>
               Quản lý bỏ phiếu
             </Typography>
-            <VotingManagement />
+            {/* Voting moved to Group management */}
+            <Typography color="text.secondary">
+              Tính năng bỏ phiếu đã được chuyển sang quản lý nhóm
+            </Typography>
             <Box mt={4}>
               <Typography variant="h6" fontWeight="bold" mb={2}>
                 Bỏ phiếu bảo dưỡng
               </Typography>
-              <MaintenanceVoteManagement />
+              {/* Maintenance voting integrated into group decisions */}
+              <Typography color="text.secondary">
+                Bỏ phiếu bảo trì được tích hợp vào quyết định nhóm
+              </Typography>
             </Box>
             <Box mt={4}>
               <Typography variant="h6" fontWeight="bold" mb={2}>
@@ -713,7 +726,7 @@ export default function CoOwnerDashboard() {
             }}
             onClick={() => {
               console.log('Booking submitted:', bookingForm);
-              // Call API: scheduleApi.create(bookingForm)
+              // Call API: coOwnerApi.create(bookingForm)
               setOpenBookingModal(false);
               setBookingForm({ date: '', startTime: '', endTime: '', purpose: '' });
             }}

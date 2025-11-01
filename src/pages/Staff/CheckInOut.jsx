@@ -13,8 +13,10 @@ import {
   LocationOn, Schedule, Warning, Info, LocalGasStation,
   Speed, Build, Camera, Assignment, Verified
 } from '@mui/icons-material';
-import bookingApi from '../../api/bookingApi';
+import staffApi from '../../api/staff';
 import { useAuth } from '../../context/AuthContext';
+import { VEHICLE_CONDITION_TYPE, getConditionLabel, getConditionColor } from '../../constants/vehicleConditionTypes';
+import { createDefaultVehicleCondition, validateVehicleCondition } from '../../types/checkInOut';
 
 export default function CheckInOut() {
   const { user } = useAuth();
@@ -28,14 +30,11 @@ export default function CheckInOut() {
   const [message, setMessage] = React.useState('');
   const [error, setError] = React.useState('');
 
-  // Vehicle condition form
-  const [vehicleCondition, setVehicleCondition] = React.useState({
-    fuelLevel: 100,
-    mileage: '',
-    damage: '',
-    cleanliness: 'good',
-    notes: ''
-  });
+  // Vehicle condition form - Updated to match database schema
+  const [vehicleCondition, setVehicleCondition] = React.useState(createDefaultVehicleCondition());
+
+  // Validation errors
+  const [validationErrors, setValidationErrors] = React.useState([]);
 
   // Mock data for active bookings
   const [mockBookings] = React.useState([
@@ -72,14 +71,34 @@ export default function CheckInOut() {
   const handleCheckIn = async () => {
     if (!selectedBooking) return;
 
+    // Validate vehicle condition before submitting
+    const errors = validateVehicleCondition(vehicleCondition);
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      setError('Vui lòng kiểm tra lại thông tin tình trạng xe');
+      return;
+    }
+
     setLoading(true);
     try {
-      await bookingApi.checkIn({
-        bookingId: selectedBooking.id,
-        staffId: user?.id,
-        vehicleCondition: vehicleCondition,
-        checkInTime: new Date().toISOString()
-      });
+      // Create check-in request matching database schema
+      const checkInRequest = {
+        booking_id: parseInt(selectedBooking.id.replace('BK', '')), // Convert BK001 -> 1
+        staff_id: user.id,
+        vehicle_station_id: selectedBooking.stationId || 1,
+        vehicle_condition: {
+          condition_type_enum: vehicleCondition.condition_type_enum,
+          description: vehicleCondition.description,
+          odometer_reading: vehicleCondition.odometer_reading,
+          fuel_level: vehicleCondition.fuel_level,
+          damage_reported: vehicleCondition.damage_reported,
+          photo_urls: vehicleCondition.photo_urls || '',
+          notes: vehicleCondition.notes
+        },
+        check_time: new Date().toISOString()
+      };
+
+      await staffApi.checkInOut.checkIn(checkInRequest);
 
       setActiveBookings(prev => prev.map(booking =>
         booking.id === selectedBooking.id
@@ -90,8 +109,11 @@ export default function CheckInOut() {
       setMessage('Check-in thành công!');
       setCheckInDialogOpen(false);
       setSelectedBooking(null);
+      setVehicleCondition(createDefaultVehicleCondition()); // Reset form
+      setValidationErrors([]);
     } catch (err) {
       setError('Check-in thất bại. Vui lòng thử lại.');
+      console.error('Check-in error:', err);
     } finally {
       setLoading(false);
     }
@@ -100,14 +122,34 @@ export default function CheckInOut() {
   const handleCheckOut = async () => {
     if (!selectedBooking) return;
 
+    // Validate vehicle condition before submitting
+    const errors = validateVehicleCondition(vehicleCondition);
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      setError('Vui lòng kiểm tra lại thông tin tình trạng xe');
+      return;
+    }
+
     setLoading(true);
     try {
-      await bookingApi.checkOut({
-        bookingId: selectedBooking.id,
-        staffId: user?.id,
-        vehicleCondition: vehicleCondition,
-        checkOutTime: new Date().toISOString()
-      });
+      // Create check-out request matching database schema
+      const checkOutRequest = {
+        booking_id: parseInt(selectedBooking.id.replace('BK', '')), // Convert BK001 -> 1
+        staff_id: user.id,
+        vehicle_station_id: selectedBooking.stationId || 1,
+        vehicle_condition: {
+          condition_type_enum: vehicleCondition.condition_type_enum,
+          description: vehicleCondition.description,
+          odometer_reading: vehicleCondition.odometer_reading,
+          fuel_level: vehicleCondition.fuel_level,
+          damage_reported: vehicleCondition.damage_reported,
+          photo_urls: vehicleCondition.photo_urls || '',
+          notes: vehicleCondition.notes
+        },
+        check_time: new Date().toISOString()
+      };
+
+      await staffApi.checkInOut.checkOut(checkOutRequest);
 
       setActiveBookings(prev => prev.map(booking =>
         booking.id === selectedBooking.id
@@ -118,8 +160,11 @@ export default function CheckInOut() {
       setMessage('Check-out thành công!');
       setCheckOutDialogOpen(false);
       setSelectedBooking(null);
+      setVehicleCondition(createDefaultVehicleCondition()); // Reset form
+      setValidationErrors([]);
     } catch (err) {
       setError('Check-out thất bại. Vui lòng thử lại.');
+      console.error('Check-out error:', err);
     } finally {
       setLoading(false);
     }
@@ -434,48 +479,149 @@ export default function CheckInOut() {
           </Box>
         </DialogTitle>
         <DialogContent>
+          {/* Validation Errors */}
+          {validationErrors.length > 0 && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {validationErrors.map((error, index) => (
+                <div key={index}>{error}</div>
+              ))}
+            </Alert>
+          )}
+
           <Grid container spacing={2} sx={{ mt: 1 }}>
+            {/* Condition Type - New DB field */}
             <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Số km hiện tại"
-                type="number"
-                value={vehicleCondition.mileage}
-                onChange={(e) => setVehicleCondition(prev => ({ ...prev, mileage: e.target.value }))}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Mức xăng (%)"
-                type="number"
-                value={vehicleCondition.fuelLevel}
-                onChange={(e) => setVehicleCondition(prev => ({ ...prev, fuelLevel: e.target.value }))}
-              />
-            </Grid>
-            <Grid item xs={12}>
               <FormControl fullWidth>
-                <InputLabel>Tình trạng vệ sinh</InputLabel>
+                <InputLabel>Tình trạng tổng thể</InputLabel>
                 <Select
-                  value={vehicleCondition.cleanliness}
-                  onChange={(e) => setVehicleCondition(prev => ({ ...prev, cleanliness: e.target.value }))}
+                  value={vehicleCondition.condition_type_enum}
+                  onChange={(e) => setVehicleCondition(prev => ({
+                    ...prev,
+                    condition_type_enum: parseInt(e.target.value)
+                  }))}
                 >
-                  <MenuItem value="excellent">Rất sạch</MenuItem>
-                  <MenuItem value="good">Sạch</MenuItem>
-                  <MenuItem value="fair">Bình thường</MenuItem>
-                  <MenuItem value="poor">Cần vệ sinh</MenuItem>
+                  {Object.entries(VEHICLE_CONDITION_TYPE).map(([key, value]) => (
+                    <MenuItem key={value} value={value}>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <Box
+                          sx={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: '50%',
+                            backgroundColor: getConditionColor(value)
+                          }}
+                        />
+                        {getConditionLabel(value)}
+                      </Box>
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Grid>
+
+            {/* Odometer Reading - Updated field name */}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Số km đồng hồ"
+                type="number"
+                value={vehicleCondition.odometer_reading}
+                onChange={(e) => setVehicleCondition(prev => ({
+                  ...prev,
+                  odometer_reading: parseInt(e.target.value) || 0
+                }))}
+                helperText="Đọc từ đồng hồ xe"
+              />
+            </Grid>
+
+            {/* Fuel Level - Updated field name */}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Mức pin/xăng (%)"
+                type="number"
+                inputProps={{ min: 0, max: 100 }}
+                value={vehicleCondition.fuel_level}
+                onChange={(e) => setVehicleCondition(prev => ({
+                  ...prev,
+                  fuel_level: parseInt(e.target.value) || 0
+                }))}
+                helperText="0-100%"
+              />
+            </Grid>
+
+            {/* Damage Reported - Updated to boolean */}
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel>Báo cáo hư hỏng</InputLabel>
+                <Select
+                  value={vehicleCondition.damage_reported}
+                  onChange={(e) => setVehicleCondition(prev => ({
+                    ...prev,
+                    damage_reported: e.target.value === 'true'
+                  }))}
+                >
+                  <MenuItem value={false}>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <CheckCircle sx={{ color: 'green', fontSize: 16 }} />
+                      Không có hư hỏng
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value={true}>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Warning sx={{ color: 'red', fontSize: 16 }} />
+                      Có hư hỏng
+                    </Box>
+                  </MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            {/* Photo URLs - New DB field */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="URL hình ảnh"
+                value={vehicleCondition.photo_urls}
+                onChange={(e) => setVehicleCondition(prev => ({
+                  ...prev,
+                  photo_urls: e.target.value
+                }))}
+                placeholder="Nhập URL hình ảnh (nếu có), cách nhau bằng dấu phẩy"
+                helperText="Có thể để trống nếu không có hình ảnh"
+              />
+            </Grid>
+
+            {/* Description - Updated field name */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
                 multiline
                 rows={3}
-                label="Ghi chú tình trạng xe"
+                label="Mô tả chi tiết"
+                value={vehicleCondition.description}
+                onChange={(e) => setVehicleCondition(prev => ({
+                  ...prev,
+                  description: e.target.value
+                }))}
+                placeholder="Mô tả chi tiết tình trạng xe..."
+                required
+              />
+            </Grid>
+
+            {/* Notes - Additional field */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                multiline
+                rows={2}
+                label="Ghi chú thêm"
                 value={vehicleCondition.notes}
-                onChange={(e) => setVehicleCondition(prev => ({ ...prev, notes: e.target.value }))}
-                placeholder="Mô tả tình trạng xe, hư hỏng (nếu có)..."
+                onChange={(e) => setVehicleCondition(prev => ({
+                  ...prev,
+                  notes: e.target.value
+                }))}
+                placeholder="Ghi chú bổ sung từ nhân viên..."
               />
             </Grid>
           </Grid>
@@ -497,34 +643,149 @@ export default function CheckInOut() {
           </Box>
         </DialogTitle>
         <DialogContent>
+          {/* Validation Errors */}
+          {validationErrors.length > 0 && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {validationErrors.map((error, index) => (
+                <div key={index}>{error}</div>
+              ))}
+            </Alert>
+          )}
+
           <Grid container spacing={2} sx={{ mt: 1 }}>
+            {/* Condition Type - New DB field */}
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel>Tình trạng tổng thể</InputLabel>
+                <Select
+                  value={vehicleCondition.condition_type_enum}
+                  onChange={(e) => setVehicleCondition(prev => ({
+                    ...prev,
+                    condition_type_enum: parseInt(e.target.value)
+                  }))}
+                >
+                  {Object.entries(VEHICLE_CONDITION_TYPE).map(([key, value]) => (
+                    <MenuItem key={value} value={value}>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <Box
+                          sx={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: '50%',
+                            backgroundColor: getConditionColor(value)
+                          }}
+                        />
+                        {getConditionLabel(value)}
+                      </Box>
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            {/* Odometer Reading - Updated field name */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 label="Số km kết thúc"
                 type="number"
-                value={vehicleCondition.mileage}
-                onChange={(e) => setVehicleCondition(prev => ({ ...prev, mileage: e.target.value }))}
+                value={vehicleCondition.odometer_reading}
+                onChange={(e) => setVehicleCondition(prev => ({
+                  ...prev,
+                  odometer_reading: parseInt(e.target.value) || 0
+                }))}
+                helperText="Đọc từ đồng hồ xe khi trả"
               />
             </Grid>
+
+            {/* Fuel Level - Updated field name */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Mức xăng còn lại (%)"
+                label="Mức pin/xăng còn lại (%)"
                 type="number"
-                value={vehicleCondition.fuelLevel}
-                onChange={(e) => setVehicleCondition(prev => ({ ...prev, fuelLevel: e.target.value }))}
+                inputProps={{ min: 0, max: 100 }}
+                value={vehicleCondition.fuel_level}
+                onChange={(e) => setVehicleCondition(prev => ({
+                  ...prev,
+                  fuel_level: parseInt(e.target.value) || 0
+                }))}
+                helperText="0-100%"
               />
             </Grid>
+
+            {/* Damage Reported - Updated to boolean */}
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel>Báo cáo hư hỏng</InputLabel>
+                <Select
+                  value={vehicleCondition.damage_reported}
+                  onChange={(e) => setVehicleCondition(prev => ({
+                    ...prev,
+                    damage_reported: e.target.value === 'true'
+                  }))}
+                >
+                  <MenuItem value={false}>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <CheckCircle sx={{ color: 'green', fontSize: 16 }} />
+                      Không có hư hỏng
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value={true}>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Warning sx={{ color: 'red', fontSize: 16 }} />
+                      Có hư hỏng
+                    </Box>
+                  </MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            {/* Photo URLs - New DB field */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="URL hình ảnh"
+                value={vehicleCondition.photo_urls}
+                onChange={(e) => setVehicleCondition(prev => ({
+                  ...prev,
+                  photo_urls: e.target.value
+                }))}
+                placeholder="Nhập URL hình ảnh (nếu có), cách nhau bằng dấu phẩy"
+                helperText="Có thể để trống nếu không có hình ảnh"
+              />
+            </Grid>
+
+            {/* Description - Updated field name */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
                 multiline
                 rows={3}
                 label="Tình trạng xe khi trả"
-                value={vehicleCondition.damage}
-                onChange={(e) => setVehicleCondition(prev => ({ ...prev, damage: e.target.value }))}
-                placeholder="Ghi chú về tình trạng xe, hư hỏng, vệ sinh..."
+                value={vehicleCondition.description}
+                onChange={(e) => setVehicleCondition(prev => ({
+                  ...prev,
+                  description: e.target.value
+                }))}
+                placeholder="Mô tả chi tiết tình trạng xe khi trả..."
+                required
+              />
+            </Grid>
+
+            {/* Notes - Additional field */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                multiline
+                rows={2}
+                label="Ghi chú check-out"
+                value={vehicleCondition.notes}
+                onChange={(e) => setVehicleCondition(prev => ({
+                  ...prev,
+                  notes: e.target.value
+                }))}
+                placeholder="Ghi chú bổ sung khi check-out..."
               />
             </Grid>
           </Grid>

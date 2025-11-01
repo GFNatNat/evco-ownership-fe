@@ -42,8 +42,7 @@ import {
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import bookingApi from '../../api/bookingApi';
-import vehicleApi from '../../api/vehicleApi';
+import coOwnerApi from '../../api/coowner';
 
 const BookingManagement = () => {
     const [activeTab, setActiveTab] = useState(0);
@@ -58,8 +57,9 @@ const BookingManagement = () => {
         startTime: new Date(),
         endTime: new Date(Date.now() + 2 * 60 * 60 * 1000), // +2 hours
         purpose: '',
-        priority: 1,
-        notes: ''
+        pickupLocationId: '',
+        dropoffLocationId: '',
+        additionalNotes: ''
     });
     const [alert, setAlert] = useState({ open: false, message: '', severity: 'info' });
 
@@ -71,10 +71,10 @@ const BookingManagement = () => {
         setLoading(true);
         try {
             const results = await Promise.allSettled([
-                bookingApi.getMyBookings().catch(() => ({ data: { bookings: [] } })),
-                vehicleApi.getMyVehicles().catch(() => ({ data: [] })),
-                bookingApi.getPendingConflicts().catch(() => ({ data: { conflicts: [] } })),
-                bookingApi.getSlotRequests().catch(() => ({ data: { requests: [] } }))
+                coOwnerApi.bookings.getMy().catch(() => ({ data: { bookings: [] } })),
+                coOwnerApi.vehicles.getMyVehicles().catch(() => ({ data: [] })),
+                coOwnerApi.bookings.getPendingConflicts().catch(() => ({ data: { conflicts: [] } })),
+                coOwnerApi.bookings.getSlotRequests().catch(() => ({ data: { requests: [] } }))
             ]);
 
             const [bookingsRes, vehiclesRes, conflictsRes, slotsRes] = results.map(r =>
@@ -108,7 +108,7 @@ const BookingManagement = () => {
 
     const handleCreateBooking = async () => {
         try {
-            await bookingApi.create(formData);
+            await coOwnerApi.bookings.create(formData);
             showAlert('Tạo booking thành công!', 'success');
             setOpenDialog(false);
             loadData();
@@ -119,7 +119,7 @@ const BookingManagement = () => {
 
     const handleCancelBooking = async (bookingId) => {
         try {
-            await bookingApi.cancel(bookingId, { reason: 'Cancelled by user' });
+            await coOwnerApi.bookings.cancel(bookingId, 'Cancelled by user');
             showAlert('Hủy booking thành công!', 'success');
             loadData();
         } catch (error) {
@@ -129,7 +129,7 @@ const BookingManagement = () => {
 
     const handleResolveConflict = async (conflictId, resolution) => {
         try {
-            await bookingApi.resolveConflict(conflictId, resolution);
+            await coOwnerApi.bookings.resolveConflict(conflictId, resolution);
             showAlert('Giải quyết xung đột thành công!', 'success');
             loadData();
         } catch (error) {
@@ -409,25 +409,33 @@ const BookingManagement = () => {
                                 </Grid>
 
                                 <Grid item xs={12} sm={6}>
-                                    <FormControl fullWidth>
-                                        <InputLabel>Độ ưu tiên</InputLabel>
-                                        <Select
-                                            value={formData.priority}
-                                            onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                                        >
-                                            <MenuItem value={1}>Bình thường</MenuItem>
-                                            <MenuItem value={2}>Cao</MenuItem>
-                                            <MenuItem value={3}>Rất cao</MenuItem>
-                                        </Select>
-                                    </FormControl>
+                                    <TextField
+                                        fullWidth
+                                        label="Điểm đón (Location ID)"
+                                        type="number"
+                                        value={formData.pickupLocationId}
+                                        onChange={(e) => setFormData({ ...formData, pickupLocationId: parseInt(e.target.value) || '' })}
+                                        required
+                                    />
+                                </Grid>
+
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Điểm trả (Location ID)"
+                                        type="number"
+                                        value={formData.dropoffLocationId}
+                                        onChange={(e) => setFormData({ ...formData, dropoffLocationId: parseInt(e.target.value) || '' })}
+                                        required
+                                    />
                                 </Grid>
 
                                 <Grid item xs={12}>
                                     <TextField
                                         fullWidth
-                                        label="Ghi chú"
-                                        value={formData.notes}
-                                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                        label="Ghi chú thêm"
+                                        value={formData.additionalNotes}
+                                        onChange={(e) => setFormData({ ...formData, additionalNotes: e.target.value })}
                                         multiline
                                         rows={3}
                                     />

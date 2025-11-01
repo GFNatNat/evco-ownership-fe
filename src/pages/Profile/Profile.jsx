@@ -6,10 +6,9 @@ import {
 } from '@mui/material';
 import { PhotoCamera, Security, Notifications, Edit, DirectionsCar, Assessment } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
-import profileApi from '../../api/profileApi';
 import authApi from '../../api/authApi';
 import licenseApi from '../../api/licenseApi';
-import fileUploadApi from '../../api/fileUploadApi';
+// fileUploadApi removed - Profile uses profileApi.uploadProfilePicture instead
 
 export default function Profile() {
     // Tách profile (dữ liệu gốc) và profileDraft (form nhập liệu)
@@ -68,6 +67,7 @@ export default function Profile() {
     const [licenseForm, setLicenseForm] = React.useState({
         licenseNumber: '',
         issueDate: '',
+        expiryDate: '', // Added expiry date field as per API
         issuedBy: '',
         firstName: '',
         lastName: '',
@@ -99,11 +99,12 @@ export default function Profile() {
                         firstName = res.data.firstName ?? '';
                         lastName = res.data.lastName ?? '';
                     }
+                    // Map BE 'phone' to FE 'phoneNumber'
                     const loadedProfile = {
                         firstName,
                         lastName,
                         email: res.data.email ?? '',
-                        phoneNumber: res.data.phoneNumber ?? '',
+                        phoneNumber: res.data.phone ?? res.data.phoneNumber ?? '',
                         address: res.data.address ?? '',
                         dateOfBirth: res.data.dateOfBirth ?? '',
                         gender: res.data.gender ?? '',
@@ -192,7 +193,15 @@ export default function Profile() {
             try { localStorage.removeItem('profileDraft'); } catch { }
             setMessage('Cập nhật thông tin thành công');
         } catch (err) {
-            setError(err?.response?.data?.message || 'Cập nhật thất bại');
+            let msg = 'Cập nhật thất bại';
+            if (err && err.response && err.response.data) {
+                if (typeof err.response.data.message === 'string') msg = err.response.data.message;
+                else if (typeof err.response.data.Message === 'string') msg = err.response.data.Message;
+                else if (typeof err.response.data.status === 'string') msg = err.response.data.status;
+            } else if (err && err.message) {
+                msg = err.message;
+            }
+            setError(msg);
         } finally {
             setLoading(false);
         }
@@ -216,7 +225,15 @@ export default function Profile() {
             setMessage('Đổi mật khẩu thành công');
             setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
         } catch (err) {
-            setError(err?.response?.data?.message || 'Đổi mật khẩu thất bại');
+            let msg = 'Đổi mật khẩu thất bại';
+            if (err && err.response && err.response.data) {
+                if (typeof err.response.data.message === 'string') msg = err.response.data.message;
+                else if (typeof err.response.data.Message === 'string') msg = err.response.data.Message;
+                else if (typeof err.response.data.status === 'string') msg = err.response.data.status;
+            } else if (err && err.message) {
+                msg = err.message;
+            }
+            setError(msg);
         }
     };
 
@@ -266,26 +283,40 @@ export default function Profile() {
     const verifyLicense = async () => {
         setMessage('');
         setError('');
-        // Validate bắt buộc nhập đủ trường
-        if (!licenseForm.licenseNumber || !licenseForm.issueDate || !licenseForm.issuedBy || !licenseForm.firstName || !licenseForm.lastName || !licenseForm.dateOfBirth || !licenseForm.licenseImage) {
+
+        // Validate required fields as per new License API
+        if (!licenseForm.licenseNumber || !licenseForm.issueDate || !licenseForm.issuedBy ||
+            !licenseForm.firstName || !licenseForm.lastName || !licenseForm.dateOfBirth || !licenseForm.licenseImage) {
             setError('Vui lòng nhập đầy đủ tất cả các trường và tải lên ảnh giấy phép.');
             return;
         }
+
         try {
+            // Create FormData with correct field names as per README_FRONTEND_LICENSE.md
             const formData = new FormData();
-            formData.append('LicenseNumber', licenseForm.licenseNumber);
-            formData.append('IssueDate', licenseForm.issueDate);
-            formData.append('IssuedBy', licenseForm.issuedBy);
-            formData.append('FirstName', licenseForm.firstName);
-            formData.append('LastName', licenseForm.lastName);
-            formData.append('DateOfBirth', licenseForm.dateOfBirth);
-            formData.append('LicenseImage', licenseForm.licenseImage);
-            const res = await licenseApi.verify(formData);
-            if (res && res.data && res.data.StatusCode === 200) {
-                setMessage(res.data.Message || 'Xác minh giấy phép thành công. Đang chờ xác nhận.');
+            formData.append('licenseNumber', licenseForm.licenseNumber);
+            formData.append('issuedBy', licenseForm.issuedBy);
+            formData.append('issueDate', licenseForm.issueDate);
+            formData.append('firstName', licenseForm.firstName);
+            formData.append('lastName', licenseForm.lastName);
+            formData.append('dateOfBirth', licenseForm.dateOfBirth);
+            formData.append('licenseImage', licenseForm.licenseImage);
+
+            // Optional expiry date if available
+            if (licenseForm.expiryDate) {
+                formData.append('expiryDate', licenseForm.expiryDate);
+            }
+
+            // Use the correct license API endpoint
+            const response = await licenseApi.verifyLicense(formData);
+
+            if (response.statusCode === 200 || response.statusCode === 201) {
+                setMessage('Xác minh giấy phép thành công! Yêu cầu đã được gửi để duyệt.');
+                // Reset form after successful submission
                 setLicenseForm({
                     licenseNumber: '',
                     issueDate: '',
+                    expiryDate: '',
                     issuedBy: '',
                     firstName: '',
                     lastName: '',
@@ -293,12 +324,19 @@ export default function Profile() {
                     licenseImage: null
                 });
             } else {
-                setError(res?.data?.Message || 'Xác minh giấy phép thất bại');
+                setError(response.message || 'Xác minh giấy phép thất bại');
             }
         } catch (err) {
-            // Hiển thị rõ lỗi trả về từ BE
-            const msg = err?.response?.data?.Message || err?.response?.data?.Error || err?.message || 'Xác minh giấy phép thất bại';
-            setError(msg);
+            console.error('License verification error:', err);
+            let errorMessage = 'Xác minh giấy phép thất bại';
+
+            if (err.response?.data?.message) {
+                errorMessage = err.response.data.message;
+            } else if (err.message) {
+                errorMessage = err.message;
+            }
+
+            setError(errorMessage);
         }
     };
 
@@ -317,6 +355,9 @@ export default function Profile() {
             </div>
         );
     }
+
+
+
 
     // Nếu profileDraft chưa khởi tạo xong thì không render form
     if (!profileDraft) return null;

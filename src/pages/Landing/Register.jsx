@@ -12,7 +12,9 @@ export default function Register() {
     confirmPassword: '',
     firstName: '',
     lastName: '',
-    phoneNumber: ''
+    phone: '', // Changed from phoneNumber to phone to match API
+    dateOfBirth: '', // Added dateOfBirth field as per API
+    address: '' // Added address field as per API
   });
   const [error, setError] = React.useState('');
   const [success, setSuccess] = React.useState(false);
@@ -28,8 +30,11 @@ export default function Register() {
     if (!form.password) errors.password = 'Mật khẩu không được để trống';
     if (form.password.length < 6) errors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
     if (form.password !== form.confirmPassword) errors.confirmPassword = 'Mật khẩu không khớp';
-    if (form.phoneNumber && !/^[0-9+\-\s()]{10,15}$/.test(form.phoneNumber)) {
-      errors.phoneNumber = 'Số điện thoại không hợp lệ';
+    if (form.phone && !/^[0-9+\-\s()]{10,15}$/.test(form.phone)) {
+      errors.phone = 'Số điện thoại không hợp lệ';
+    }
+    if (form.dateOfBirth && new Date(form.dateOfBirth) > new Date()) {
+      errors.dateOfBirth = 'Ngày sinh không hợp lệ';
     }
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -100,13 +105,36 @@ export default function Register() {
             />
             <TextField
               label="Số điện thoại"
-              value={form.phoneNumber}
+              value={form.phone}
               onChange={(e) => {
-                setForm({ ...form, phoneNumber: e.target.value });
-                if (validationErrors.phoneNumber) setValidationErrors({ ...validationErrors, phoneNumber: '' });
+                setForm({ ...form, phone: e.target.value });
+                if (validationErrors.phone) setValidationErrors({ ...validationErrors, phone: '' });
               }}
-              error={!!validationErrors.phoneNumber}
-              helperText={validationErrors.phoneNumber}
+              error={!!validationErrors.phone}
+              helperText={validationErrors.phone}
+            />
+            <TextField
+              label="Ngày sinh"
+              type="date"
+              value={form.dateOfBirth}
+              onChange={(e) => {
+                setForm({ ...form, dateOfBirth: e.target.value });
+                if (validationErrors.dateOfBirth) setValidationErrors({ ...validationErrors, dateOfBirth: '' });
+              }}
+              error={!!validationErrors.dateOfBirth}
+              helperText={validationErrors.dateOfBirth}
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+            <TextField
+              label="Địa chỉ"
+              multiline
+              rows={2}
+              value={form.address}
+              onChange={(e) => {
+                setForm({ ...form, address: e.target.value });
+              }}
             />
             <TextField
               label="Mật khẩu"

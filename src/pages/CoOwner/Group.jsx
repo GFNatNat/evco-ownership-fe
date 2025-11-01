@@ -8,12 +8,12 @@ import {
   Switch, Menu, MenuItem, LinearProgress
 } from '@mui/material';
 import {
-  Group as GroupIcon, Person, Add, MoreVert, VoteIcon as Vote,
+  Group as GroupIcon, Person, Add, MoreVert, HowToVote as Vote,
   AccountBalance, Message, Settings, ExitToApp, PersonAdd,
   Schedule, DirectionsCar, Payment, Notifications, Check, Close
 } from '@mui/icons-material';
 import { DataGrid } from '@mui/x-data-grid';
-import coOwnerApi from '../../api/coOwnerApi';
+import coOwnerApi from '../../api/coowner';
 import { useAuth } from '../../context/AuthContext';
 
 export default function Group() {
@@ -35,7 +35,7 @@ export default function Group() {
   const loadMyGroups = async () => {
     setLoading(true);
     try {
-      const res = await coOwnerApi.getGroups();
+      const res = await coOwnerApi.groups.getMyGroups();
       const groups = res.data || [];
       setMyGroups(groups);
       if (groups.length > 0 && !selectedGroup) {
@@ -52,7 +52,7 @@ export default function Group() {
     if (!inviteEmail || !selectedGroup) return;
 
     try {
-      await coOwnerApi.inviteToGroup(selectedGroup.id, {
+      await coOwnerApi.groups.inviteToGroup(selectedGroup.id, {
         email: inviteEmail,
         message: inviteMessage
       });
@@ -280,7 +280,7 @@ function GroupMembers({ group, canManage }) {
     if (!group?.id) return;
     setLoading(true);
     try {
-      const res = await coOwnerApi.getGroupMembers(group.id);
+      const res = await coOwnerApi.groups.getMembers(group.id);
       setMembers(res.data || []);
     } catch (err) {
       console.error('Failed to load members:', err);

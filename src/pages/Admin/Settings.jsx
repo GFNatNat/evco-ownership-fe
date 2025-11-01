@@ -6,6 +6,7 @@ import {
     ListItemText, ListItemSecondaryAction, IconButton
 } from '@mui/material';
 import { Save, Refresh, Security, Notifications, Email, Sms } from '@mui/icons-material';
+import adminApi from '../../api/admin';
 
 export default function Settings() {
     const [settings, setSettings] = React.useState({
@@ -53,8 +54,10 @@ export default function Settings() {
         setLoading(true);
         try {
             // Load settings from API
-            // const res = await settingsApi.getAll();
-            // setSettings(res.data);
+            const response = await adminApi.settings.get();
+            if (response.data) {
+                setSettings(prev => ({ ...prev, ...response.data }));
+            }
         } catch (err) {
             setError('Không thể tải cài đặt hệ thống');
         } finally {
@@ -73,7 +76,7 @@ export default function Settings() {
         setMessage('');
 
         try {
-            // await settingsApi.update(settings);
+            await adminApi.settings.update(settings);
             setMessage('Cập nhật cài đặt thành công');
             setUnsavedChanges(false);
         } catch (err) {

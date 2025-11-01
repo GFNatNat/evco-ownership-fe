@@ -1,121 +1,224 @@
 import axiosClient from './axiosClient';
 
-/**
- * File Upload API - README 19 Compliant Implementation
- * Manages file upload, download, info, and deletion operations
- * All endpoints follow exact README 19 specifications
-// All endpoints updated to use capitalized controller names (e.g., /api/FileUpload) to match Swagger
- */
-
 const fileUploadApi = {
-  // ===== README 19 COMPLIANCE - 4 ENDPOINTS =====
+  // Enhanced response parser
+  parseResponse: (response, operation = 'unknown') => {
+    try {
+      // Handle different response formats
+      let parsedData = response;
 
-  // 1. Upload file - POST /api/fileupload/upload (README 19 compliant)
-  upload: (formData) => axiosClient.post('/api/FileUpload/upload', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  }),
-
-  // 2. Download file - GET /api/fileupload/{id}/download (README 19 compliant)
-  download: (fileId) => axiosClient.get(`/api/FileUpload/${fileId}/download`, {
-    responseType: 'blob'
-  }),
-
-  // 3. Get file info - GET /api/fileupload/{id}/info (README 19 compliant)
-  getInfo: (fileId) => axiosClient.get(`/api/FileUpload/${fileId}/info`),
-
-  // 4. Delete file - DELETE /api/fileupload/{id} (README 19 compliant)
-  delete: (fileId) => axiosClient.delete(`/api/FileUpload/${fileId}`),
-
-  // ===== LEGACY SUPPORT & UTILITY METHODS =====
-
-  // Legacy method names for backward compatibility
-  uploadMultiple: (formData) => fileUploadApi.upload(formData), // Redirect to main upload
-  getFile: (fileId) => fileUploadApi.getInfo(fileId), // Redirect to getInfo
-  deleteFile: (fileId) => fileUploadApi.delete(fileId), // Redirect to delete
-  downloadFile: (fileId) => fileUploadApi.download(fileId), // Redirect to download
-
-  // Specialized upload methods
-  uploadVehicleDocument: (vehicleId, formData) => {
-    // Add vehicle ID to form data
-    formData.append('vehicleId', vehicleId);
-    formData.append('fileType', 'VehicleDocument');
-    return fileUploadApi.upload(formData);
-  },
-
-  uploadUserDocument: (formData) => {
-    formData.append('fileType', 'UserDocument');
-    return fileUploadApi.upload(formData);
-  },
-
-  uploadProfileImage: (formData) => {
-    formData.append('fileType', 'ProfileImage');
-    return fileUploadApi.upload(formData);
-  },
-
-  uploadMaintenanceEvidence: (maintenanceId, formData) => {
-    formData.append('maintenanceId', maintenanceId);
-    formData.append('fileType', 'MaintenanceEvidence');
-    return fileUploadApi.upload(formData);
-  },
-
-  uploadExpenseReceipt: (expenseId, formData) => {
-    formData.append('expenseId', expenseId);
-    formData.append('fileType', 'ExpenseReceipt');
-    return fileUploadApi.upload(formData);
-  },
-
-  // ===== VALIDATION & UTILITY METHODS =====
-
-  // Validate file before upload
-  validateFile: (file) => {
-    const errors = [];
-    const maxSize = 10 * 1024 * 1024; // 10MB as per README 19
-    const allowedTypes = [
-      // Images
-      'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
-      // Documents
-      'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'text/plain', 'text/csv'
-    ];
-
-    if (!file) {
-      errors.push('File is required');
-      return { isValid: false, errors };
-    }
-
-    if (file.size > maxSize) {
-      errors.push(`File size cannot exceed ${fileUploadApi.formatFileSize(maxSize)}`);
-    }
-
-    if (!allowedTypes.includes(file.type)) {
-      errors.push('File type not supported. Please upload images (JPEG, PNG, GIF, WebP) or documents (PDF, DOC, DOCX, XLS, XLSX, TXT, CSV)');
-    }
-
-    if (file.name.length > 255) {
-      errors.push('File name cannot exceed 255 characters');
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-      fileInfo: {
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        formattedSize: fileUploadApi.formatFileSize(file.size)
+      // If response has statusCode field (backend format)
+      if (response && typeof response === 'object' && 'statusCode' in response) {
+        return {
+          success: response.statusCode >= 200 && response.statusCode < 300,
+          statusCode: response.statusCode,
+          message: response.message || `${operation} completed`,
+          data: response.data,
+          raw: response
+        };
       }
-    };
+
+      // If response is direct data (axios interceptor already parsed)
+      if (response && typeof response === 'object') {
+        return {
+          success: true,
+          statusCode: 200,
+          message: `${operation} completed successfully`,
+          data: response,
+          raw: response
+        };
+      }
+
+      // Fallback for other formats
+      return {
+        success: true,
+        statusCode: 200,
+        message: `${operation} completed`,
+        data: response,
+        raw: response
+      };
+
+    } catch (error) {
+      return {
+        success: false,
+        statusCode: 500,
+        message: `${operation} failed: ${error.message}`,
+        data: null,
+        error: error.message,
+        raw: response
+      };
+    }
   },
 
-  // Create FormData from file and metadata
+  // Enhanced error handler
+  handleError: (error, operation = 'unknown') => {
+    const errorResponse = {
+      success: false,
+      statusCode: error.response?.status || 500,
+      message: fileUploadApi.getErrorMessage(error, operation),
+      data: null,
+      error: error.message,
+      raw: error.response?.data
+    };
+
+    console.error(`❌ ${operation} Error:`, errorResponse);
+    return errorResponse;
+  },
+
+  // Get user-friendly error message
+  getErrorMessage: (error, operation) => {
+    const statusCode = error.response?.status;
+    const backendMessage = error.response?.data?.message;
+
+    // Use backend message if available
+    if (backendMessage) {
+      return fileUploadApi.translateErrorMessage(backendMessage);
+    }
+
+    // Fallback based on status code
+    switch (statusCode) {
+      case 400:
+        return `${operation} failed: Invalid request data`;
+      case 401:
+        return `${operation} failed: Authentication required`;
+      case 403:
+        return `${operation} failed: Permission denied`;
+      case 404:
+        return `${operation} failed: File not found`;
+      case 413:
+        return `${operation} failed: File size too large`;
+      case 415:
+        return `${operation} failed: File type not supported`;
+      case 500:
+        return `${operation} failed: Server error`;
+      default:
+        return `${operation} failed: ${error.message}`;
+    }
+  },
+
+  // Translate backend error messages to user-friendly Vietnamese
+  translateErrorMessage: (message) => {
+    const translations = {
+      'FILE_REQUIRED': 'Vui lòng chọn file để tải lên',
+      'INVALID_FILE_TYPE': 'Loại file không được hỗ trợ',
+      'FILE_SIZE_EXCEEDS_LIMIT': 'Kích thước file vượt quá giới hạn cho phép',
+      'FILE_NOT_FOUND': 'Không tìm thấy file',
+      'FILE_UPLOAD_FAILED': 'Tải file lên thất bại',
+      'FILE_DELETE_FAILED': 'Xóa file thất bại',
+      'FILE_INFO_RETRIEVAL_FAILED': 'Lấy thông tin file thất bại',
+      'FILE_RETRIEVAL_FAILED': 'Tải file xuống thất bại',
+      'MALWARE_DETECTED': 'File chứa mã độc, không thể tải lên',
+      'INVALID_FILE_CONTENT': 'Nội dung file không hợp lệ'
+    };
+
+    return translations[message] || message || 'Đã xảy ra lỗi';
+  },
+
+  // Basic File Upload with enhanced response handling
+  uploadFile: async (file, category) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      if (category) {
+        formData.append('category', category);
+      }
+
+      const response = await axiosClient.post('/FileUpload/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / (progressEvent.total || 1)
+          );
+          // Handle upload progress
+          console.log(`Upload progress: ${percentCompleted}%`);
+        },
+      });
+
+      return fileUploadApi.parseResponse(response, 'Upload');
+    } catch (error) {
+      throw fileUploadApi.handleError(error, 'Upload');
+    }
+  },
+
+  // Get File Info with enhanced response handling
+  getFileInfo: async (fileId) => {
+    try {
+      const response = await axiosClient.get(`/FileUpload/${fileId}/info`);
+      return fileUploadApi.parseResponse(response, 'Get File Info');
+    } catch (error) {
+      throw fileUploadApi.handleError(error, 'Get File Info');
+    }
+  },
+
+  // Download File with enhanced error handling
+  downloadFile: async (fileId) => {
+    try {
+      const response = await axiosClient.get(`/FileUpload/${fileId}/download`, {
+        responseType: 'blob',
+      });
+      return response; // Return blob directly for downloads
+    } catch (error) {
+      throw fileUploadApi.handleError(error, 'Download');
+    }
+  },
+
+  // Delete File with enhanced response handling
+  deleteFile: async (fileId) => {
+    try {
+      const response = await axiosClient.delete(`/FileUpload/${fileId}`);
+      return fileUploadApi.parseResponse(response, 'Delete');
+    } catch (error) {
+      throw fileUploadApi.handleError(error, 'Delete');
+    }
+  },
+
+  // Get File URL for direct access
+  getFileUrl: (fileId) => {
+    const baseURL = axiosClient.defaults.baseURL || '';
+    return `${baseURL}/FileUpload/${fileId}`;
+  },
+
+  // Upload with Progress Tracking
+  uploadWithProgress: async (file, category, onProgress) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      if (category) {
+        formData.append('category', category);
+      }
+
+      const response = await axiosClient.post('/FileUpload/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress: (progressEvent) => {
+          if (onProgress) {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / (progressEvent.total || 1)
+            );
+            onProgress(percentCompleted, progressEvent.loaded, progressEvent.total);
+          }
+        },
+      });
+
+      return fileUploadApi.parseResponse(response, 'Upload with Progress');
+    } catch (error) {
+      throw fileUploadApi.handleError(error, 'Upload with Progress');
+    }
+  },
+
+  // MISSING METHODS - Adding for component compatibility
+
+  // Create FormData with metadata
   createFormData: (file, metadata = {}) => {
     const formData = new FormData();
     formData.append('file', file);
 
-    // Add metadata
+    // Add metadata fields
     Object.keys(metadata).forEach(key => {
       if (metadata[key] !== undefined && metadata[key] !== null) {
         formData.append(key, metadata[key]);
@@ -125,163 +228,191 @@ const fileUploadApi = {
     return formData;
   },
 
-  // Format file size for display
-  formatFileSize: (bytes) => {
-    if (bytes === 0) return '0 B';
+  // Simple upload method (wrapper for uploadFile) with enhanced response
+  upload: async (formData) => {
+    try {
+      const response = await axiosClient.post('/FileUpload/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      return fileUploadApi.parseResponse(response, 'Upload');
+    } catch (error) {
+      throw fileUploadApi.handleError(error, 'Upload');
+    }
   },
 
-  // Get file type category
-  getFileTypeCategory: (mimeType) => {
-    if (mimeType.startsWith('image/')) {
-      return { category: 'image', icon: '🖼️', color: '#4CAF50' };
-    } else if (mimeType === 'application/pdf') {
-      return { category: 'pdf', icon: '📄', color: '#F44336' };
-    } else if (mimeType.includes('word') || mimeType.includes('document')) {
-      return { category: 'document', icon: '📝', color: '#2196F3' };
-    } else if (mimeType.includes('excel') || mimeType.includes('spreadsheet') || mimeType.includes('csv')) {
-      return { category: 'spreadsheet', icon: '📊', color: '#4CAF50' };
-    } else if (mimeType.includes('text')) {
-      return { category: 'text', icon: '📋', color: '#FF9800' };
-    } else {
-      return { category: 'unknown', icon: '📎', color: '#9E9E9E' };
+  // Validate multiple files
+  validateMultipleFiles: (files, maxSize = 10 * 1024 * 1024, acceptedTypes = ['image/*', '.pdf', '.doc', '.docx']) => {
+    const results = {
+      valid: true,
+      errors: [],
+      validFiles: [],
+      invalidFiles: []
+    };
+
+    Array.from(files).forEach((file, index) => {
+      const validation = fileUploadApi.validateFile(file, maxSize, acceptedTypes);
+
+      if (validation.valid) {
+        results.validFiles.push(file);
+      } else {
+        results.valid = false;
+        results.invalidFiles.push({ file, error: validation.error, index });
+        results.errors.push(`File ${index + 1} (${file.name}): ${validation.error}`);
+      }
+    });
+
+    return results;
+  },
+
+  // Download file with specific filename
+  downloadFileWithName: async (fileId, filename) => {
+    try {
+      const response = await axiosClient.get(`/FileUpload/${fileId}/download`, {
+        responseType: 'blob',
+      });
+
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      return { success: true, message: `Downloaded ${filename} successfully` };
+    } catch (error) {
+      throw fileUploadApi.handleError(error, 'Download');
     }
   },
 
   // Format file info for display
-  formatFileInfoForDisplay: (fileInfo) => {
-    if (!fileInfo) return null;
-
-    const typeInfo = fileUploadApi.getFileTypeCategory(fileInfo.mimeType || fileInfo.fileType);
-
+  formatFileInfoForDisplay: (fileData) => {
     return {
-      ...fileInfo,
-      typeInfo,
-      formattedSize: fileUploadApi.formatFileSize(fileInfo.fileSize || fileInfo.size),
-      formattedCreatedAt: fileInfo.createdAt ? new Date(fileInfo.createdAt).toLocaleString('vi-VN') : null,
-      formattedUpdatedAt: fileInfo.updatedAt ? new Date(fileInfo.updatedAt).toLocaleString('vi-VN') : null,
-      isImage: typeInfo.category === 'image',
-      isPdf: typeInfo.category === 'pdf',
-      isDocument: ['document', 'spreadsheet', 'text'].includes(typeInfo.category)
+      id: fileData.fileId || fileData.id,
+      name: fileData.fileName || fileData.name,
+      size: fileData.fileSize || fileData.size,
+      type: fileData.fileType || fileData.mimeType || fileData.type,
+      uploadDate: fileData.uploadDate,
+      downloadUrl: fileData.downloadUrl,
+      formattedSize: fileUploadApi.formatFileSize(fileData.fileSize || fileData.size || 0),
+      formattedDate: fileData.uploadDate ? new Date(fileData.uploadDate).toLocaleString() : 'Unknown'
     };
   },
 
-  // Download file with proper filename
-  downloadFileWithName: async (fileId, filename) => {
-    try {
-      const response = await fileUploadApi.download(fileId);
+  // Get file type category and icon
+  getFileTypeCategory: (mimeType) => {
+    if (!mimeType) return { icon: '📎', color: '#9E9E9E', category: 'unknown' };
 
-      // Create blob URL
-      const blob = new Blob([response.data]);
-      const url = window.URL.createObjectURL(blob);
+    const type = mimeType.toLowerCase();
 
-      // Create download link
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename || `file_${fileId}`;
-      document.body.appendChild(link);
-      link.click();
-
-      // Cleanup
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(link);
-
-      return { success: true };
-    } catch (error) {
-      console.error('Download failed:', error);
-      return { success: false, error: error.message };
-    }
-  },
-
-  // Upload with progress tracking
-  uploadWithProgress: (file, metadata = {}, onProgress) => {
-    const formData = fileUploadApi.createFormData(file, metadata);
-
-    return axiosClient.post('/api/FileUpload/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      },
-      onUploadProgress: (progressEvent) => {
-        if (onProgress) {
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          onProgress(percentCompleted, progressEvent.loaded, progressEvent.total);
-        }
-      }
-    });
-  },
-
-  // Batch upload multiple files
-  uploadMultipleFiles: async (files, metadata = {}) => {
-    const uploadPromises = files.map(file => {
-      const validation = fileUploadApi.validateFile(file);
-      if (!validation.isValid) {
-        return Promise.resolve({
-          file: file.name,
-          success: false,
-          errors: validation.errors
-        });
-      }
-
-      const formData = fileUploadApi.createFormData(file, metadata);
-      return fileUploadApi.upload(formData)
-        .then(response => ({
-          file: file.name,
-          success: true,
-          data: response.data
-        }))
-        .catch(error => ({
-          file: file.name,
-          success: false,
-          error: error.message
-        }));
-    });
-
-    return Promise.all(uploadPromises);
-  },
-
-  // Get file types for form dropdown
-  getFileTypes: () => [
-    { value: 'VehicleDocument', label: 'Tài liệu xe', icon: '🚗' },
-    { value: 'UserDocument', label: 'Tài liệu người dùng', icon: '👤' },
-    { value: 'ProfileImage', label: 'Ảnh đại diện', icon: '📷' },
-    { value: 'MaintenanceEvidence', label: 'Bằng chứng bảo trì', icon: '🔧' },
-    { value: 'ExpenseReceipt', label: 'Biên lai chi phí', icon: '🧾' },
-    { value: 'ContractDocument', label: 'Tài liệu hợp đồng', icon: '📋' },
-    { value: 'LicenseDocument', label: 'Giấy phép', icon: '📜' },
-    { value: 'InsuranceDocument', label: 'Bảo hiểm', icon: '🛡️' },
-    { value: 'Other', label: 'Khác', icon: '📎' }
-  ],
-
-  // Validate multiple files
-  validateMultipleFiles: (files) => {
-    if (!files || !files.length) {
-      return { isValid: false, errors: ['No files selected'] };
+    // Images
+    if (type.startsWith('image/')) {
+      return { icon: '🖼️', color: '#4CAF50', category: 'image' };
     }
 
-    const results = Array.from(files).map(file => ({
-      file: file.name,
-      validation: fileUploadApi.validateFile(file)
-    }));
+    // Documents
+    if (type.includes('pdf')) {
+      return { icon: '📄', color: '#F44336', category: 'pdf' };
+    }
 
-    const invalidFiles = results.filter(result => !result.validation.isValid);
+    if (type.includes('word') || type.includes('document')) {
+      return { icon: '📝', color: '#2196F3', category: 'document' };
+    }
 
-    return {
-      isValid: invalidFiles.length === 0,
-      results,
-      invalidFiles,
-      validFiles: results.filter(result => result.validation.isValid),
-      summary: {
-        total: files.length,
-        valid: results.length - invalidFiles.length,
-        invalid: invalidFiles.length
+    if (type.includes('spreadsheet') || type.includes('excel')) {
+      return { icon: '📊', color: '#4CAF50', category: 'spreadsheet' };
+    }
+
+    if (type.includes('presentation') || type.includes('powerpoint')) {
+      return { icon: '📊', color: '#FF9800', category: 'presentation' };
+    }
+
+    // Text files
+    if (type.includes('text')) {
+      return { icon: '📃', color: '#607D8B', category: 'text' };
+    }
+
+    // Archives
+    if (type.includes('zip') || type.includes('rar') || type.includes('tar')) {
+      return { icon: '🗜️', color: '#795548', category: 'archive' };
+    }
+
+    // Audio
+    if (type.startsWith('audio/')) {
+      return { icon: '🎵', color: '#9C27B0', category: 'audio' };
+    }
+
+    // Video
+    if (type.startsWith('video/')) {
+      return { icon: '🎬', color: '#E91E63', category: 'video' };
+    }
+
+    // Default
+    return { icon: '📎', color: '#9E9E9E', category: 'unknown' };
+  },
+
+  // METHOD ALIASES for component compatibility
+
+  // Alias for getFileInfo
+  getInfo: (fileId) => fileUploadApi.getFileInfo(fileId),
+
+  // Alias for deleteFile  
+  delete: (fileId) => fileUploadApi.deleteFile(fileId),
+
+  // File Validation
+  validateFile: (file, maxSize = 10 * 1024 * 1024, acceptedTypes = ['image/*', '.pdf', '.doc', '.docx']) => {
+    if (file.size > maxSize) {
+      return {
+        valid: false,
+        error: `File size exceeds limit. Maximum size is ${formatFileSize(maxSize)}.`
+      };
+    }
+
+    const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+    const mimeType = file.type.toLowerCase();
+
+    const isValidType = acceptedTypes.some(type => {
+      if (type.startsWith('.')) {
+        return fileExtension === type;
+      } else if (type.includes('/*')) {
+        return mimeType.startsWith(type.replace('/*', '/'));
+      } else {
+        return mimeType === type;
       }
-    };
+    });
+
+    if (!isValidType) {
+      return {
+        valid: false,
+        error: `Invalid file type. Accepted types: ${acceptedTypes.join(', ')}`
+      };
+    }
+
+    return { valid: true };
+  },
+
+  // Utility function to format file size
+  formatFileSize: (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
+};
+
+// Helper function for formatting file size
+const formatFileSize = (bytes) => {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
 export default fileUploadApi;

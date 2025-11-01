@@ -34,14 +34,19 @@ export default function Login() {
     try {
       const result = await login(form);
       if (result.ok) {
-        // Chỉ cho phép truy cập dashboard đúng role
-        const role = result.role || localStorage.getItem('role') || 'CoOwner';
-        if (role === 'Admin') {
-          nav('/admin', { replace: true });
-        } else if (role === 'Staff') {
-          nav('/staff', { replace: true });
-        } else {
-          nav('/coowner', { replace: true });
+        // Use numeric role values as per 7-controller structure
+        const role = result.role || result.user?.role || 0;
+        switch (role) {
+          case 2: // Admin
+            nav('/admin/dashboard', { replace: true });
+            break;
+          case 1: // Staff
+            nav('/staff/dashboard', { replace: true });
+            break;
+          case 0: // CoOwner
+          default:
+            nav('/dashboard', { replace: true });
+            break;
         }
       } else {
         setError(result.error || 'Đăng nhập thất bại');

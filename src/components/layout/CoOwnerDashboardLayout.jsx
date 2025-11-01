@@ -8,18 +8,15 @@ import {
 import {
     Menu as MenuIcon, Dashboard as DashboardIcon, DirectionsCar as DirectionsCarIcon,
     Schedule as ScheduleIcon, AccountBalance as AccountBalanceIcon,
-    Analytics as AnalyticsIcon, Group as GroupIcon, HowToVote as HowToVoteIcon,
-    Build as BuildIcon, Assessment as AssessmentIcon, Notifications as NotificationsIcon,
-    Settings as SettingsIcon, ExitToApp as ExitToAppIcon, AccountCircle as AccountCircleIcon,
-    Add as AddIcon, History as HistoryIcon, Upgrade as UpgradeIcon,
-    NotificationImportant as ReminderIcon, CheckCircle as CheckCircleIcon
+    Group as GroupIcon, ExitToApp as ExitToAppIcon, AccountCircle as AccountCircleIcon,
+    Payment as PaymentIcon, Settings as SettingsIcon, Analytics as AnalyticsIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
 import NotificationCenter from '../common/NotificationCenter';
 
 const drawerWidth = 280;
 
-// CoOwner Navigation Menu Structure
+// CoOwner Navigation Menu Structure - Simplified for 7-Controller Architecture
 const coOwnerNavigation = [
     {
         section: 'Dashboard',
@@ -28,63 +25,31 @@ const coOwnerNavigation = [
         ]
     },
     {
-        section: 'Quản lý xe',
+        section: 'Hồ sơ & Xác thực',
         items: [
-            { to: '/coowner/vehicles', label: 'Quản lý xe', icon: <DirectionsCarIcon /> },
-            { to: '/coowner/create-vehicle', label: 'Thêm xe mới', icon: <AddIcon /> },
-            { to: '/coowner/availability', label: 'Lịch trình sử dụng', icon: <ScheduleIcon /> },
-            { to: '/coowner/analytics', label: 'Phân tích hiệu suất', icon: <AnalyticsIcon /> }
+            { to: '/coowner/profile', label: 'Hồ sơ cá nhân', icon: <AccountCircleIcon /> },
+            { to: '/profile', label: 'Cài đặt tài khoản', icon: <SettingsIcon /> }
         ]
     },
     {
-        section: 'Booking & Lịch trình',
+        section: 'Xe & Booking',
         items: [
-            { to: '/coowner/schedule', label: 'Lịch & đặt xe', icon: <ScheduleIcon /> },
-            { to: '/coowner/booking-management', label: 'Quản lý Booking', icon: <ScheduleIcon /> },
-            { to: '/coowner/booking-reminder', label: 'Nhắc nhở Booking', icon: <ReminderIcon /> },
-            { to: '/coowner/checkin-checkout', label: 'Check-in/Check-out', icon: <CheckCircleIcon /> }
+            { to: '/coowner/vehicles', label: 'Quản lý xe', icon: <DirectionsCarIcon /> },
+            { to: '/coowner/bookings', label: 'Đặt xe & lịch trình', icon: <ScheduleIcon /> },
+            { to: '/coowner/analytics', label: 'Phân tích sử dụng', icon: <AnalyticsIcon /> }
         ]
     },
     {
         section: 'Tài chính',
         items: [
-            { to: '/coowner/payments', label: 'Chi phí & thanh toán', icon: <AccountBalanceIcon /> },
-            { to: '/coowner/payment-management', label: 'Quản lý Thanh toán', icon: <AccountBalanceIcon /> },
-            { to: '/coowner/fund-management', label: 'Quản lý Quỹ', icon: <AccountBalanceIcon /> },
-            { to: '/coowner/deposit-management', label: 'Quản lý Cọc tiền', icon: <AccountBalanceIcon /> }
+            { to: '/coowner/funds', label: 'Quản lý quỹ', icon: <AccountBalanceIcon /> },
+            { to: '/coowner/payments', label: 'Thanh toán', icon: <PaymentIcon /> }
         ]
     },
     {
-        section: 'Bảo dưỡng & Dịch vụ',
+        section: 'Nhóm đồng sở hữu',
         items: [
-            { to: '/coowner/maintenance-management', label: 'Quản lý Bảo dưỡng', icon: <BuildIcon /> },
-            { to: '/coowner/maintenance-vote-management', label: 'Bỏ phiếu Bảo trì', icon: <HowToVoteIcon /> },
-            { to: '/coowner/vehicle-upgrade', label: 'Nâng cấp xe', icon: <UpgradeIcon /> }
-        ]
-    },
-    {
-        section: 'Nhóm & Cộng đồng',
-        items: [
-            { to: '/coowner/group', label: 'Nhóm đồng sở hữu', icon: <GroupIcon /> },
-            { to: '/coowner/invitations', label: 'Lời mời đồng sở hữu', icon: <GroupIcon /> },
-            { to: '/coowner/voting-management', label: 'Quản lý Bình chọn', icon: <HowToVoteIcon /> },
-            { to: '/coowner/dispute-management', label: 'Quản lý Tranh chấp', icon: <AssessmentIcon /> }
-        ]
-    },
-    {
-        section: 'Báo cáo & Lịch sử',
-        items: [
-            { to: '/coowner/reports-management', label: 'Quản lý Báo cáo', icon: <AssessmentIcon /> },
-            { to: '/coowner/vehicle-reports', label: 'Báo cáo xe', icon: <AssessmentIcon /> },
-            { to: '/coowner/history', label: 'Lịch sử & phân tích', icon: <HistoryIcon /> },
-            { to: '/coowner/usage-analytics-management', label: 'Phân tích Sử dụng', icon: <AnalyticsIcon /> }
-        ]
-    },
-    {
-        section: 'Khác',
-        items: [
-            { to: '/coowner/notification-management', label: 'Quản lý Thông báo', icon: <NotificationsIcon /> },
-            { to: '/coowner/fairness-optimization', label: 'Tối ưu hóa Công bằng', icon: <AnalyticsIcon /> }
+            { to: '/groups', label: 'Nhóm của tôi', icon: <GroupIcon /> }
         ]
     }
 ];
@@ -119,7 +84,7 @@ export default function CoOwnerDashboardLayout() {
                 'vehicles': 'Quản lý xe',
                 'create-vehicle': 'Thêm xe mới',
                 'availability': 'Lịch trình sử dụng',
-                'analytics': 'Phân tích hiệu suất',
+                'analytics': 'Phân tích sử dụng',
                 'schedule': 'Lịch & đặt xe',
                 'booking-management': 'Quản lý Booking',
                 'booking-reminder': 'Nhắc nhở Booking',

@@ -5,7 +5,7 @@ import {
     Divider, Button, Chip
 } from '@mui/material';
 import { Notifications, NotificationsNone, Circle } from '@mui/icons-material';
-import notificationApi from '../../api/notificationApi';
+import authApi from '../../api/authApi';
 
 export default function NotificationCenter() {
     const [anchorEl, setAnchorEl] = React.useState(null);
@@ -28,7 +28,7 @@ export default function NotificationCenter() {
     const loadNotifications = async () => {
         setLoading(true);
         try {
-            const res = await notificationApi.getNotifications({ limit: 10 });
+            const res = await authApi.getNotifications({ limit: 10 });
             setNotifications(res.data?.items || res.data || []);
         } catch (err) {
             console.error('Failed to load notifications:', err);
@@ -39,7 +39,7 @@ export default function NotificationCenter() {
 
     const loadUnreadCount = async () => {
         try {
-            const res = await notificationApi.getUnreadCount();
+            const res = await authApi.getUnreadCount();
             setUnreadCount(res.data?.count || 0);
         } catch (err) {
             console.error('Failed to load unread count:', err);
@@ -59,7 +59,7 @@ export default function NotificationCenter() {
 
     const handleMarkAsRead = async (id) => {
         try {
-            await notificationApi.markAsRead(id);
+            await authApi.markAsRead(id);
             setNotifications(notifications.map(n =>
                 n.id === id ? { ...n, isRead: true } : n
             ));
@@ -71,7 +71,7 @@ export default function NotificationCenter() {
 
     const handleMarkAllAsRead = async () => {
         try {
-            await notificationApi.markAllAsRead();
+            await authApi.markAllAsRead();
             setNotifications(notifications.map(n => ({ ...n, isRead: true })));
             setUnreadCount(0);
         } catch (err) {

@@ -7,7 +7,7 @@ import {
 import { DataGrid } from '@mui/x-data-grid';
 import { Add, MoreVert, Group, Person, AccountBalance } from '@mui/icons-material';
 import groupApi from '../../api/groupApi';
-import vehicleApi from '../../api/vehicleApi';
+import adminApi from '../../api/admin';
 
 export default function Groups() {
     const [groups, setGroups] = React.useState([]);
@@ -34,7 +34,10 @@ export default function Groups() {
     const loadGroups = async () => {
         setLoading(true);
         try {
-            const res = await groupApi.getAll().catch(() => ({ data: [] }));
+            const res = await adminApi.groups.getAll({
+                pageIndex: 1,
+                pageSize: 100
+            }).catch(() => ({ data: { items: [] } }));
             const data = Array.isArray(res.data) ? res.data : res.data?.items || [];
             setGroups(data);
             console.log('✅ Loaded groups:', data.length);

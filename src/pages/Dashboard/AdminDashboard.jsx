@@ -6,9 +6,9 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import reportApi from '../../api/reportApi';
-import disputeApi from '../../api/disputeApi';
-import vehicleApi from '../../api/vehicleApi';
+import adminApi from '../../api/admin';
+// import disputeApi from '../../api/disputeApi'; // Removed - use adminApi
+// import vehicleApi from '../../api/vehicleApi'; // Removed - use adminApi
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -90,15 +90,15 @@ export default function AdminDashboard() {
       setError(null);
 
       // Gọi API lấy thống kê dashboard
-      const statsRes = await reportApi.getDashboardStats();
+      const statsRes = await adminApi.getDashboardStats();
       const stats = statsRes?.data || {};
 
       // Gọi API lấy danh sách tranh chấp
-      const disputesRes = await disputeApi.list();
+      const disputesRes = await adminApi.getDisputes();
       const disputes = disputesRes?.data || [];
 
       // Gọi API lấy danh sách xe
-      const vehiclesRes = await vehicleApi.getAll();
+      const vehiclesRes = await adminApi.getVehicles();
       const vehicles = vehiclesRes?.data || [];
 
       // Đếm xe đang hoạt động

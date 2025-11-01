@@ -13,7 +13,7 @@ import {
 import { DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import vehicleApi from '../../api/vehicleApi';
+import coOwnerApi from '../../api/coowner';
 import { format, addDays, parseISO } from 'date-fns';
 import { vi } from 'date-fns/locale';
 
@@ -44,7 +44,7 @@ export default function VehicleAvailability() {
     const loadMyVehicles = async () => {
         setLoading(true);
         try {
-            const response = await vehicleApi.getMyVehicles();
+            const response = await coOwnerApi.vehicles.getMyVehicles();
             const data = Array.isArray(response.data) ? response.data : (response.data?.data || []);
             setMyVehicles(Array.isArray(data) ? data : []);
             if (Array.isArray(data) && data.length > 0) {
@@ -63,7 +63,7 @@ export default function VehicleAvailability() {
 
         setLoading(true);
         try {
-            const response = await vehicleApi.getAvailabilitySchedule(vehicleId, {
+            const response = await coOwnerApi.vehicles.getAvailabilitySchedule(vehicleId, {
                 startDate: format(searchCriteria.startDate, 'yyyy-MM-dd'),
                 endDate: format(searchCriteria.endDate, 'yyyy-MM-dd')
             });
@@ -81,7 +81,7 @@ export default function VehicleAvailability() {
 
         setLoading(true);
         try {
-            const response = await vehicleApi.findAvailableSlots(vehicleId, {
+            const response = await coOwnerApi.vehicles.findAvailableSlots(vehicleId, {
                 startDate: format(searchCriteria.startDate, 'yyyy-MM-dd'),
                 endDate: format(searchCriteria.endDate, 'yyyy-MM-dd'),
                 minimumDurationHours: searchCriteria.minimumDurationHours

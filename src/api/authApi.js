@@ -1,65 +1,82 @@
 import axiosClient from './axiosClient';
 
 const authApi = {
-  // Authentication endpoints
-  login: (data) => axiosClient.post('/api/Auth/login', {
-    email: data.email,
-    password: data.password,
-    rememberMe: data.rememberMe || false
+  // User Login
+  login: (credentials) => axiosClient.post('/Auth/login', {
+    email: credentials.email,
+    password: credentials.password
   }),
 
-  register: (data) => axiosClient.post('/api/Auth/register', {
-    email: data.email,
-    password: data.password,
-    confirmPassword: data.confirmPassword,
-    firstName: data.firstName,
-    lastName: data.lastName
+  // User Registration
+  register: (userData) => axiosClient.post('/Auth/register', {
+    email: userData.email,
+    password: userData.password,
+    confirmPassword: userData.confirmPassword,
+    firstName: userData.firstName,
+    lastName: userData.lastName,
+    phone: userData.phone,
+    dateOfBirth: userData.dateOfBirth,
+    address: userData.address
   }),
 
-  refreshToken: (data) => axiosClient.post('/api/Auth/refresh-token', {
-    refreshToken: data.refreshToken
+  // Token Refresh
+  refreshToken: (refreshToken) => axiosClient.post('/Auth/refresh-token', {
+    refreshToken
   }),
 
-  logout: () => axiosClient.post('/api/Auth/logout'),
-
-  forgotPassword: (data) => axiosClient.post('/api/Auth/forgot-password', {
-    email: data.email
+  // Logout (Optional - for token invalidation)
+  logout: (refreshToken) => axiosClient.post('/Auth/logout', {
+    refreshToken
   }),
 
-  resetPassword: (data) => axiosClient.patch('/api/Auth/reset-password', {
+  // Forgot Password
+  forgotPassword: (email) => axiosClient.post('/Auth/forgot-password', {
+    email
+  }),
+
+  // Reset Password
+  resetPassword: (data) => axiosClient.patch('/Auth/reset-password', {
     email: data.email,
     otp: data.otp,
     newPassword: data.newPassword
   }),
 
-  changePassword: (data) => axiosClient.post('/api/Auth/change-password', {
+  // Change Password (for authenticated users)
+  changePassword: (data) => axiosClient.post('/Auth/change-password', {
     currentPassword: data.currentPassword,
     newPassword: data.newPassword,
     confirmPassword: data.confirmPassword
   }),
 
-  // Verification endpoints
-  verifyEmail: (data) => axiosClient.post('/api/Auth/verify-email', {
-    email: data.email,
-    token: data.token
+  // Basic License Verification (from Auth controller)
+  verifyLicense: (licenseData) => axiosClient.post('/Auth/verify-license', {
+    licenseNumber: licenseData.licenseNumber,
+    issuedBy: licenseData.issuedBy,
+    issueDate: licenseData.issueDate,
+    expiryDate: licenseData.expiryDate,
+    firstName: licenseData.firstName,
+    lastName: licenseData.lastName
   }),
 
-  resendEmailConfirmation: (data) => axiosClient.post('/api/Auth/resend-confirmation', {
+  // Email Verification
+  verifyEmail: (data) => axiosClient.post('/Auth/verify-email', {
+    email: data.email,
+    otp: data.otp
+  }),
+
+  // Resend OTP for email verification
+  resendOTP: (data) => axiosClient.post('/Auth/resend-otp', {
     email: data.email
   }),
 
-  // License verification (basic)
-  verifyLicense: (data) => axiosClient.post('/api/Auth/verify-license', {
-    licenseNumber: data.licenseNumber,
-    issueDate: data.issueDate,
-    firstName: data.firstName,
-    lastName: data.lastName
-  }),
+  // Check if email exists
+  checkEmailExists: (email) => axiosClient.get(`/Auth/check-email?email=${encodeURIComponent(email)}`),
+
+  // Get current user info (for token validation)
+  getCurrentUser: () => axiosClient.get('/Auth/me'),
 
   // Development only - Get test OTP
-  getTestOTP: (email) => axiosClient.get('/api/Auth/test/get-forgot-password-otp', {
-    params: { email }
-  })
+  getTestOTP: (email) => axiosClient.get(`/Auth/test/get-forgot-password-otp?email=${encodeURIComponent(email)}`)
 };
 
 export default authApi;

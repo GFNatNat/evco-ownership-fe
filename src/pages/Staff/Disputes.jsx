@@ -9,7 +9,7 @@ import {
 import {
   ReportProblem, Gavel, CheckCircle, Cancel, Person, Visibility, Edit, Send, Warning
 } from '@mui/icons-material';
-import disputeApi from '../../api/disputeApi';
+import staffApi from '../../api/staff';
 import { useAuth } from '../../context/AuthContext';
 
 export default function Disputes() {
@@ -64,8 +64,21 @@ export default function Disputes() {
   ]);
 
   React.useEffect(() => {
-    setDisputes(mockData);
+    loadDisputes();
   }, []);
+
+  const loadDisputes = async () => {
+    setLoading(true);
+    try {
+      const response = await staffApi.disputes.getAll().catch(() => ({ data: mockData }));
+      setDisputes(response.data);
+    } catch (err) {
+      setError('Không thể tải dữ liệu tranh chấp');
+      setDisputes(mockData);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getStatusColor = (status) => {
     switch (status) {

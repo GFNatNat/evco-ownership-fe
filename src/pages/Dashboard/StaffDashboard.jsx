@@ -6,8 +6,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import disputeApi from '../../api/disputeApi';
-import vehicleApi from '../../api/vehicleApi';
+import staffApi from '../../api/staff';
 
 export default function StaffDashboard() {
   const navigate = useNavigate();
@@ -81,11 +80,11 @@ export default function StaffDashboard() {
       setError(null);
 
       // Gọi API lấy danh sách tranh chấp
-      const disputesRes = await disputeApi.list({ status: 'pending' });
+      const disputesRes = await staffApi.getDisputes({ status: 'pending' });
       const disputes = disputesRes?.data || [];
 
       // Gọi API lấy danh sách xe
-      const vehiclesRes = await vehicleApi.getAll();
+      const vehiclesRes = await staffApi.getVehicles();
       const vehicles = vehiclesRes?.data || [];
 
       // Lọc xe đang bảo dưỡng

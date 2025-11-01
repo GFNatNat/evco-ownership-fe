@@ -1,172 +1,183 @@
-// ========================= PHÂN QUYỀN NGƯỜI DÙNG =========================
-// - Backend trả về user.roles là mảng chuỗi, ví dụ: ["Admin"], ["CoOwner"], ["Staff"]
-// - FE luôn lấy user.roles[0], chuẩn hóa viết hoa chữ cái đầu (Admin, Staff, CoOwner)
-// - Nếu role không hợp lệ, FE mặc định là CoOwner (an toàn)
-// - Role được lưu vào localStorage và state FE, dùng cho kiểm tra truy cập
-// - Khi reload, FE lấy lại role từ localStorage, chuẩn hóa lại
-// - Tất cả kiểm tra phân quyền đều dùng đúng format chuỗi này
-// - Nếu backend/JWT trả về role khác, FE vẫn an toàn (mặc định CoOwner)
-// ========================================================================
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import axiosClient from '../api/axiosClient';
+import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import authApi from '../api/authApi';
+
+// User roles enum
+const UserRole = {
+  CoOwner: 0,
+  Staff: 1,
+  Admin: 2
+};
+
+// Auth state interface
+const initialState = {
+  user: null,
+  accessToken: null,
+  refreshToken: null,
+  isAuthenticated: false,
+  isLoading: true,
+};
+
+// Auth reducer
+const authReducer = (state, action) => {
+  switch (action.type) {
+    case 'LOGIN':
+      return {
+        ...state,
+        user: action.payload.user,
+        accessToken: action.payload.accessToken,
+        refreshToken: action.payload.refreshToken,
+        isAuthenticated: true,
+        isLoading: false,
+      };
+    case 'LOGOUT':
+      return {
+        ...state,
+        user: null,
+        accessToken: null,
+        refreshToken: null,
+        isAuthenticated: false,
+        isLoading: false,
+      };
+    case 'UPDATE_USER':
+      return {
+        ...state,
+        user: action.payload,
+      };
+    case 'SET_LOADING':
+      return {
+        ...state,
+        isLoading: action.payload,
+      };
+    default:
+      return state;
+  }
+};
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(localStorage.getItem('accessToken') || '');
-  const [role, setRole] = useState(localStorage.getItem('role') || '');
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // ✅ Khi token thay đổi → tự cập nhật vào axiosClient
   useEffect(() => {
-    if (token) {
-      axiosClient.defaults.headers.Authorization = `Bearer ${token}`;
-    } else {
-      delete axiosClient.defaults.headers.Authorization;
-    }
-  }, [token]);
+    // Check for stored tokens on app start
+    const storedToken = localStorage.getItem('accessToken');
+    const storedUser = localStorage.getItem('user');
+    const storedRefreshToken = localStorage.getItem('refreshToken');
 
-  // ✅ Hàm login
-  const login = async ({ email, password }) => {
-    setLoading(true);
-    try {
-      const payload = {
-        email,
-        password,
-        userName: email,
-        username: email,
-        userNameOrEmail: email,
-      };
-      const res = await authApi.login(payload);
-      const d = res?.data || {};
-
-      // Lấy token
-      const t =
-        d.token ||
-        d.accessToken ||
-        d.jwt ||
-        d.data?.accessToken ||
-        d.data?.token ||
-        d.result?.token ||
-        '';
-
-      if (!t) throw new Error('Không nhận được token từ API');
-
-      // Lấy user object đúng vị trí
-      const userObj = d.user || d.data?.user || {};
-      console.log('DEBUG: d.user =', d.user, '| d.data.user =', d.data?.user, '| userObj =', userObj, '| userObj.roles =', userObj.roles);
-
-      // Lấy role không phân biệt hoa thường và log ra role thực tế
-      const roleStrRaw = userObj.roles?.[0] || 'CoOwner';
-      // Chuẩn hóa: luôn viết hoa chữ cái đầu, còn lại thường
-      const capitalize = (s) => s && typeof s === 'string' ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : 'CoOwner';
-      let r = capitalize(roleStrRaw);
-      // Nếu không phải Admin/Staff/CoOwner thì mặc định là CoOwner
-      if (!['Admin', 'Staff', 'CoOwner'].includes(r)) r = 'CoOwner';
-      console.log('DEBUG: roleStrRaw from API =', roleStrRaw, '| mapped FE role =', r);
-
-      localStorage.setItem('accessToken', t);
-      localStorage.setItem('role', r);
-      setToken(t);
-      setRole(r);
-      setUser({ email: userObj.email || email, role: r });
-
-      return { ok: true, role: r };
-    } catch (err) {
-      console.error('Login error:', err);
-      const msg =
-        err?.response?.data?.message ||
-        JSON.stringify(err?.response?.data) ||
-        err.message ||
-        'Đăng nhập thất bại';
-      return { ok: false, error: msg };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ✅ Hàm register
-  const register = async ({ email, password, firstName, lastName, confirmPassword }) => {
-    setLoading(true);
-    try {
-      if (password !== confirmPassword) {
-        return { ok: false, error: 'Mật khẩu xác nhận không khớp' };
+    if (storedToken && storedUser && storedRefreshToken) {
+      try {
+        const user = JSON.parse(storedUser);
+        dispatch({
+          type: 'LOGIN',
+          payload: {
+            accessToken: storedToken,
+            refreshToken: storedRefreshToken,
+            user,
+          },
+        });
+      } catch (error) {
+        console.error('Error parsing stored user data:', error);
+        logout();
       }
-
-      const payload = {
-        email,
-        password,
-        firstName,
-        lastName,
-        confirmPassword
-      };
-
-      const res = await authApi.register(payload);
-      const d = res?.data || {};
-
-      // Successful registration - don't auto-login
-      return { ok: true, message: 'Đăng ký thành công! Vui lòng đăng nhập.' };
-    } catch (err) {
-      console.error('Register error:', err);
-      const msg =
-        err?.response?.data?.message ||
-        err?.response?.data?.errors?.Password?.[0] ||
-        JSON.stringify(err?.response?.data) ||
-        err.message ||
-        'Đăng ký thất bại';
-      return { ok: false, error: msg };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ✅ Đăng xuất
-  const logout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('role');
-    setToken('');
-    setRole('');
-    setUser(null);
-  };
-
-  // ✅ Kiểm tra đăng nhập khi tải trang
-  useEffect(() => {
-    const t = localStorage.getItem('accessToken');
-    let r = localStorage.getItem('role');
-    // Chuẩn hóa role khi reload
-    const capitalize = (s) => s && typeof s === 'string' ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : 'CoOwner';
-    r = capitalize(r);
-    if (!['Admin', 'Staff', 'CoOwner'].includes(r)) r = 'CoOwner';
-    if (t) {
-      setToken(t);
-      axiosClient.defaults.headers.Authorization = `Bearer ${t}`;
-    }
-    if (r) setRole(r);
-    // Nếu có cả token và role thì set lại user
-    if (t && r) {
-      setUser({ email: '', role: r });
+    } else {
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
   }, []);
 
+  const login = async (credentials) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: true });
+      const response = await authApi.login(credentials);
+
+      if (response.statusCode === 200) {
+        const { accessToken, refreshToken, user } = response.data;
+
+        // Store tokens and user data
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        localStorage.setItem('user', JSON.stringify(user));
+
+        dispatch({
+          type: 'LOGIN',
+          payload: { accessToken, refreshToken, user },
+        });
+
+        return { success: true, user };
+      } else {
+        throw new Error(response.message || 'Login failed');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Login failed';
+      return { success: false, error: errorMessage };
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
+    }
+  };
+
+  const register = async (userData) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: true });
+      const response = await authApi.register(userData);
+
+      if (response.statusCode === 201) {
+        return { success: true, message: 'Registration successful! Please login.' };
+      } else {
+        throw new Error(response.message || 'Registration failed');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.errors?.Password?.[0] ||
+        error.message ||
+        'Registration failed';
+      return { success: false, error: errorMessage };
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
+
+    dispatch({ type: 'LOGOUT' });
+  };
+
+  const updateUser = (user) => {
+    localStorage.setItem('user', JSON.stringify(user));
+    dispatch({ type: 'UPDATE_USER', payload: user });
+  };
+
+  // Helper functions for role checking
+  const isAdmin = () => state.user?.role === UserRole.Admin;
+  const isStaff = () => state.user?.role === UserRole.Staff;
+  const isCoOwner = () => state.user?.role === UserRole.CoOwner;
+
+  const value = {
+    ...state,
+    login,
+    register,
+    logout,
+    updateUser,
+    isAdmin,
+    isStaff,
+    isCoOwner,
+    UserRole,
+  };
+
   return (
-    <AuthContext.Provider
-      value={{
-        token,
-        role,
-        user,
-        loading,
-        login,
-        register,
-        logout,
-        setUser,
-        setRole,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};

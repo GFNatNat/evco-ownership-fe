@@ -30,8 +30,7 @@ const staffNavigation = [
         section: 'Quản lý xe',
         items: [
             { to: '/staff/fleet', label: 'Quản lý nhóm xe', icon: <DirectionsCarIcon /> },
-            { to: '/staff/vehicle-verification', label: 'Xác minh xe', icon: <VerifiedUserIcon /> },
-            { to: '/staff/services', label: 'Dịch vụ xe', icon: <BuildIcon /> }
+            { to: '/staff/services', label: 'Dịch vụ bảo trì', icon: <BuildIcon /> }
         ]
     },
     {
@@ -39,16 +38,7 @@ const staffNavigation = [
         items: [
             { to: '/staff/contracts', label: 'Hợp đồng điện tử', icon: <AssignmentIcon /> },
             { to: '/staff/checkin', label: 'Check-in/Check-out', icon: <CheckCircleIcon /> },
-            { to: '/staff/booking-reminder', label: 'Nhắc nhở Booking', icon: <ReminderIcon /> },
             { to: '/staff/disputes', label: 'Tranh chấp', icon: <ReportIcon /> }
-        ]
-    },
-    {
-        section: 'Báo cáo & Phê duyệt',
-        items: [
-            { to: '/staff/vehicle-reports', label: 'Báo cáo xe', icon: <AssessmentIcon /> },
-            { to: '/staff/vehicle-upgrade-approval', label: 'Phê duyệt nâng cấp', icon: <UpgradeIcon /> },
-            { to: '/staff/fairness-monitoring', label: 'Giám sát công bằng', icon: <AnalyticsIcon /> }
         ]
     },
     {
