@@ -20,58 +20,48 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   // ✅ Hàm login
-  const login = async ({ email, password }) => {
-    setLoading(true);
-    try {
-      const payload = {
-        email,
-        password,
-        userName: email,
-        username: email,
-        userNameOrEmail: email,
-      };
-      const res = await authApi.login(payload);
-      const d = res?.data || {};
+  // AuthContext.jsx (only the login function body changed)
+const login = async ({ email, password }) => {
+  setLoading(true);
+  try {
+    const payload = { email, password }; // <-- send Email as backend requires
+    console.log('[LOGIN] baseURL:', axiosClient.defaults.baseURL);
+    console.log('[LOGIN] POST /Auth/login payload:', payload);
 
-      // đọc token theo format backend ASP.NET của bạn
-      const t =
-        d.token ||
-        d.accessToken ||
-        d.jwt ||
-        d.data?.accessToken ||
-        d.data?.token ||
-        d.result?.token ||
-        '';
+    const res = await authApi.login(payload);
+    const d = res?.data ?? {};
 
-      if (!t) throw new Error('Không nhận được token từ API');
+    const t =
+      d.token || d.accessToken || d.jwt ||
+      d.data?.accessToken || d.data?.token || d.result?.token || '';
 
-      // role (nếu có)
-      const r =
-        d.role ||
-        d.user?.role ||
-        d.data?.role ||
-        d.result?.role ||
-        'CoOwner';
+    if (!t) throw new Error('Không nhận được token từ API');
 
-      localStorage.setItem('accessToken', t);
-      localStorage.setItem('role', r);
-      setToken(t);
-      setRole(r);
-      setUser({ email, role: r });
+    const r =
+      d.role || d.user?.role || d.data?.role || d.result?.role || 'CoOwner';
 
-      return { ok: true, role: r };
-    } catch (err) {
-      console.error('Login error:', err);
-      const msg =
-        err?.response?.data?.message ||
-        JSON.stringify(err?.response?.data) ||
-        err.message ||
-        'Đăng nhập thất bại';
-      return { ok: false, error: msg };
-    } finally {
-      setLoading(false);
-    }
-  };
+    localStorage.setItem('accessToken', t);
+    localStorage.setItem('role', r);
+    setToken(t);
+    setRole(r);
+    setUser({ email, role: r });
+
+    return { ok: true, role: r };
+  } catch (err) {
+    console.error('Login error:', err);
+    const data = err?.response?.data;
+    const msg =
+      (typeof data === 'string' && data) ||
+      data?.message ||
+      JSON.stringify(data) ||
+      err.message ||
+      'Đăng nhập thất bại';
+    return { ok: false, error: msg };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // ✅ Hàm register
   const register = async ({ email, password, firstName, lastName, confirmPassword }) => {
