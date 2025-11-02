@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // API Configuration
 export const API_CONFIG = {
-  baseURL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:5215',
+  baseURL: process.env.REACT_APP_API_BASE_URL || 'https://localhost:7279',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'

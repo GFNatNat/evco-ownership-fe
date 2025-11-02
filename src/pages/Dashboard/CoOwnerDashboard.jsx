@@ -15,6 +15,7 @@ import { debugAPI, testSpecificEndpoint } from '../../utils/apiTestHelper';
 // Import management components
 import PaymentManagement from '../CoOwner/PaymentManagement';
 import FundManagement from '../CoOwner/FundManagement';
+import BackendStatusChecker from '../../components/common/BackendStatusChecker';
 // import MaintenanceManagement from '../CoOwner/MaintenanceManagement'; // Removed - not in 7-controller
 // import ReportsManagement from '../CoOwner/ReportsManagement'; // Removed - not in 7-controller
 // import VotingManagement from '../CoOwner/VotingManagement'; // Removed - replaced by Group
@@ -122,7 +123,21 @@ export default function CoOwnerDashboard() {
         return;
       }
 
-      console.log('🔄 Fetching dashboard data from PostgreSQL...');
+      console.log('🔄 Fetching dashboard data...');
+
+      // Run API debug test first
+      const debugResults = await debugAPI();
+      console.log('🧪 API Debug Results:', debugResults);
+
+      // Test individual endpoints
+      console.log('🧪 Testing individual Vehicle API endpoint...');
+      const vehicleTest = await testSpecificEndpoint('/api/Vehicle');
+      console.log('🚗 Vehicle API Test:', vehicleTest);
+
+      if (!vehicleTest.success && vehicleTest.statusCode === 401) {
+        setError('❌ Token không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại.');
+        return;
+      }
 
       // Call multiple API endpoints to get complete dashboard data
       const [statsRes, vehiclesRes, groupsRes, bookingsRes, fundsRes] = await Promise.all([
@@ -138,7 +153,7 @@ export default function CoOwnerDashboard() {
           console.error('❌ Groups API failed:', err);
           return null;
         }),
-        coOwnerApi.bookings.getMy().catch(err => {
+        coOwnerApi.bookings.getMyBookings().catch(err => {
           console.error('❌ Bookings API failed:', err);
           return null;
         }),
@@ -149,17 +164,17 @@ export default function CoOwnerDashboard() {
       ]);
 
       // Debug: Log all API responses
-      console.log('� PostgreSQL API Responses:', {
-        stats: statsRes?.data,
-        vehicles: vehiclesRes?.data,
-        groups: groupsRes?.data,
-        bookings: bookingsRes?.data,
-        funds: fundsRes?.data
+      console.log('📊 API Responses:', {
+        stats: statsRes,
+        vehicles: vehiclesRes,
+        groups: groupsRes,
+        bookings: bookingsRes,
+        funds: fundsRes
       });
 
       // Check if backend is completely down
       if (!statsRes && !vehiclesRes && !groupsRes && !bookingsRes && !fundsRes) {
-        throw new Error('Backend API không phản hồi. Vui lòng kiểm tra kết nối backend tại https://localhost:7279');
+        throw new Error('Backend API không phản hồi. Kiểm tra kết nối backend tại http://localhost:5215');
       }
 
       // Extract data from successful API calls - ensure arrays
@@ -169,9 +184,20 @@ export default function CoOwnerDashboard() {
         totalGroups: 0,
         monthlyUsage: 0
       };
-      const vehicles = Array.isArray(vehiclesRes?.data) ? vehiclesRes.data : [];
+
+      // Handle vehicles response structure according to OpenAPI spec
+      let vehicles = [];
+      if (vehiclesRes?.data?.items) {
+        vehicles = Array.isArray(vehiclesRes.data.items) ? vehiclesRes.data.items : [];
+      } else if (vehiclesRes?.data) {
+        vehicles = Array.isArray(vehiclesRes.data) ? vehiclesRes.data : [];
+      } else {
+        vehicles = [];
+      }
+
       const groups = Array.isArray(groupsRes?.data) ? groupsRes.data : [];
-      const bookings = Array.isArray(bookingsRes?.data) ? bookingsRes.data : [];
+      const bookings = Array.isArray(bookingsRes?.data?.items) ? bookingsRes.data.items :
+        Array.isArray(bookingsRes?.data) ? bookingsRes.data : [];
       const funds = Array.isArray(fundsRes?.data) ? fundsRes.data : [];
 
       // Calculate derived data
@@ -179,7 +205,7 @@ export default function CoOwnerDashboard() {
       const nextBooking = bookings.length > 0 ? bookings[0] : null;
       const recentCosts = funds.length > 0 ? funds[0]?.recentTransactions?.filter(t => t.type === 'usage')?.slice(0, 3) || [] : [];
 
-      // Update state with ONLY real PostgreSQL data
+      // Update state with ONLY real API data
       setDashboardData({
         ownership: stats.ownershipPercentage || 0,
         groupFund,
@@ -217,8 +243,63 @@ export default function CoOwnerDashboard() {
     );
   }
 
+  if (error) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          <Typography variant="h6" gutterBottom>
+            ❌ Lỗi kết nối API
+          </Typography>
+          <Typography variant="body2" paragraph>
+            {error}
+          </Typography>
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              🔧 Hướng dẫn khắc phục:
+            </Typography>
+            <Typography variant="body2" color="text.secondary" component="div">
+              1. Kiểm tra backend có chạy tại: <code>http://localhost:5215</code><br />
+              2. Kiểm tra token đăng nhập có hợp lệ<br />
+              3. Xem console log để biết chi tiết lỗi<br />
+              4. Thử đăng nhập lại nếu token hết hạn
+            </Typography>
+          </Box>
+          <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+            <Button
+              variant="outlined"
+              onClick={fetchDashboardData}
+              size="small"
+            >
+              🔄 Thử lại
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={async () => {
+                console.clear();
+                await debugAPI();
+              }}
+              size="small"
+            >
+              🔧 Debug API
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => navigate('/login')}
+              size="small"
+            >
+              🔑 Đăng nhập lại
+            </Button>
+          </Box>
+        </Alert>
+      </Box>
+    );
+  }
+
   return (
     <Box>
+      {/* Backend Status Checker */}
+      <BackendStatusChecker />
+
       {/* Navigation Tabs */}
       <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'white', mb: 3 }}>
         <Box sx={{ px: 0 }}>
@@ -457,18 +538,39 @@ export default function CoOwnerDashboard() {
             {/* Available Vehicles Section */}
             <Card sx={{ mb: 3, boxShadow: '0 1px 3px rgba(0,0,0,0.12)' }}>
               <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={3}>
-                  <DirectionsCar sx={{ fontSize: 24, color: '#10b981' }} />
-                  <Typography variant="h6" fontWeight="bold">
-                    Xe có sẵn
-                  </Typography>
-                  {dashboardData.vehicles && (
-                    <Chip
-                      label={`${dashboardData.vehicles.length} xe`}
-                      size="small"
-                      sx={{ bgcolor: '#10b981', color: 'white' }}
-                    />
-                  )}
+                <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <DirectionsCar sx={{ fontSize: 24, color: '#10b981' }} />
+                    <Typography variant="h6" fontWeight="bold">
+                      Xe có sẵn
+                    </Typography>
+                    {dashboardData.vehicles && (
+                      <Chip
+                        label={`${dashboardData.vehicles.length} xe`}
+                        size="small"
+                        sx={{ bgcolor: '#10b981', color: 'white' }}
+                      />
+                    )}
+                  </Box>
+
+                  {/* Debug Button */}
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={async () => {
+                      console.clear();
+                      await debugAPI();
+                      await fetchDashboardData();
+                    }}
+                    sx={{
+                      textTransform: 'none',
+                      borderColor: '#ef4444',
+                      color: '#ef4444',
+                      '&:hover': { borderColor: '#dc2626' }
+                    }}
+                  >
+                    🔧 Debug API
+                  </Button>
                 </Box>
 
                 {/* Show vehicles from database */}
