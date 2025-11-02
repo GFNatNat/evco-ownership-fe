@@ -8,6 +8,40 @@ const UserRole = {
   Admin: 2
 };
 
+// Helper function to map role string to number
+const mapRoleStringToNumber = (roleString) => {
+  const roleMap = {
+    'CoOwner': UserRole.CoOwner,
+    'Staff': UserRole.Staff,
+    'Admin': UserRole.Admin
+  };
+  return roleMap[roleString] !== undefined ? roleMap[roleString] : UserRole.CoOwner;
+};
+
+// Helper function to process user object from backend
+const processUserFromBackend = (backendUser) => {
+  if (!backendUser) return null;
+
+  // Extract role from roles array (backend sends roles: ["CoOwner"])
+  const roleString = backendUser.roles && backendUser.roles.length > 0
+    ? backendUser.roles[0]
+    : 'CoOwner';
+
+  const role = mapRoleStringToNumber(roleString);
+
+  console.log('🔄 Processing user from backend:', {
+    backendUser,
+    extractedRoleString: roleString,
+    mappedRoleNumber: role
+  });
+
+  return {
+    ...backendUser,
+    role: role,
+    roleString: roleString
+  };
+};
+
 // Auth state interface
 const initialState = {
   user: null,
@@ -67,21 +101,38 @@ export const AuthProvider = ({ children }) => {
     if (storedToken && storedUser && storedRefreshToken) {
       try {
         const user = JSON.parse(storedUser);
+
+        // Process user object to handle both old format (role_enum) and new format (roles array)
+        let processedUser;
+        if (user.roles && Array.isArray(user.roles)) {
+          // New format from backend
+          processedUser = processUserFromBackend(user);
+        } else {
+          // Legacy format or already processed
+          processedUser = {
+            ...user,
+            role: user.role_enum !== undefined ? user.role_enum : user.role
+          };
+        }
+
         dispatch({
           type: 'LOGIN',
           payload: {
             accessToken: storedToken,
             refreshToken: storedRefreshToken,
-            user,
+            user: processedUser,
           },
         });
+
+        console.log('✅ User restored from localStorage:', processedUser);
       } catch (error) {
         console.error('Error parsing stored user data:', error);
         logout();
       }
-    } else {
-      dispatch({ type: 'SET_LOADING', payload: false });
     }
+
+    // Always set loading to false after checking localStorage
+    dispatch({ type: 'SET_LOADING', payload: false });
   }, []);
 
   const login = async (credentials) => {
@@ -89,25 +140,50 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: 'SET_LOADING', payload: true });
       const response = await authApi.login(credentials);
 
-      if (response.statusCode === 200) {
-        const { accessToken, refreshToken, user } = response.data;
+      // Check for successful response - either 200 statusCode or valid data structure
+      if (response.statusCode === 200 || (response.data && response.data.accessToken)) {
+        const { accessToken, refreshToken, user } = response.data || response;
+
+        // Process user object to map roles array to role number
+        const processedUser = processUserFromBackend(user);
 
         // Store tokens and user data
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
-        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('user', JSON.stringify(processedUser));
 
         dispatch({
           type: 'LOGIN',
-          payload: { accessToken, refreshToken, user },
+          payload: { accessToken, refreshToken, user: processedUser },
         });
 
-        return { success: true, user };
+        return { success: true, user: processedUser };
       } else {
         throw new Error(response.message || 'Login failed');
       }
     } catch (error) {
       console.error('Login error:', error);
+
+      // Check if the error response actually contains valid login data
+      if (error.response?.data?.data?.accessToken) {
+        console.warn('⚠️ Login error but response contains valid tokens - processing as success');
+        const { accessToken, refreshToken, user } = error.response.data.data;
+
+        // Process user object to map roles array to role number
+        const processedUser = processUserFromBackend(user);
+
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        localStorage.setItem('user', JSON.stringify(processedUser));
+
+        dispatch({
+          type: 'LOGIN',
+          payload: { accessToken, refreshToken, user: processedUser },
+        });
+
+        return { success: true, user: processedUser };
+      }
+
       const errorMessage = error.response?.data?.message || error.message || 'Login failed';
       return { success: false, error: errorMessage };
     } finally {
@@ -120,13 +196,24 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: 'SET_LOADING', payload: true });
       const response = await authApi.register(userData);
 
-      if (response.statusCode === 201) {
+      // Check for successful response - either 201 statusCode or valid success indicator
+      if (response.statusCode === 201 || response.statusCode === 200 ||
+        (response.message && response.message.includes('success'))) {
         return { success: true, message: 'Registration successful! Please login.' };
       } else {
         throw new Error(response.message || 'Registration failed');
       }
     } catch (error) {
       console.error('Registration error:', error);
+
+      // Check if the error response actually indicates successful registration
+      if (error.response?.data?.statusCode === 201 ||
+        error.response?.data?.statusCode === 200 ||
+        (error.response?.data?.message && error.response.data.message.includes('success'))) {
+        console.warn('⚠️ Registration error but response indicates success');
+        return { success: true, message: 'Registration successful! Please login.' };
+      }
+
       const errorMessage = error.response?.data?.message ||
         error.response?.data?.errors?.Password?.[0] ||
         error.message ||

@@ -37,52 +37,7 @@ export default function Contracts() {
     notes: ''
   });
 
-  // Mock data
-  const [mockData] = React.useState({
-    contracts: [
-      {
-        id: 'CT001',
-        title: 'Hợp đồng sở hữu chung Honda City',
-        type: 'ownership',
-        customerName: 'Nguyễn Văn A',
-        customerEmail: 'nguyenvana@email.com',
-        status: 'signed',
-        createdDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-        signedDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-        value: 250000000,
-        staff: user?.name || 'Staff'
-      },
-      {
-        id: 'CT002',
-        title: 'Hợp đồng thuê Toyota Camry',
-        type: 'rental',
-        customerName: 'Trần Thị B',
-        customerEmail: 'tranthib@email.com',
-        status: 'pending',
-        createdDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-        signedDate: null,
-        value: 15000000,
-        staff: user?.name || 'Staff'
-      },
-      {
-        id: 'CT003',
-        title: 'Hợp đồng bảo trì Mazda CX-5',
-        type: 'maintenance',
-        customerName: 'Lê Văn C',
-        customerEmail: 'levanc@email.com',
-        status: 'draft',
-        createdDate: new Date(),
-        signedDate: null,
-        value: 5000000,
-        staff: user?.name || 'Staff'
-      }
-    ],
-    templates: [
-      { id: 1, name: 'Mẫu hợp đồng sở hữu chung', type: 'ownership' },
-      { id: 2, name: 'Mẫu hợp đồng thuê xe', type: 'rental' },
-      { id: 3, name: 'Mẫu hợp đồng bảo trì', type: 'maintenance' }
-    ]
-  });
+  // No mock data - all data from PostgreSQL database
 
   React.useEffect(() => {
     loadData();
@@ -91,15 +46,28 @@ export default function Contracts() {
   const loadData = async () => {
     setLoading(true);
     try {
+      // Only fetch from PostgreSQL database via API
       const [contractsRes, templatesRes] = await Promise.all([
-        staffApi.contracts.getAll().catch(() => ({ data: mockData.contracts })),
-        staffApi.contracts.getTemplate('all').catch(() => ({ data: mockData.templates }))
+        staffApi.contracts.getAll(),
+        staffApi.contracts.getTemplate('all')
       ]);
 
-      setContracts(contractsRes.data);
-      setTemplates(templatesRes.data);
+      if (contractsRes && contractsRes.data) {
+        setContracts(contractsRes.data);
+      } else {
+        setContracts([]);
+      }
+
+      if (templatesRes && templatesRes.data) {
+        setTemplates(templatesRes.data);
+      } else {
+        setTemplates([]);
+      }
     } catch (err) {
-      setError('Không thể tải dữ liệu hợp đồng');
+      console.error('Contracts API Error:', err);
+      setError(`Lỗi kết nối database: ${err.message || 'Network error'}`);
+      setContracts([]);
+      setTemplates([]);
     } finally {
       setLoading(false);
     }

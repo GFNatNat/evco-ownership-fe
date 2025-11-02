@@ -36,37 +36,30 @@ export default function CheckInOut() {
   // Validation errors
   const [validationErrors, setValidationErrors] = React.useState([]);
 
-  // Mock data for active bookings
-  const [mockBookings] = React.useState([
-    {
-      id: 'BK001',
-      customerName: 'Nguyễn Văn A',
-      customerPhone: '0901234567',
-      vehicle: 'Honda City 2023',
-      plate: '29A-12345',
-      startTime: new Date(),
-      endTime: new Date(Date.now() + 4 * 60 * 60 * 1000),
-      status: 'confirmed',
-      checkInTime: null,
-      checkOutTime: null
-    },
-    {
-      id: 'BK002',
-      customerName: 'Trần Thị B',
-      customerPhone: '0907654321',
-      vehicle: 'Toyota Camry 2022',
-      plate: '30B-67890',
-      startTime: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      endTime: new Date(Date.now() + 2 * 60 * 60 * 1000),
-      status: 'in_progress',
-      checkInTime: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      checkOutTime: null
-    }
-  ]);
+  // No mock data - all data from PostgreSQL database
 
   React.useEffect(() => {
-    setActiveBookings(mockBookings);
+    loadActiveBookings();
   }, []);
+
+  const loadActiveBookings = async () => {
+    setLoading(true);
+    try {
+      // Only fetch from PostgreSQL database via API
+      const response = await staffApi.checkInOut.getPendingCheckIns();
+      if (response && response.data) {
+        setActiveBookings(response.data);
+      } else {
+        setActiveBookings([]);
+      }
+    } catch (err) {
+      console.error('CheckInOut API Error:', err);
+      setError(`Lỗi kết nối database: ${err.message || 'Network error'}`);
+      setActiveBookings([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCheckIn = async () => {
     if (!selectedBooking) return;

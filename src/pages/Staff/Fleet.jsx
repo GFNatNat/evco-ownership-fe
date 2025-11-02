@@ -38,78 +38,7 @@ export default function Fleet() {
   const [detailDialogOpen, setDetailDialogOpen] = React.useState(false);
   const [selectedVehicle, setSelectedVehicle] = React.useState(null);
 
-  // Enhanced mock data with database schema fields
-  const [mockData] = React.useState([
-    {
-      id: 1,
-      name: 'Honda City Hybrid 2023',
-      description: 'Xe hybrid tiết kiệm nhiên liệu',
-      brand: 'Honda',
-      model: 'City',
-      year: 2023,
-      vin: '1HGCM82633A123456',
-      license_plate: '29A-12345',
-      color: 'Trắng',
-      battery_capacity: 1.5, // kWh for hybrid
-      range_km: 600,
-      purchase_date: '2023-01-15',
-      purchase_price: 650000000, // 650M VND
-      warranty_until: '2026-01-15',
-      distance_travelled: 12000,
-      status_enum: VEHICLE_STATUS.AVAILABLE,
-      verification_status_enum: VEHICLE_VERIFICATION_STATUS.VERIFIED,
-      location_latitude: 10.762622,
-      location_longitude: 106.660172,
-      created_by: 1,
-      fund_id: 1
-    },
-    {
-      id: 2,
-      name: 'Toyota Camry 2022',
-      description: 'Sedan cao cấp',
-      brand: 'Toyota',
-      model: 'Camry',
-      year: 2022,
-      vin: '4T1BF1FK7GU123456',
-      license_plate: '30B-67890',
-      color: 'Đen',
-      battery_capacity: null, // Not electric
-      range_km: 800,
-      purchase_date: '2022-06-10',
-      purchase_price: 1200000000, // 1.2B VND
-      warranty_until: '2025-06-10',
-      distance_travelled: 25000,
-      status_enum: VEHICLE_STATUS.MAINTENANCE,
-      verification_status_enum: VEHICLE_VERIFICATION_STATUS.VERIFIED,
-      location_latitude: 10.768239,
-      location_longitude: 106.681885,
-      created_by: 1,
-      fund_id: 2
-    },
-    {
-      id: 3,
-      name: 'VinFast VF8 2024',
-      description: 'SUV điện của Việt Nam',
-      brand: 'VinFast',
-      model: 'VF8',
-      year: 2024,
-      vin: '2VFVF8AAXP0000123',
-      license_plate: '51F-99999',
-      color: 'Xanh',
-      battery_capacity: 87.7, // kWh
-      range_km: 450,
-      purchase_date: '2024-03-01',
-      purchase_price: 1800000000, // 1.8B VND
-      warranty_until: '2029-03-01',
-      distance_travelled: 5000,
-      status_enum: VEHICLE_STATUS.AVAILABLE,
-      verification_status_enum: VEHICLE_VERIFICATION_STATUS.PENDING,
-      location_latitude: null,
-      location_longitude: null,
-      created_by: 2,
-      fund_id: 1
-    }
-  ]);
+  // No mock data - all data from PostgreSQL database
 
   React.useEffect(() => {
     loadVehicles();
@@ -118,10 +47,17 @@ export default function Fleet() {
   const loadVehicles = async () => {
     setLoading(true);
     try {
+      // Only fetch from PostgreSQL database via API
       const response = await staffApi.vehicles.getAll();
-      setVehicles(response.data || []);
+      if (response && response.data) {
+        setVehicles(response.data);
+      } else {
+        setError('Không có dữ liệu xe từ database');
+        setVehicles([]);
+      }
     } catch (err) {
-      setError('Không thể tải dữ liệu xe từ database');
+      console.error('Fleet API Error:', err);
+      setError(`Lỗi kết nối database: ${err.message || 'Network error'}`);
       setVehicles([]);
     } finally {
       setLoading(false);

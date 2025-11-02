@@ -58,42 +58,42 @@ const PaymentManagement = () => {
     const loadData = async () => {
         setLoading(true);
         try {
-            const results = await Promise.allSettled([
-                coOwnerApi.payments.getPayments().catch(() => ({ data: [] })),
-                Promise.resolve({ data: ['VNPAY', 'MOMO', 'BANK_TRANSFER'] }) // Mock gateways
+            const [paymentsRes, gatewaysRes] = await Promise.all([
+                coOwnerApi.payments.getPayments(),
+                coOwnerApi.payments.getGateways()
             ]);
 
-            const [paymentsRes, gatewaysRes] = results.map(r =>
-                r.status === 'fulfilled' ? r.value : { data: [] }
-            );
-
-            // Ensure payments and gateways are always arrays
-            const paymentsData = paymentsRes?.data || [];
-            const gatewaysData = gatewaysRes?.data || [];
-
-            setPayments(Array.isArray(paymentsData) ? paymentsData : []);
-            setGateways(Array.isArray(gatewaysData) ? gatewaysData : []);
+            setPayments(paymentsRes?.data || []);
+            setGateways(gatewaysRes?.data || []);
         } catch (error) {
-            console.error('Error loading data:', error);
+            console.error('Error loading payment data:', error);
             setPayments([]);
             setGateways([]);
+            setAlert({
+                open: true,
+                message: 'Không thể tải dữ liệu thanh toán từ hệ thống',
+                severity: 'error'
+            });
         }
         setLoading(false);
     };
 
     const loadStatistics = async () => {
         try {
-            // Mock statistics since we don't have specific payment statistics API
-            const mockStats = {
-                totalPaid: 5000000,
-                pendingPayments: 2,
-                completedPayments: 15,
-                failedPayments: 1
-            };
-            setStatistics(mockStats);
+            const response = await coOwnerApi.payments.getStatistics();
+            setStatistics(response?.data || {
+                totalPaid: 0,
+                pendingPayments: 0,
+                completedPayments: 0,
+                failedPayments: 0
+            });
         } catch (error) {
-            console.error('Error loading statistics:', error);
-            setStatistics(null);
+            console.error('Error loading payment statistics:', error);
+            setAlert({
+                open: true,
+                message: 'Không thể tải thống kê thanh toán',
+                severity: 'error'
+            });
         }
     };
 

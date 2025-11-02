@@ -124,7 +124,7 @@ const fileUploadApi = {
         formData.append('category', category);
       }
 
-      const response = await axiosClient.post('/FileUpload/upload', formData, {
+      const response = await axiosClient.post('/api/FileUpload/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -191,7 +191,7 @@ const fileUploadApi = {
         formData.append('category', category);
       }
 
-      const response = await axiosClient.post('/FileUpload/upload', formData, {
+      const response = await axiosClient.post('/api/FileUpload/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -231,7 +231,7 @@ const fileUploadApi = {
   // Simple upload method (wrapper for uploadFile) with enhanced response
   upload: async (formData) => {
     try {
-      const response = await axiosClient.post('/FileUpload/upload', formData, {
+      const response = await axiosClient.post('/api/FileUpload/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

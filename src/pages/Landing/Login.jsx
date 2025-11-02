@@ -33,19 +33,21 @@ export default function Login() {
 
     try {
       const result = await login(form);
-      if (result.ok) {
+      if (result.success) {
         // Use numeric role values as per 7-controller structure
-        const role = result.role || result.user?.role || 0;
+        const role = result.user?.role;
+        console.log('Login successful, user role:', role, 'user:', result.user);
+
         switch (role) {
           case 2: // Admin
-            nav('/admin/dashboard', { replace: true });
+            nav('/admin', { replace: true });
             break;
           case 1: // Staff
-            nav('/staff/dashboard', { replace: true });
+            nav('/staff', { replace: true });
             break;
           case 0: // CoOwner
           default:
-            nav('/dashboard', { replace: true });
+            nav('/coowner', { replace: true });
             break;
         }
       } else {

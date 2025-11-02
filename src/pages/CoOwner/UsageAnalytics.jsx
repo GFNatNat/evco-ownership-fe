@@ -38,8 +38,12 @@ const UsageAnalytics = () => {
             const costData = costAnalysis.data;
             const envData = environmentalImpact.data;
 
-            // Process timeline data
-            const timeline = costData.timeline || generateMockTimelineForFallback();
+            // Process timeline data - PostgreSQL only
+            const timeline = costData.timeline || [];
+
+            if (timeline.length === 0) {
+                console.warn('⚠️ No timeline data from PostgreSQL API');
+            }
 
             // Calculate summary
             const totalHours = timeline.reduce((sum, item) => sum + (item.hours || 0), 0);
@@ -62,70 +66,27 @@ const UsageAnalytics = () => {
             });
         } catch (error) {
             console.error('Error loading usage analytics:', error);
-            // Fallback to mock data if API fails
-            const mockData = generateMockUsageData();
-            setUsageData(mockData.timeline);
-            setSummary(mockData.summary);
+            // No fallback - show error message to user
+            setError(`Không thể tải dữ liệu thống kê từ database: ${error.message}`);
+            setUsageData([]);
+            setSummary({
+                totalHours: 0,
+                totalDistance: 0,
+                totalCost: 0,
+                avgHoursPerMonth: 0,
+                thisMonth: 0,
+                lastMonth: 0,
+                ownershipPercentage: 0,
+                fairnessScore: 0,
+                co2Saved: 0,
+                fuelSaved: 0
+            });
         } finally {
             setLoading(false);
         }
     };
 
-    const generateMockTimelineForFallback = () => {
-        const timeline = [];
-        const now = new Date();
-
-        for (let i = 11; i >= 0; i--) {
-            const date = new Date(now);
-            date.setMonth(date.getMonth() - i);
-
-            timeline.push({
-                month: date.toLocaleDateString('vi-VN', { month: 'short', year: 'numeric' }),
-                hours: Math.floor(Math.random() * 50) + 10,
-                distance: Math.floor(Math.random() * 500) + 100,
-                cost: Math.floor(Math.random() * 1000000) + 200000
-            });
-        }
-        return timeline;
-    };
-
-    const generateMockUsageData = () => {
-        // This would be replaced with actual API call to usage analytics endpoint
-        const timeline = [];
-        const now = new Date();
-
-        for (let i = 11; i >= 0; i--) {
-            const date = new Date(now);
-            date.setMonth(date.getMonth() - i);
-
-            timeline.push({
-                month: date.toLocaleDateString('vi-VN', { month: 'short', year: 'numeric' }),
-                hours: Math.floor(Math.random() * 50) + 10,
-                distance: Math.floor(Math.random() * 500) + 100,
-                cost: Math.floor(Math.random() * 1000000) + 200000
-            });
-        }
-
-        const totalHours = timeline.reduce((sum, item) => sum + item.hours, 0);
-        const totalDistance = timeline.reduce((sum, item) => sum + item.distance, 0);
-        const totalCost = timeline.reduce((sum, item) => sum + item.cost, 0);
-        const avgHoursPerMonth = totalHours / timeline.length;
-
-        return {
-            timeline,
-            summary: {
-                totalHours,
-                totalDistance,
-                totalCost,
-                avgHoursPerMonth: Math.round(avgHoursPerMonth * 10) / 10,
-                thisMonth: timeline[timeline.length - 1]?.hours || 0,
-                lastMonth: timeline[timeline.length - 2]?.hours || 0,
-                ownershipPercentage: 35, // This would come from user profile
-                fairnessScore: 0.85 // Usage vs ownership ratio
-            }
-        };
-    };
-
+    // Chart data for usage visualization  
     const usageDistribution = [
         { name: 'Đi làm', value: 40, color: '#8884d8' },
         { name: 'Mua sắm', value: 25, color: '#82ca9d' },
@@ -135,6 +96,14 @@ const UsageAnalytics = () => {
 
     const fairnessColor = summary.fairnessScore >= 0.8 ? 'success' :
         summary.fairnessScore >= 0.6 ? 'warning' : 'error';
+
+    if (loading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                <CircularProgress />
+            </Box>
+        );
+    }
 
     return (
         <Box sx={{ p: 3 }}>

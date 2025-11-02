@@ -12,7 +12,6 @@ import {
     Payment as PaymentIcon, Settings as SettingsIcon, Analytics as AnalyticsIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
-import NotificationCenter from '../common/NotificationCenter';
 
 const drawerWidth = 280;
 
@@ -240,8 +239,6 @@ export default function CoOwnerDashboardLayout() {
                         >
                             + Đặt lịch
                         </Button>
-
-                        <NotificationCenter />
 
                         {/* Profile Menu */}
                         <IconButton onClick={handleProfileMenuOpen}>

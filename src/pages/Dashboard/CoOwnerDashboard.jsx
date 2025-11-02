@@ -4,11 +4,13 @@ import {
   DirectionsCar, TrendingUp, AttachMoney, Schedule, Battery80,
   AccessTime, Group, CalendarToday, ExitToApp, PeopleOutline,
   Build, Assessment, Notifications, HowToVote, Handyman,
-  Payment, AccountBalance, Gavel, Analytics, History
+  Payment, AccountBalance, Gavel, Analytics, History,
+  CreditCard, Upload, PhotoCamera, Description
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import coOwnerApi from '../../api/coowner';
+import { debugAPI, testSpecificEndpoint } from '../../utils/apiTestHelper';
 
 // Import management components
 import PaymentManagement from '../CoOwner/PaymentManagement';
@@ -29,10 +31,24 @@ export default function CoOwnerDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Check authentication on component mount
+  useEffect(() => {
+    console.log('👤 Current User:', user);
+    console.log('🔑 Access Token:', localStorage.getItem('accessToken') ? 'Present' : 'Missing');
+
+    if (!user) {
+      console.warn('⚠️ No user found, redirecting to login...');
+      navigate('/login');
+      return;
+    }
+  }, [user, navigate]);
+
   // Modal states
   const [openBookingModal, setOpenBookingModal] = useState(false);
   const [openInviteModal, setOpenInviteModal] = useState(false);
   const [openVoteModal, setOpenVoteModal] = useState(false);
+  const [openLicenseModal, setOpenLicenseModal] = useState(false);
+  const [openVehicleModal, setOpenVehicleModal] = useState(false);
 
   // Form states
   const [bookingForm, setBookingForm] = useState({
@@ -50,30 +66,42 @@ export default function CoOwnerDashboard() {
     description: '',
     options: ['Đồng ý', 'Không đồng ý']
   });
+  const [licenseForm, setLicenseForm] = useState({
+    licenseNumber: '',
+    fullName: '',
+    dateOfBirth: '',
+    issueDate: '',
+    expiryDate: '',
+    licenseClass: 'B1',
+    issuePlace: '',
+    frontImage: null,
+    backImage: null
+  });
+  const [vehicleForm, setVehicleForm] = useState({
+    brand: '',
+    model: '',
+    year: new Date().getFullYear(),
+    color: '',
+    licensePlate: '',
+    vin: '',
+    engineNumber: '',
+    fuelType: 'Gasoline',
+    registrationDocument: null,
+    insuranceDocument: null,
+    inspectionDocument: null
+  });
   const [dashboardData, setDashboardData] = useState({
-    ownership: 40,
-    groupFund: 2450000,
-    monthlyUsage: 15,
-    nextBooking: 'Hôm nay 14:00 - 18:00',
-    costThisMonth: 340000,
-    availableBalance: 890000,
+    ownership: 0,
+    groupFund: 0,
+    monthlyUsage: 0,
+    nextBooking: null,
+    costThisMonth: 0,
+    availableBalance: 0,
     vehicle: null,
-    bookings: [
-      { date: "Hôm nay 14:00 - 18:00", status: "confirmed", purpose: "Đi làm" },
-      { date: "Thứ 6 09:00 - 17:00", status: "pending", purpose: "Đi công tác" },
-      { date: "Chủ nhật 08:00 - 20:00", status: "completed", purpose: "Du lịch gia đình" }
-    ],
-    costs: [
-      { name: "Tiền sạc điện", amount: 150000 },
-      { name: "Bảo dưỡng", amount: 120000 },
-      { name: "Bảo hiểm", amount: 70000 }
-    ],
-    groupMembers: [
-      { name: "Nguyễn Văn A", ownership: 40, role: "Chủ nhóm", isYou: true },
-      { name: "Trần Thị B", ownership: 30, role: "Thành viên", isYou: false },
-      { name: "Lê Văn C", ownership: 20, role: "Thành viên", isYou: false },
-      { name: "Phạm Thị D", ownership: 10, role: "Thành viên", isYou: false }
-    ]
+    vehicles: [], // Real vehicles from database
+    bookings: [], // Real bookings from database
+    costs: [], // Real costs from database
+    groupMembers: [] // Real group members from database
   });
 
   useEffect(() => {
@@ -85,35 +113,92 @@ export default function CoOwnerDashboard() {
       setLoading(true);
       setError(null);
 
-      const statsRes = await coOwnerApi.getDashboardStats();
-      const stats = statsRes?.data || {};
+      // Check authentication
+      const token = localStorage.getItem('accessToken');
+      console.log('🔑 Access Token:', token ? 'Present' : 'Missing');
 
-      const ownershipRes = await coOwnerApi.getOwnerships();
-      const ownerships = ownershipRes?.data || [];
-      const firstOwnership = ownerships[0];
-
-      let vehicleData = null;
-      if (firstOwnership?.vehicleId) {
-        const vehicleRes = await coOwnerApi.getVehicleById(firstOwnership.vehicleId);
-        vehicleData = vehicleRes?.data;
+      if (!token) {
+        setError('⚠️ Bạn chưa đăng nhập. Vui lòng đăng nhập để xem dashboard.');
+        return;
       }
 
-      const scheduleRes = await coOwnerApi.getUserSchedule({ limit: 1, upcoming: true });
-      const schedules = scheduleRes?.data || [];
-      const nextBooking = schedules[0];
+      console.log('🔄 Fetching dashboard data from PostgreSQL...');
 
-      setDashboardData(prev => ({
-        ...prev,
-        ownership: firstOwnership?.ownershipPercentage || stats.ownershipPercentage || prev.ownership,
-        groupFund: stats.groupFund || prev.groupFund,
-        monthlyUsage: stats.monthlyUsage || prev.monthlyUsage,
-        nextBooking: nextBooking ? `${new Date(nextBooking.startDateTime).toLocaleString('vi-VN')}` : prev.nextBooking,
-        costThisMonth: stats.costThisMonth || prev.costThisMonth,
-        availableBalance: stats.availableBalance || prev.availableBalance,
-        vehicle: vehicleData
-      }));
-    } catch (err) {
-      console.error('Error fetching dashboard data:', err);
+      // Call multiple API endpoints to get complete dashboard data
+      const [statsRes, vehiclesRes, groupsRes, bookingsRes, fundsRes] = await Promise.all([
+        coOwnerApi.getDashboardStats().catch(err => {
+          console.error('❌ Dashboard stats API failed:', err);
+          return null;
+        }),
+        coOwnerApi.vehicles.getAvailable().catch(err => {
+          console.error('❌ Vehicles API failed:', err);
+          return null;
+        }),
+        coOwnerApi.groups.getMyGroups().catch(err => {
+          console.error('❌ Groups API failed:', err);
+          return null;
+        }),
+        coOwnerApi.bookings.getMy().catch(err => {
+          console.error('❌ Bookings API failed:', err);
+          return null;
+        }),
+        coOwnerApi.funds.getInfo().catch(err => {
+          console.error('❌ Funds API failed:', err);
+          return null;
+        })
+      ]);
+
+      // Debug: Log all API responses
+      console.log('� PostgreSQL API Responses:', {
+        stats: statsRes?.data,
+        vehicles: vehiclesRes?.data,
+        groups: groupsRes?.data,
+        bookings: bookingsRes?.data,
+        funds: fundsRes?.data
+      });
+
+      // Check if backend is completely down
+      if (!statsRes && !vehiclesRes && !groupsRes && !bookingsRes && !fundsRes) {
+        throw new Error('Backend API không phản hồi. Vui lòng kiểm tra kết nối backend tại https://localhost:7279');
+      }
+
+      // Extract data from successful API calls - ensure arrays
+      const stats = statsRes?.data || {
+        totalVehicles: 0,
+        activeBookings: 0,
+        totalGroups: 0,
+        monthlyUsage: 0
+      };
+      const vehicles = Array.isArray(vehiclesRes?.data) ? vehiclesRes.data : [];
+      const groups = Array.isArray(groupsRes?.data) ? groupsRes.data : [];
+      const bookings = Array.isArray(bookingsRes?.data) ? bookingsRes.data : [];
+      const funds = Array.isArray(fundsRes?.data) ? fundsRes.data : [];
+
+      // Calculate derived data
+      const groupFund = funds.length > 0 ? funds[0]?.currentBalance || 0 : 0;
+      const nextBooking = bookings.length > 0 ? bookings[0] : null;
+      const recentCosts = funds.length > 0 ? funds[0]?.recentTransactions?.filter(t => t.type === 'usage')?.slice(0, 3) || [] : [];
+
+      // Update state with ONLY real PostgreSQL data
+      setDashboardData({
+        ownership: stats.ownershipPercentage || 0,
+        groupFund,
+        monthlyUsage: stats.monthlyUsage || 0,
+        nextBooking: nextBooking ? `${new Date(nextBooking.startTime).toLocaleDateString()} ${new Date(nextBooking.startTime).toLocaleTimeString()}` : null,
+        costThisMonth: stats.costThisMonth || 0,
+        availableBalance: stats.availableBalance || 0,
+        vehicle: vehicles.length > 0 ? vehicles[0] : null,
+        vehicles: vehicles,
+        bookings: Array.isArray(bookings) ? bookings.slice(0, 3) : [],
+        costs: recentCosts.map(t => ({ name: t.description, amount: t.amount })),
+        groupMembers: groups.length > 0 ? groups[0]?.members || [] : []
+      });
+
+      console.log(`✅ Dashboard loaded: ${vehicles.length} vehicles, ${bookings.length} bookings, ${groups.length} groups`);
+
+    } catch (error) {
+      console.error('❌ Fatal error loading dashboard:', error);
+      setError(`Không thể tải dữ liệu từ database: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -368,6 +453,141 @@ export default function CoOwnerDashboard() {
                 </Card>
               </Grid>
             </Grid>
+
+            {/* Available Vehicles Section */}
+            <Card sx={{ mb: 3, boxShadow: '0 1px 3px rgba(0,0,0,0.12)' }}>
+              <CardContent>
+                <Box display="flex" alignItems="center" gap={1} mb={3}>
+                  <DirectionsCar sx={{ fontSize: 24, color: '#10b981' }} />
+                  <Typography variant="h6" fontWeight="bold">
+                    Xe có sẵn
+                  </Typography>
+                  {dashboardData.vehicles && (
+                    <Chip
+                      label={`${dashboardData.vehicles.length} xe`}
+                      size="small"
+                      sx={{ bgcolor: '#10b981', color: 'white' }}
+                    />
+                  )}
+                </Box>
+
+                {/* Show vehicles from database */}
+                {dashboardData.vehicles && dashboardData.vehicles.length > 0 ? (
+                  <Grid container spacing={2}>
+                    {dashboardData.vehicles.slice(0, 4).map((vehicle) => (
+                      <Grid item xs={12} sm={6} md={3} key={vehicle.id}>
+                        <Card
+                          sx={{
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            '&:hover': {
+                              transform: 'translateY(-2px)',
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                            }
+                          }}
+                          onClick={() => navigate('/coowner/bookings')}
+                        >
+                          <CardContent sx={{ p: 2 }}>
+                            <Typography variant="subtitle2" fontWeight="bold" mb={1} noWrap>
+                              {vehicle.name || `${vehicle.brand} ${vehicle.model}`}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" mb={1}>
+                              {vehicle.license_plate || vehicle.licensePlate}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" mb={1}>
+                              {vehicle.year} • {vehicle.color}
+                            </Typography>
+                            <Box display="flex" justifyContent="space-between" alignItems="center">
+                              <Typography variant="caption" color="text.secondary">
+                                🔋 {vehicle.battery_capacity || vehicle.batteryCapacity || 'N/A'} kWh
+                              </Typography>
+                              <Chip
+                                label="Có sẵn"
+                                size="small"
+                                color="success"
+                              />
+                            </Box>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                ) : (
+                  <Box
+                    sx={{
+                      textAlign: 'center',
+                      py: 4,
+                      background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(14, 165, 233, 0.05))',
+                      borderRadius: 2
+                    }}
+                  >
+                    <DirectionsCar sx={{ fontSize: 48, color: '#9ca3af', mb: 2 }} />
+                    <Typography variant="h6" color="text.secondary" mb={1}>
+                      Chưa có xe nào
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" mb={2}>
+                      Không tìm thấy xe có sẵn. Vui lòng liên hệ quản trị viên.
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      startIcon={<DirectionsCar />}
+                      onClick={() => navigate('/coowner/vehicles')}
+                    >
+                      Xem xe có sẵn
+                    </Button>
+                  </Box>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Registration Actions */}
+            <Card sx={{ mb: 3, boxShadow: '0 1px 3px rgba(0,0,0,0.12)' }}>
+              <CardContent>
+                <Typography variant="h6" fontWeight="bold" mb={2} sx={{ color: '#374151' }}>
+                  Đăng ký & Xác thực
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      startIcon={<DirectionsCar />}
+                      onClick={() => setOpenLicenseModal(true)}
+                      sx={{
+                        textTransform: 'none',
+                        borderColor: '#3b82f6',
+                        color: '#3b82f6',
+                        '&:hover': {
+                          borderColor: '#2563eb',
+                          bgcolor: 'rgba(59, 130, 246, 0.05)'
+                        }
+                      }}
+                    >
+                      Đăng ký bằng lái xe
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      startIcon={<Build />}
+                      onClick={() => setOpenVehicleModal(true)}
+                      sx={{
+                        textTransform: 'none',
+                        borderColor: '#10b981',
+                        color: '#10b981',
+                        '&:hover': {
+                          borderColor: '#059669',
+                          bgcolor: 'rgba(16, 185, 129, 0.05)'
+                        }
+                      }}
+                    >
+                      Đăng ký xe mới
+                    </Button>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
           </Box>
         )}
 
@@ -919,6 +1139,375 @@ export default function CoOwnerDashboard() {
             }}
           >
             Tạo bỏ phiếu
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* License Registration Dialog */}
+      <Dialog
+        open={openLicenseModal}
+        onClose={() => setOpenLicenseModal(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle sx={{ pb: 1 }}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <CreditCard sx={{ color: '#3b82f6' }} />
+            <Typography variant="h6" fontWeight="bold">
+              Đăng ký bằng lái xe
+            </Typography>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Grid container spacing={3} sx={{ mt: 1 }}>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Số bằng lái"
+                value={licenseForm.licenseNumber}
+                onChange={(e) => setLicenseForm({ ...licenseForm, licenseNumber: e.target.value })}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Họ và tên"
+                value={licenseForm.fullName}
+                onChange={(e) => setLicenseForm({ ...licenseForm, fullName: e.target.value })}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Ngày sinh"
+                type="date"
+                value={licenseForm.dateOfBirth}
+                onChange={(e) => setLicenseForm({ ...licenseForm, dateOfBirth: e.target.value })}
+                InputLabelProps={{ shrink: true }}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth required>
+                <InputLabel>Hạng bằng lái</InputLabel>
+                <Select
+                  value={licenseForm.licenseClass}
+                  onChange={(e) => setLicenseForm({ ...licenseForm, licenseClass: e.target.value })}
+                  label="Hạng bằng lái"
+                >
+                  <SelectMenuItem value="A1">A1 - Xe máy 50-175cc</SelectMenuItem>
+                  <SelectMenuItem value="A2">A2 - Xe máy trên 175cc</SelectMenuItem>
+                  <SelectMenuItem value="B1">B1 - Xe ô tô đến 9 chỗ</SelectMenuItem>
+                  <SelectMenuItem value="B2">B2 - Xe ô tô đến 3.5 tấn</SelectMenuItem>
+                  <SelectMenuItem value="C">C - Xe tải trên 3.5 tấn</SelectMenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Ngày cấp"
+                type="date"
+                value={licenseForm.issueDate}
+                onChange={(e) => setLicenseForm({ ...licenseForm, issueDate: e.target.value })}
+                InputLabelProps={{ shrink: true }}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Ngày hết hạn"
+                type="date"
+                value={licenseForm.expiryDate}
+                onChange={(e) => setLicenseForm({ ...licenseForm, expiryDate: e.target.value })}
+                InputLabelProps={{ shrink: true }}
+                required
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Nơi cấp"
+                value={licenseForm.issuePlace}
+                onChange={(e) => setLicenseForm({ ...licenseForm, issuePlace: e.target.value })}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Box sx={{ p: 2, border: '2px dashed #d1d5db', borderRadius: 2, textAlign: 'center' }}>
+                <PhotoCamera sx={{ fontSize: 48, color: '#9ca3af', mb: 1 }} />
+                <Typography variant="body2" color="text.secondary" mb={1}>
+                  Ảnh mặt trước bằng lái
+                </Typography>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  size="small"
+                  startIcon={<Upload />}
+                  sx={{ textTransform: 'none' }}
+                >
+                  Chọn ảnh
+                  <input type="file" hidden accept="image/*" onChange={(e) =>
+                    setLicenseForm({ ...licenseForm, frontImage: e.target.files[0] })
+                  } />
+                </Button>
+                {licenseForm.frontImage && (
+                  <Typography variant="caption" color="success.main" display="block" mt={1}>
+                    ✓ Đã chọn: {licenseForm.frontImage.name}
+                  </Typography>
+                )}
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Box sx={{ p: 2, border: '2px dashed #d1d5db', borderRadius: 2, textAlign: 'center' }}>
+                <PhotoCamera sx={{ fontSize: 48, color: '#9ca3af', mb: 1 }} />
+                <Typography variant="body2" color="text.secondary" mb={1}>
+                  Ảnh mặt sau bằng lái
+                </Typography>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  size="small"
+                  startIcon={<Upload />}
+                  sx={{ textTransform: 'none' }}
+                >
+                  Chọn ảnh
+                  <input type="file" hidden accept="image/*" onChange={(e) =>
+                    setLicenseForm({ ...licenseForm, backImage: e.target.files[0] })
+                  } />
+                </Button>
+                {licenseForm.backImage && (
+                  <Typography variant="caption" color="success.main" display="block" mt={1}>
+                    ✓ Đã chọn: {licenseForm.backImage.name}
+                  </Typography>
+                )}
+              </Box>
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, gap: 1 }}>
+          <Button
+            onClick={() => setOpenLicenseModal(false)}
+            sx={{ textTransform: 'none' }}
+          >
+            Hủy
+          </Button>
+          <Button
+            variant="contained"
+            sx={{
+              bgcolor: '#3b82f6',
+              textTransform: 'none',
+              '&:hover': { bgcolor: '#2563eb' }
+            }}
+            onClick={() => {
+              console.log('License submitted:', licenseForm);
+              // Call API: coOwnerApi.registerLicense(licenseForm)
+              setOpenLicenseModal(false);
+            }}
+          >
+            Đăng ký bằng lái
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Vehicle Registration Dialog */}
+      <Dialog
+        open={openVehicleModal}
+        onClose={() => setOpenVehicleModal(false)}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle sx={{ pb: 1 }}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <DirectionsCar sx={{ color: '#10b981' }} />
+            <Typography variant="h6" fontWeight="bold">
+              Đăng ký xe mới
+            </Typography>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Grid container spacing={3} sx={{ mt: 1 }}>
+            <Grid item xs={12} md={4}>
+              <TextField
+                fullWidth
+                label="Hãng xe"
+                value={vehicleForm.brand}
+                onChange={(e) => setVehicleForm({ ...vehicleForm, brand: e.target.value })}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <TextField
+                fullWidth
+                label="Dòng xe"
+                value={vehicleForm.model}
+                onChange={(e) => setVehicleForm({ ...vehicleForm, model: e.target.value })}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <TextField
+                fullWidth
+                label="Năm sản xuất"
+                type="number"
+                value={vehicleForm.year}
+                onChange={(e) => setVehicleForm({ ...vehicleForm, year: parseInt(e.target.value) })}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Màu sắc"
+                value={vehicleForm.color}
+                onChange={(e) => setVehicleForm({ ...vehicleForm, color: e.target.value })}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Biển số xe"
+                value={vehicleForm.licensePlate}
+                onChange={(e) => setVehicleForm({ ...vehicleForm, licensePlate: e.target.value })}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Số VIN"
+                value={vehicleForm.vin}
+                onChange={(e) => setVehicleForm({ ...vehicleForm, vin: e.target.value })}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Số máy"
+                value={vehicleForm.engineNumber}
+                onChange={(e) => setVehicleForm({ ...vehicleForm, engineNumber: e.target.value })}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth required>
+                <InputLabel>Loại nhiên liệu</InputLabel>
+                <Select
+                  value={vehicleForm.fuelType}
+                  onChange={(e) => setVehicleForm({ ...vehicleForm, fuelType: e.target.value })}
+                  label="Loại nhiên liệu"
+                >
+                  <SelectMenuItem value="Gasoline">Xăng</SelectMenuItem>
+                  <SelectMenuItem value="Diesel">Dầu diesel</SelectMenuItem>
+                  <SelectMenuItem value="Electric">Điện</SelectMenuItem>
+                  <SelectMenuItem value="Hybrid">Hybrid</SelectMenuItem>
+                  <SelectMenuItem value="LPG">LPG</SelectMenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Box sx={{ p: 2, border: '2px dashed #d1d5db', borderRadius: 2, textAlign: 'center' }}>
+                <Description sx={{ fontSize: 40, color: '#9ca3af', mb: 1 }} />
+                <Typography variant="body2" color="text.secondary" mb={1}>
+                  Đăng ký xe
+                </Typography>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  size="small"
+                  startIcon={<Upload />}
+                  sx={{ textTransform: 'none' }}
+                >
+                  Chọn file
+                  <input type="file" hidden accept=".pdf,.jpg,.png" onChange={(e) =>
+                    setVehicleForm({ ...vehicleForm, registrationDocument: e.target.files[0] })
+                  } />
+                </Button>
+                {vehicleForm.registrationDocument && (
+                  <Typography variant="caption" color="success.main" display="block" mt={1}>
+                    ✓ {vehicleForm.registrationDocument.name}
+                  </Typography>
+                )}
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Box sx={{ p: 2, border: '2px dashed #d1d5db', borderRadius: 2, textAlign: 'center' }}>
+                <Description sx={{ fontSize: 40, color: '#9ca3af', mb: 1 }} />
+                <Typography variant="body2" color="text.secondary" mb={1}>
+                  Bảo hiểm xe
+                </Typography>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  size="small"
+                  startIcon={<Upload />}
+                  sx={{ textTransform: 'none' }}
+                >
+                  Chọn file
+                  <input type="file" hidden accept=".pdf,.jpg,.png" onChange={(e) =>
+                    setVehicleForm({ ...vehicleForm, insuranceDocument: e.target.files[0] })
+                  } />
+                </Button>
+                {vehicleForm.insuranceDocument && (
+                  <Typography variant="caption" color="success.main" display="block" mt={1}>
+                    ✓ {vehicleForm.insuranceDocument.name}
+                  </Typography>
+                )}
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Box sx={{ p: 2, border: '2px dashed #d1d5db', borderRadius: 2, textAlign: 'center' }}>
+                <Description sx={{ fontSize: 40, color: '#9ca3af', mb: 1 }} />
+                <Typography variant="body2" color="text.secondary" mb={1}>
+                  Đăng kiểm xe
+                </Typography>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  size="small"
+                  startIcon={<Upload />}
+                  sx={{ textTransform: 'none' }}
+                >
+                  Chọn file
+                  <input type="file" hidden accept=".pdf,.jpg,.png" onChange={(e) =>
+                    setVehicleForm({ ...vehicleForm, inspectionDocument: e.target.files[0] })
+                  } />
+                </Button>
+                {vehicleForm.inspectionDocument && (
+                  <Typography variant="caption" color="success.main" display="block" mt={1}>
+                    ✓ {vehicleForm.inspectionDocument.name}
+                  </Typography>
+                )}
+              </Box>
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, gap: 1 }}>
+          <Button
+            onClick={() => setOpenVehicleModal(false)}
+            sx={{ textTransform: 'none' }}
+          >
+            Hủy
+          </Button>
+          <Button
+            variant="contained"
+            sx={{
+              bgcolor: '#10b981',
+              textTransform: 'none',
+              '&:hover': { bgcolor: '#059669' }
+            }}
+            onClick={() => {
+              console.log('Vehicle submitted:', vehicleForm);
+              // Call API: coOwnerApi.registerVehicle(vehicleForm)
+              setOpenVehicleModal(false);
+            }}
+          >
+            Đăng ký xe
           </Button>
         </DialogActions>
       </Dialog>

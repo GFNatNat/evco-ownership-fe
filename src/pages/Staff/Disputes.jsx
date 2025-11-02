@@ -22,46 +22,7 @@ export default function Disputes() {
   const [detailDialogOpen, setDetailDialogOpen] = React.useState(false);
   const [selectedDispute, setSelectedDispute] = React.useState(null);
 
-  // Mock data for demo
-  const [mockData] = React.useState([
-    {
-      id: 'DP001',
-      code: 'DP001',
-      topic: 'Tranh chấp phí bảo trì',
-      status: 'open',
-      createdDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-      lastUpdate: new Date(),
-      owner: 'Nguyễn Văn A',
-      description: 'Khách hàng khiếu nại về phí bảo trì xe Honda City tháng 10.',
-      actions: [
-        { by: 'Staff', date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), note: 'Đã tiếp nhận và xác minh thông tin.' }
-      ]
-    },
-    {
-      id: 'DP002',
-      code: 'DP002',
-      topic: 'Tranh chấp lịch sử dụng xe',
-      status: 'resolved',
-      createdDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-      lastUpdate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-      owner: 'Trần Thị B',
-      description: 'Hai đồng sở hữu tranh chấp về lịch sử dụng xe Toyota Camry.',
-      actions: [
-        { by: 'Staff', date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000), note: 'Đã liên hệ các bên và giải quyết.' }
-      ]
-    },
-    {
-      id: 'DP003',
-      code: 'DP003',
-      topic: 'Tranh chấp hợp đồng',
-      status: 'pending',
-      createdDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-      lastUpdate: new Date(),
-      owner: 'Lê Văn C',
-      description: 'Khách hàng yêu cầu kiểm tra lại hợp đồng bảo trì Mazda CX-5.',
-      actions: []
-    }
-  ]);
+  // No mock data - all data from PostgreSQL database
 
   React.useEffect(() => {
     loadDisputes();
@@ -70,11 +31,18 @@ export default function Disputes() {
   const loadDisputes = async () => {
     setLoading(true);
     try {
-      const response = await staffApi.disputes.getAll().catch(() => ({ data: mockData }));
-      setDisputes(response.data);
+      // Only fetch from PostgreSQL database via API
+      const response = await staffApi.disputes.getAll();
+      if (response && response.data) {
+        setDisputes(response.data);
+      } else {
+        setError('Không có dữ liệu tranh chấp từ database');
+        setDisputes([]);
+      }
     } catch (err) {
-      setError('Không thể tải dữ liệu tranh chấp');
-      setDisputes(mockData);
+      console.error('Disputes API Error:', err);
+      setError(`Lỗi kết nối database: ${err.message || 'Network error'}`);
+      setDisputes([]);
     } finally {
       setLoading(false);
     }

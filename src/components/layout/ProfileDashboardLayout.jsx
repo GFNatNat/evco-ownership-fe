@@ -15,7 +15,6 @@ import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import EditIcon from '@mui/icons-material/Edit';
 import Person from '@mui/icons-material/Person';
 import { useAuth } from '../../context/AuthContext';
-import NotificationCenter from '../common/NotificationCenter';
 
 const drawerWidth = 280;
 
@@ -241,8 +240,6 @@ export default function ProfileDashboardLayout() {
                         >
                             Chỉnh sửa
                         </Button>
-
-                        <NotificationCenter />
 
                         {/* Back to Dashboard */}
                         <Button

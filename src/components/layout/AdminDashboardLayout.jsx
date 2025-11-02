@@ -11,10 +11,10 @@ import {
     Settings as SettingsIcon, ExitToApp as ExitToAppIcon,
     VerifiedUser as LicenseIcon, Group as GroupIcon,
     AccountCircle as AccountCircleIcon, Notifications as NotificationsIcon,
-    History as HistoryIcon
+    History as HistoryIcon, CheckCircle as CheckCircleIcon,
+    NotificationImportant as ReminderIcon, Upgrade as UpgradeIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
-import NotificationCenter from '../common/NotificationCenter';
 
 const drawerWidth = 280;
 
@@ -228,8 +228,6 @@ export default function AdminDashboardLayout() {
                         >
                             + Thêm User
                         </Button>
-
-                        <NotificationCenter />
 
                         {/* Profile Menu */}
                         <IconButton onClick={handleProfileMenuOpen}>

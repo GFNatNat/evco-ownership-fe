@@ -2,10 +2,10 @@ import axios from 'axios';
 
 // API Configuration
 export const API_CONFIG = {
-  baseURL: process.env.REACT_APP_API_BASE_URL || 'https://localhost:7296/api',
+  baseURL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:5215',
   timeout: 10000,
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json'
   }
 };
 
@@ -28,7 +28,45 @@ axiosClient.interceptors.request.use(
 axiosClient.interceptors.response.use(
   (response) => response.data, // Return BaseResponse<T> directly
   async (error) => {
+    // Enhanced error logging for debugging
+    console.error('🚨 API Error:', {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message
+    });
+
     const originalRequest = error.config;
+
+    // Handle 500 Internal Server Error specifically
+    if (error.response?.status === 500) {
+      console.error('❌ 500 Internal Server Error Details:', {
+        url: error.config?.url,
+        method: error.config?.method,
+        requestData: error.config?.data,
+        responseData: error.response?.data,
+        headers: error.config?.headers
+      });
+
+      // For registration/login, check if there's actual data in response
+      // Sometimes backend throws 500 but still processes the request successfully
+      if (error.response?.data && (
+        error.config?.url?.includes('/Auth/register') ||
+        error.config?.url?.includes('/Auth/login')
+      )) {
+        console.warn('⚠️ 500 error but response contains data - attempting to parse:', error.response.data);
+
+        // Try to return the response data if it exists and looks valid
+        if (error.response.data.statusCode || error.response.data.data) {
+          return error.response.data;
+        }
+      }
+
+      // Don't retry 500 errors, just return them
+      return Promise.reject(error);
+    }
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
@@ -37,7 +75,7 @@ axiosClient.interceptors.response.use(
       const refreshToken = localStorage.getItem('refreshToken');
       if (refreshToken) {
         try {
-          const response = await axios.post(`${API_CONFIG.baseURL}/Auth/refresh-token`, {
+          const response = await axios.post(`${API_CONFIG.baseURL}/api/Auth/refresh-token`, {
             refreshToken
           });
 

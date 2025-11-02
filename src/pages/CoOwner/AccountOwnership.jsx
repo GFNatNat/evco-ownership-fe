@@ -14,7 +14,6 @@ import { useAuth } from '../../context/AuthContext';
 import coOwnerApi from '../../api/coowner';
 import fileUploadApi from '../../api/fileUploadApi';
 import licenseApi from '../../api/licenseApi';
-import { handleMultipleApiCalls, extractResponseData } from '../../utils/apiResponseHandler';
 
 export default function AccountOwnership() {
   const { user } = useAuth();
@@ -53,33 +52,20 @@ export default function AccountOwnership() {
   const loadInitialData = async () => {
     setLoading(true);
     try {
-      // Load data with individual error handling using utility functions
-      const apiCalls = [
-        () => coOwnerApi.profile.get(),
-        () => coOwnerApi.vehicles.getAvailable(),
-        () => coOwnerApi.getOwnerships(),
-        () => coOwnerApi.getOwnershipRequests()
-      ];
+      // Load all data from PostgreSQL
+      const [profileRes, vehiclesRes, ownershipsRes, requestsRes] = await Promise.all([
+        coOwnerApi.profile.get(),
+        coOwnerApi.vehicles.getAvailable(),
+        coOwnerApi.getOwnerships(),
+        coOwnerApi.getOwnershipRequests()
+      ]);
 
-      const fallbackData = [
-        { verified: false, completionRate: 0, documents: [] },
-        [],
-        [],
-        []
-      ];
+      setProfile(profileRes?.data || { verified: false, completionRate: 0, documents: [] });
+      setAvailableVehicles(vehiclesRes?.data || []);
+      setMyOwnerships(ownershipsRes?.data || []);
+      setOwnershipRequests(requestsRes?.data || []);
 
-      const responses = await handleMultipleApiCalls(apiCalls, fallbackData);
-
-      const [profileRes, vehiclesRes, ownershipsRes, requestsRes] = responses;
-
-      // Extract data safely using utility function
-      setProfile(extractResponseData(profileRes, { verified: false, completionRate: 0, documents: [] }));
-      setVehicles(extractResponseData(vehiclesRes, []));
-      setOwnerships(extractResponseData(ownershipsRes, []));
-      setOwnershipRequests(extractResponseData(requestsRes, []));
-
-      let safeAvailableVehicles = vehiclesRes && Array.isArray(vehiclesRes.data) ? vehiclesRes.data : (vehiclesRes && vehiclesRes.data ? [vehiclesRes.data] : []);
-      setAvailableVehicles(safeAvailableVehicles);
+      console.log('Loaded vehicles from API:', vehiclesRes?.data);
 
       setMyOwnerships(ownershipsRes && Array.isArray(ownershipsRes.data) ? ownershipsRes.data : []);
       setOwnershipRequests(requestsRes && Array.isArray(requestsRes.data) ? requestsRes.data : []);
@@ -90,12 +76,7 @@ export default function AccountOwnership() {
 
     } catch (err) {
       console.error('Error loading data:', err);
-      // Don't show error for 404, just use empty data
-      if (err && err.response && typeof err.response.status !== 'undefined' && err.response.status !== 404) {
-        setError('Không thể tải một số dữ liệu. Vui lòng thử lại.');
-      } else if (!err || !err.response) {
-        setError('Lỗi không xác định khi tải dữ liệu.');
-      }
+      setError('🚨 Không thể kết nối backend API. Vui lòng khởi động backend server tại https://localhost:7279');
     } finally {
       setLoading(false);
     }
