@@ -1,19 +1,17 @@
-'use client';
-import axios from 'axios';
-import Cookies from 'js-cookie';
-
-const baseURL = (process.env.NEXT_PUBLIC_API_BASE || '').replace(/\/+$/, '');
+import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL,
-  headers: { 'Content-Type': 'application/json' },
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  withCredentials: true, // cho phép gửi cookie JWT
 });
 
-axiosClient.interceptors.request.use((config) => {
-  const name = process.env.NEXT_PUBLIC_AUTH_COOKIE ?? process.env.AUTH_COOKIE ?? 'accessToken';
-  const token = Cookies.get(name);
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
+axiosClient.interceptors.request.use(
+  (config) => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 export default axiosClient;
