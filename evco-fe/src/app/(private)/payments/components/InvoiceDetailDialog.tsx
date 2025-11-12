@@ -46,16 +46,7 @@ export default function InvoiceDetailDialog({ invoice, onClose }: any) {
         </Table>
       </DialogContent>
       <DialogActions>
-        <Button
-  variant="outlined"
-  size="small"
-  onClick={() => setShowReceipt(invoice)}
-  className="mt-2"
->
-  Xem biên lai
-</Button>
-
-<ReceiptDialog invoice={showReceipt} onClose={() => setShowReceipt(null)} />
+        <Button onClick={onClose}>Đóng</Button>
       </DialogActions>
     </Dialog>
   );
