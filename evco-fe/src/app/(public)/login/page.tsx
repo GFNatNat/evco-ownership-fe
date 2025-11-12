@@ -17,20 +17,47 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErr(null); setLoading(true);
-    try {
-      const res = await authApi.login({ email, password });
-      const token = res.data?.accessToken || res.data?.token;
-      if (!token) throw new Error('Không nhận được access token');
-      Cookies.set(process.env.NEXT_PUBLIC_AUTH_COOKIE ?? 'accessToken', token, { sameSite: 'lax' });
-      router.replace(next);
-    } catch (error: any) {
-      setErr(error?.response?.data?.message || error.message || 'Đăng nhập thất bại');
-    } finally {
-      setLoading(false);
+  e.preventDefault();
+  setErr(null); setLoading(true);
+  try {
+    const res = await authApi.login({ email, password });
+    // BE trả BaseResponse { statusCode, message, data: LoginResponse }
+    // LoginResponse.AccessToken nằm ở res.data.data.accessToken (case-sensitive)
+    const token =
+      res?.data?.data?.accessToken ??
+      res?.data?.data?.token ??
+      res?.data?.accessToken ??
+      res?.data?.token;
+
+    if (!token) throw new Error('Không nhận được access token từ server');
+
+    // lấy expires nếu BE trả về accessTokenExpiresAt để set cookie expiration
+    const expiresAt = res?.data?.data?.accessTokenExpiresAt
+      ? new Date(res.data.data.accessTokenExpiresAt)
+      : undefined;
+
+    // Lưu cookie với tên từ env (nếu có) hoặc fallback 'accessToken'
+    const cookieName = process.env.NEXT_PUBLIC_AUTH_COOKIE ?? 'accessToken';
+
+    // set cookie: nếu expiresAt có thì dùng, thêm secure/path
+    if (expiresAt) {
+      Cookies.set(cookieName, token, {
+        sameSite: 'lax',
+        expires: expiresAt,
+        path: '/'
+      });
+    } else {
+      Cookies.set(cookieName, token, { sameSite: 'lax', path: '/' });
     }
-  };
+
+    router.replace(next);
+  } catch (error: any) {
+    setErr(error?.response?.data?.message || error.message || 'Đăng nhập thất bại');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <Box className="grid place-items-center min-h-[80vh] px-4">

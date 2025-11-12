@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import jwtDecode from 'jwt-decode';
 export type Decoded = { sub: string; email?: string; role?: string; exp?: number; [k: string]: any };
 export function decodeRole(token?: string): 'Guest'|'User'|'CoOwner'|'Staff'|'Admin' {
