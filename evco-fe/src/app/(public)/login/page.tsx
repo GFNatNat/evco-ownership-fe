@@ -11,7 +11,7 @@ export default function LoginPage() {
   const search = useSearchParams();
   const next = search.get('next') || '/dashboard';
 
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(''); 
   const [password, setPassword] = useState('');
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
