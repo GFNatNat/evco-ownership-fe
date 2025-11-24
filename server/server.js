@@ -25,6 +25,7 @@ const licenseRoutes = require('./routes/license')
 const paymentRoutes = require('./routes/payment')
 const staffRoutes = require('./routes/staff')
 const coownerRoutes = require('./routes/coowner')
+const adminRoutes = require('./routes/admin')
 
 app.use('/api/Auth', authRoutes)
 app.use('/api/groups', groupRoutes)
@@ -35,6 +36,7 @@ app.use('/api/shared/license', licenseRoutes)
 app.use('/api/payment', paymentRoutes)
 app.use('/api/staff', staffRoutes)
 app.use('/api/coowner', coownerRoutes)
+app.use('/api/admin', adminRoutes)
 
 app.get('/', (req, res) => res.send({ ok: true }))
 
