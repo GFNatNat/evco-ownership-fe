@@ -3,17 +3,18 @@ const express = require('express')
 const mongoose = require('mongoose')
 const cors = require('cors')
 const morgan = require('morgan')
+const cookieParser = require('cookie-parser')
 
 const app = express()
-app.use(cors())
+app.use(cors({ origin: process.env.FRONTEND_ORIGIN || 'http://localhost:5173', credentials: true }))
 app.use(express.json())
+app.use(cookieParser())
 app.use(morgan('dev'))
 
 // Connect MongoDB
-const MONGO = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/evco'
-mongoose.connect(MONGO, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log('Mongo connected'))
-    .catch(err => console.error('Mongo err', err))
+mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/evco', { useNewUrlParser:true, useUnifiedTopology:true })
+  .then(()=>console.log('Mongo connected'))
+  .catch(err=>console.error(err))
 
 // Routes
 const authRoutes = require('./routes/auth')
@@ -38,7 +39,7 @@ app.use('/api/staff', staffRoutes)
 app.use('/api/coowner', coownerRoutes)
 app.use('/api/admin', adminRoutes)
 
-app.get('/', (req, res) => res.send({ ok: true }))
+app.get('/api/health', (req,res)=>res.json({ ok:true }))
 
 const PORT = process.env.PORT || 4000
-app.listen(PORT, () => console.log(`Server listening ${PORT}`))
+app.listen(PORT, ()=>console.log('Server listening on', PORT))
