@@ -19,10 +19,12 @@ mongoose.connect(MONGO, { useNewUrlParser: true, useUnifiedTopology: true })
 const authRoutes = require('./routes/auth')
 const groupRoutes = require('./routes/groups')
 const costRoutes = require('./routes/costs')
+const fileUploadRoutes = require('./routes/fileUpload')
 
-app.use('/api/auth', authRoutes)
+app.use('/api/Auth', authRoutes)
 app.use('/api/groups', groupRoutes)
 app.use('/api/costs', costRoutes)
+app.use('/api/FileUpload', fileUploadRoutes)
 
 app.get('/', (req, res) => res.send({ ok: true }))
 

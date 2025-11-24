@@ -2,7 +2,14 @@ const UserSchema = new Schema({
     name: String,
     email: { type: String, unique: true, index: true },
     phone: String,
-    passwordHash: String,
+    password: String, // dùng cho Auth
+    status: { type: String, enum: ['active', 'inactive', 'suspended'], default: 'active' },
+    resetOtp: String,
+    resetOtpExpires: Date,
+    otpVerified: { type: Boolean, default: false },
+    refreshToken: String,
+    expiresRefreshToken: Date,
+    licenseNumber: String,
     roles: [{ type: String, enum: ['admin', 'staff', 'coowner'] }],
     verified: { type: Boolean, default: false },
     idDocs: { // CMND/CCCD, driver's license
