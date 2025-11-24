@@ -23,6 +23,7 @@ const fileUploadRoutes = require('./routes/fileUpload')
 const groupRoutes = require('./routes/group')
 const licenseRoutes = require('./routes/license')
 const paymentRoutes = require('./routes/payment')
+const staffRoutes = require('./routes/staff')
 
 app.use('/api/Auth', authRoutes)
 app.use('/api/groups', groupRoutes)
@@ -31,6 +32,7 @@ app.use('/api/FileUpload', fileUploadRoutes)
 app.use('/api/group', groupRoutes)
 app.use('/api/shared/license', licenseRoutes)
 app.use('/api/payment', paymentRoutes)
+app.use('/api/staff', staffRoutes)
 
 app.get('/', (req, res) => res.send({ ok: true }))
 
