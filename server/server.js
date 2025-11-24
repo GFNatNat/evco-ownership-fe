@@ -20,11 +20,13 @@ const authRoutes = require('./routes/auth')
 const groupRoutes = require('./routes/groups')
 const costRoutes = require('./routes/costs')
 const fileUploadRoutes = require('./routes/fileUpload')
+const groupRoutes = require('./routes/group')
 
 app.use('/api/Auth', authRoutes)
 app.use('/api/groups', groupRoutes)
 app.use('/api/costs', costRoutes)
 app.use('/api/FileUpload', fileUploadRoutes)
+app.use('/api/group', groupRoutes)
 
 app.get('/', (req, res) => res.send({ ok: true }))
 
