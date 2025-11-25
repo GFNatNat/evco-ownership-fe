@@ -6,6 +6,7 @@ import CalendarPage from "./pages/CalendarPage";
 import LoginPage from "./pages/LoginPage";
 import CostListPage from "./pages/CostListPage";
 import CostCreatePage from "./pages/CostCreatePage";
+import KycUpload from './pages/KycUpload';
 import { AuthProvider } from "./context/AuthContext";
 import Layout from "./components/Layout";
 
@@ -22,6 +23,7 @@ function App() {
           <Route path="calendar" element={<CalendarPage />} />
           <Route path="costs" element={<CostListPage />} />
           <Route path="costs/create" element={<CostCreatePage />} />
+          <Route path="/kyc" element={<KycUpload />} />
         </Route>
       </Routes>
     </AuthProvider>

@@ -1,58 +1,72 @@
-import React, { useEffect, useState } from 'react'
-import api from '../api/api'
-import PayModal from '../components/PayModal'
+import React, { useEffect, useState } from 'react';
+import { Box, Typography, Paper, Table, TableHead, TableRow, TableCell, TableBody, Button, CircularProgress } from '@mui/material';
+import api from '../lib/api/axiosClient';
+import PayModal from '../components/PayModal';
 
+export default function CostsList() {
+  const [costs, setCosts] = useState(null);
+  const [selected, setSelected] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-export default function CostsList(){
-const [costs, setCosts] = useState(null) // null = loading
-const [selected, setSelected] = useState(null)
+  async function fetchCosts() {
+    setLoading(true);
+    try {
+      const res = await api.get('/costs');
+      setCosts(res.data);
+    } catch (e) {
+      console.error(e);
+      setCosts([]);
+    } finally {
+      setLoading(false);
+    }
+  }
 
+  useEffect(() => { fetchCosts(); }, []);
 
-useEffect(()=>{ fetchCosts() }, [])
-async function fetchCosts(){ setCosts(null); try{ const res = await api.get('/costs'); setCosts(res.data) }catch(e){ console.error(e); setCosts([]) } }
+  async function handleApprove(id) {
+    try {
+      await api.post(`/costs/${id}/approve`);
+      fetchCosts();
+    } catch (e) {
+      alert(e.response?.data?.message || e.message);
+    }
+  }
 
+  return (
+    <Box p={3}>
+      <Typography variant="h4" gutterBottom>Costs</Typography>
+      <Paper sx={{ p: 2 }}>
+        {loading && <Box display="flex" alignItems="center" justifyContent="center"><CircularProgress /></Box>}
+        {!loading && costs && (
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Group</TableCell>
+                <TableCell>Type</TableCell>
+                <TableCell align="right">Amount</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell align="right">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {costs.map(c => (
+                <TableRow key={c._id}>
+                  <TableCell sx={{ maxWidth: 220 }}>{String(c.groupId)}</TableCell>
+                  <TableCell>{c.type}</TableCell>
+                  <TableCell align="right">{Number(c.amount).toLocaleString()}</TableCell>
+                  <TableCell>{c.status}</TableCell>
+                  <TableCell align="right">
+                    {c.status === 'pending' && <Button size="small" onClick={() => handleApprove(c._id)}>Approve</Button>}
+                    <Button size="small" onClick={() => setSelected(c)}>Pay</Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </Paper>
 
-return (
-<Box>
-<Typography variant="h4" gutterBottom>Costs</Typography>
-<Paper>
-{costs === null ? (
-<Box p={2}>
-<Skeleton variant="rectangular" height={40} />
-<Skeleton variant="rectangular" height={40} sx={{ mt:1 }} />
-<Skeleton variant="rectangular" height={40} sx={{ mt:1 }} />
-</Box>
-) : (
-<Table size="small">
-<TableHead>
-<TableRow>
-<TableCell>Group</TableCell>
-<TableCell>Type</TableCell>
-<TableCell align="right">Amount</TableCell>
-<TableCell>Status</TableCell>
-<TableCell align="right">Actions</TableCell>
-</TableRow>
-</TableHead>
-<TableBody>
-{costs.map(c => (
-<TableRow key={c._id} hover>
-<TableCell sx={{ maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.groupId}</TableCell>
-<TableCell>{c.type}</TableCell>
-<TableCell align="right">{c.amount.toLocaleString()}</TableCell>
-<TableCell>{c.status}</TableCell>
-<TableCell align="right">
-{c.status === 'pending' && <Button size="small" onClick={async ()=>{ await api.post(`/costs/${c._id}/approve`); fetchCosts() }}>Approve</Button>}
-<Button size="small" onClick={()=>setSelected(c)}>Pay</Button>
-</TableCell>
-</TableRow>
-))}
-</TableBody>
-</Table>
-)}
-</Paper>
-
-
-{selected && <PayModal cost={selected} onClose={()=>{ setSelected(null); fetchCosts() }} />}
-</Box>
-)
+      {selected && <PayModal cost={selected} onClose={() => { setSelected(null); fetchCosts(); }} />}
+    </Box>
+  );
 }
