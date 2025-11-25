@@ -5,7 +5,7 @@ const Group = require('../models/Group')
 const { auth, requireGroupRole } = require('../middleware/auth')
 
 // create cost
-router.post('/', auth(), requireGroupRole('groupId'), async (req,res)=>{
+router.post('/', auth(), requireGroupRole('groupId', ['groupAdmin', 'member']), async (req,res)=>{
   const payload = req.body
   const { group } = req
   const members = group.members.map(m=>({ userId: m.userId, share: m.share }))
