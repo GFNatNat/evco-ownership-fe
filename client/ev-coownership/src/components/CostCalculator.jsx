@@ -1,56 +1,51 @@
-import React, { useMemo } from 'react'
-import Table from '@mui/material/Table'
-import TableBody from '@mui/material/TableBody'
-import TableCell from '@mui/material/TableCell'
-import TableHead from '@mui/material/TableHead'
-import TableRow from '@mui/material/TableRow'
-import Paper from '@mui/material/Paper'
-import Typography from '@mui/material/Typography'
+import React, { useMemo } from 'react';
+import { Box, Typography, Grid, Paper } from '@mui/material';
 
-export default function CostCalculator({ amount, members, splitMethod, usageMap = {}, wShare = 0.6 }) {
-  const rows = useMemo(() => {
-    if (splitMethod === 'byShare') return members.map(m => ({ ...m, amount: Math.round((m.share/100)*amount) }))
-    if (splitMethod === 'byUsage') {
-      const totalUsage = Object.values(usageMap).reduce((a,b)=>a+(Number(b)||0),0) || 1
-      return members.map(m=>({ ...m, amount: Math.round(((Number(usageMap[m.userId])||0)/totalUsage)*amount) }))
+export default function CostCalculator({ amount = 0, members = [], usageMap = {}, method = 'byShare', wShare = 0.6 }) {
+  const split = useMemo(() => {
+    if (!members || members.length === 0) return [];
+    if (method === 'byShare') {
+      return members.map(m => ({ userId: m.userId || m._id || m.id, amount: Math.round((m.share || 0) / 100 * amount) }));
     }
-    // hybrid
-    const totalUsage = Object.values(usageMap).reduce((a,b)=>a+(Number(b)||0),0) || 1
-    return members.map(m=>{
-      const sharePart = m.share/100
-      const usagePart = (Number(usageMap[m.userId])||0)/totalUsage
-      const factor = wShare*sharePart + (1-wShare)*usagePart
-      return { ...m, amount: Math.round(factor*amount) }
-    })
-  }, [amount, members, splitMethod, usageMap, wShare])
+    if (method === 'byUsage') {
+      const total = Object.values(usageMap).reduce((a, b) => a + (Number(b) || 0), 0) || 1;
+      return members.map(m => ({ userId: m.userId || m._id || m.id, amount: Math.round(((Number(usageMap[m.userId]) || 0) / total) * amount) }));
+    }
+    if (method === 'hybrid') {
+      const total = Object.values(usageMap).reduce((a, b) => a + (Number(b) || 0), 0) || 1;
+      return members.map(m => {
+        const sharePart = (m.share || 0) / 100;
+        const usagePart = (Number(usageMap[m.userId]) || 0) / total;
+        const factor = wShare * sharePart + (1 - wShare) * usagePart;
+        return { userId: m.userId || m._id || m.id, amount: Math.round(factor * amount) };
+      });
+    }
+    return [];
+  }, [amount, members, usageMap, method, wShare]);
 
-  const total = rows.reduce((s,r)=>s+r.amount,0)
+  // rounding correction
+  const totalCalculated = split.reduce((s, it) => s + (it.amount || 0), 0);
+  let diff = Math.round(amount - totalCalculated);
+  const out = split.map(s => ({ ...s }));
+  for (let i = 0; diff !== 0 && i < out.length * 2; i++) {
+    const idx = i % out.length;
+    out[idx].amount += diff > 0 ? 1 : -1;
+    diff += diff > 0 ? -1 : 1;
+  }
 
   return (
-    <Paper sx={{ p:2, mt:2 }}>
-      <Typography variant="subtitle1">Preview split</Typography>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>Name</TableCell>
-            <TableCell>Share</TableCell>
-            <TableCell align="right">Amount</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map(r => (
-            <TableRow key={r.userId}>
-              <TableCell>{r.name}</TableCell>
-              <TableCell>{r.share}%</TableCell>
-              <TableCell align="right">{r.amount.toLocaleString()} VND</TableCell>
-            </TableRow>
-          ))}
-          <TableRow>
-            <TableCell /><TableCell><strong>Total</strong></TableCell>
-            <TableCell align="right"><strong>{total.toLocaleString()} VND</strong></TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
+    <Paper sx={{ p: 2, mt: 2 }}>
+      <Typography variant="subtitle1">Split Preview ({method})</Typography>
+      <Grid container spacing={1} sx={{ mt: 1 }}>
+        {out.map(s => (
+          <Grid item xs={12} sm={6} md={4} key={s.userId}>
+            <Box sx={{ border: '1px solid rgba(0,0,0,0.06)', p: 1, borderRadius: 1 }}>
+              <Typography variant="body2" noWrap>{String(s.userId)}</Typography>
+              <Typography variant="h6">{(s.amount || 0).toLocaleString()}</Typography>
+            </Box>
+          </Grid>
+        ))}
+      </Grid>
     </Paper>
-  )
+  );
 }
