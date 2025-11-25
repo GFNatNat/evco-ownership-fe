@@ -28,3 +28,4 @@ const UserSchema = new Schema({
     createdAt: Date,
     updatedAt: Date
 });
+module.exports = mongoose.model('User', UserSchema)
