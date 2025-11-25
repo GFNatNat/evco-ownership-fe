@@ -1,45 +1,47 @@
-require('dotenv').config()
-const express = require('express')
-const mongoose = require('mongoose')
-const cors = require('cors')
-const morgan = require('morgan')
-const cookieParser = require('cookie-parser')
+require("dotenv").config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
+const morgan = require("morgan");
 
-const app = express()
-app.use(cors({ origin: process.env.FRONTEND_ORIGIN || 'http://localhost:5173', credentials: true }))
-app.use(express.json())
-app.use(cookieParser())
-app.use(morgan('dev'))
+const authRoutes = require("./routes/function/authRoutes.js");
+app.use("/auth", authRoutes);
 
-// Connect MongoDB
-mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/evco', { useNewUrlParser:true, useUnifiedTopology:true })
-  .then(()=>console.log('Mongo connected'))
-  .catch(err=>console.error(err))
+const errorHandler = require("./middlewares/errorHandler.js");
+app.use(errorHandler);
 
-// Routes
-const authRoutes = require('./routes/auth')
-const groupRoutes = require('./routes/groups')
-const costRoutes = require('./routes/costs')
-const fileUploadRoutes = require('./routes/fileUpload')
-const groupRoutes = require('./routes/group')
-const licenseRoutes = require('./routes/license')
-const paymentRoutes = require('./routes/payment')
-const staffRoutes = require('./routes/staff')
-const coownerRoutes = require('./routes/coowner')
-const adminRoutes = require('./routes/admin')
+const app = express();
+app.use(morgan("dev"));
+app.use(express.json());
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_ORIGIN || "http://localhost:5173",
+    credentials: true,
+  })
+);
+app.use("/uploads", express.static(process.env.UPLOAD_DIR || "uploads"));
 
-app.use('/api/Auth', authRoutes)
-app.use('/api/groups', groupRoutes)
-app.use('/api/costs', costRoutes)
-app.use('/api/FileUpload', fileUploadRoutes)
-app.use('/api/group', groupRoutes)
-app.use('/api/shared/license', licenseRoutes)
-app.use('/api/payment', paymentRoutes)
-app.use('/api/staff', staffRoutes)
-app.use('/api/coowner', coownerRoutes)
-app.use('/api/admin', adminRoutes)
+// connect
+mongoose
+  .connect(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/evco")
+  .then(() => console.log("mongo ok"))
+  .catch((e) => console.error(e));
 
-app.get('/api/health', (req,res)=>res.json({ ok:true }))
+// routes
+app.use("/api/auth", require("./routes/auth"));
+app.use("/api/groups", require("./routes/groups"));
+app.use("/api/bookings", require("./routes/bookings"));
+app.use("/api/costs", require("./routes/costs"));
+app.use("/api/fileUpload", require("./routes/fileUpload"));
+app.use("/api/staff", require("./routes/staff"));
+app.use("/api/admin", require("./routes/admin"));
 
-const PORT = process.env.PORT || 4000
-app.listen(PORT, ()=>console.log('Server listening on', PORT))
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ message: err.message || "Server error" });
+});
+
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => console.log("server on", PORT));
