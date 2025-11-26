@@ -1,47 +1,39 @@
-require("dotenv").config();
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const cookieParser = require("cookie-parser");
-const morgan = require("morgan");
+import "dotenv/config"; // Load ENV 1 lần duy nhất
+import mongoose from "mongoose";
+import http from "http";
+import app from "./app.js";
+import { mongooseQueryLogger } from "./utils/mongooseQueryLogger.js";
 
-const authRoutes = require("./routes/function/authRoutes.js");
-app.use("/auth", authRoutes);
+// ⚠️ In ra môi trường để debug
+console.log("Loaded ENV MONGO_URI:", process.env.MONGO_URI);
+console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("process.cwd() =", process.cwd());
 
-const errorHandler = require("./middlewares/errorHandler.js");
-app.use(errorHandler);
+// ⚠️ Đúng KEY theo file .env
+const PORT = process.env.PORT || 5000;
+const MONGO_URI = process.env.MONGO_URI;
 
-const app = express();
-app.use(morgan("dev"));
-app.use(express.json());
-app.use(cookieParser());
-app.use(
-  cors({
-    origin: process.env.FRONTEND_ORIGIN || "http://localhost:5173",
-    credentials: true,
-  })
-);
-app.use("/uploads", express.static(process.env.UPLOAD_DIR || "uploads"));
+if (!MONGO_URI) {
+  console.error("❌ ERROR: MONGO_URI is undefined. Check your .env file!");
+  process.exit(1);
+}
 
-// connect
+const server = http.createServer(app);
+
+// MongoDB Connect
 mongoose
-  .connect(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/evco")
-  .then(() => console.log("mongo ok"))
-  .catch((e) => console.error(e));
+  .connect(MONGO_URI)
+  .then(() => {
+    console.log("✅ MongoDB connected successfully");
 
-// routes
-app.use("/api/auth", require("./routes/auth"));
-app.use("/api/groups", require("./routes/groups"));
-app.use("/api/bookings", require("./routes/bookings"));
-app.use("/api/costs", require("./routes/costs"));
-app.use("/api/fileUpload", require("./routes/fileUpload"));
-app.use("/api/staff", require("./routes/staff"));
-app.use("/api/admin", require("./routes/admin"));
+    // Logging query
+    mongoose.plugin(mongooseQueryLogger);
 
-app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).json({ message: err.message || "Server error" });
-});
-
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log("server on", PORT));
+    server.listen(PORT, () => {
+      console.log(`🚀 Server running at http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("❌ MongoDB connection failed:", err);
+    process.exit(1);
+  });
