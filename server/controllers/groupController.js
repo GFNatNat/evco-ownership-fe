@@ -1,134 +1,155 @@
-const Group = require('../models/Group')
-const User = require('../models/User')
+import OwnershipGroup from "../models/OwnershipGroup.js";
+import WalletTransaction from "../models/WalletTransaction.js";
+import { writeAudit as wa } from "../utils/audit.js";
 
-module.exports = {
-  createGroup: async (req,res)=>{
-    try{
-      const payload = req.body
-      const g = await Group.create(payload)
-      res.json(g)
-    }catch(e){ console.error(e); res.status(500).json({ message: e.message }) }
-  },
-
-  getGroups: async (req,res)=>{
-    try{
-      const q = {}
-      // optionally filter by user membership
-      if(req.query.userId){ q['members.userId'] = req.query.userId }
-      const list = await Group.find(q).limit(500)
-      res.json(list)
-    }catch(e){ console.error(e); res.status(500).json({ message: e.message }) }
-  },
-
-  getGroupById: async (req,res)=>{
-    try{
-      const g = await Group.findById(req.params.id).populate('members.userId','name email')
-      if(!g) return res.status(404).json({ message:'Not found' })
-      res.json(g)
-    }catch(e){ console.error(e); res.status(500).json({ message: e.message }) }
-  },
-
-  updateGroup: async (req,res)=>{
-    try{
-      const g = await Group.findByIdAndUpdate(req.params.id, req.body, { new:true })
-      res.json(g)
-    }catch(e){ console.error(e); res.status(500).json({ message: e.message }) }
-  },
-
-  deleteGroup: async (req,res)=>{
-    try{
-      await Group.findByIdAndDelete(req.params.id)
-      res.json({ ok:true })
-    }catch(e){ console.error(e); res.status(500).json({ message: e.message }) }
-  },
-
-  addMember: async (req,res)=>{
-    try{
-      const { groupId } = req.params
-      const { userId, share, role } = req.body
-      const g = await Group.findById(groupId)
-      if(!g) return res.status(404).json({ message:'Group not found' })
-      if(g.members.find(m=>String(m.userId)===String(userId))) return res.status(400).json({ message:'Member exists' })
-      g.members.push({ userId, share, role: role||'member' })
-      await g.save()
-      res.json(g)
-    }catch(e){ console.error(e); res.status(500).json({ message: e.message }) }
-  },
-
-  removeMember: async (req,res)=>{
-    try{
-      const { groupId, userId } = req.params
-      const g = await Group.findById(groupId)
-      if(!g) return res.status(404).json({ message:'Group not found' })
-      g.members = g.members.filter(m=>String(m.userId)!==String(userId))
-      await g.save()
-      res.json(g)
-    }catch(e){ console.error(e); res.status(500).json({ message: e.message }) }
-  },
-
-  setGroupAdmin: async (req,res)=>{
-    try{
-      const { groupId, userId } = req.params
-      const { role } = req.body
-      const g = await Group.findById(groupId)
-      if(!g) return res.status(404).json({ message:'Group not found' })
-      const member = g.members.find(m=>String(m.userId)===String(userId))
-      if(!member) return res.status(404).json({ message:'Member not found' })
-      member.role = role
-      await g.save()
-      res.json(g)
-    }catch(e){ console.error(e); res.status(500).json({ message: e.message }) }
-  },
-
-  updateOwnership: async (req,res)=>{
-    try{
-      const { groupId } = req.params
-      const { ownership } = req.body // array [{userId, share}]
-      const g = await Group.findById(groupId)
-      if(!g) return res.status(404).json({ message:'Group not found' })
-      // apply updates
-      ownership.forEach(o=>{
-        const m = g.members.find(x=>String(x.userId)===String(o.userId))
-        if(m) m.share = o.share
-      })
-      await g.save()
-      res.json(g)
-    }catch(e){ console.error(e); res.status(500).json({ message: e.message }) }
-  },
-
-  // Voting and Fund operations are left as simple placeholders here
-  createVote: async (req,res)=>{
-    res.status(501).json({ message:'Not implemented: createVote' })
-  },
-  getVotes: async (req,res)=>{
-    res.status(501).json({ message:'Not implemented: getVotes' })
-  },
-  getGroupFund: async (req,res)=>{
-    try{
-      const g = await Group.findById(req.params.groupId)
-      if(!g) return res.status(404).json({ message:'Group not found' })
-      res.json(g.commonFund || { balance:0 })
-    }catch(e){ console.error(e); res.status(500).json({ message: e.message }) }
-  },
-  topupFund: async (req,res)=>{
-    try{
-      const { amount, note } = req.body
-      const g = await Group.findById(req.params.groupId)
-      if(!g) return res.status(404).json({ message:'Group not found' })
-      g.commonFund = g.commonFund || { balance:0 }
-      g.commonFund.balance = (g.commonFund.balance || 0) + Number(amount || 0)
-      await g.save()
-      res.json(g.commonFund)
-    }catch(e){ console.error(e); res.status(500).json({ message: e.message }) }
-  },
-  createFundExpense: async (req,res)=>{
-    try{
-      const { amount, reason } = req.body
-      const g = await Group.findById(req.params.groupId)
-      if(!g) return res.status(404).json({ message:'Group not found' })
-      g.commonFund.balance = (g.commonFund.balance || 0) - Number(amount || 0)
-      await g.save()
-      res.json(g.commonFund)
-    }catch(e){ console.error(e); res.status(500).json({ message: e.message }) }
+export const createGroup = async (req, res, next) => {
+  try {
+    const group = await OwnershipGroup.create({
+      ...req.body,
+      createdAt: new Date(),
+    });
+    await wa({
+      userId: req.user.id,
+      action: "group.create",
+      entityType: "Group",
+      entityId: group._id,
+      message: "Created group",
+      meta: req.body,
+      ip: req.ip,
+    });
+    res.status(201).json(group);
+  } catch (err) {
+    next(err);
   }
-}
+};
+
+export const updateGroup = async (req, res, next) => {
+  try {
+    const group = await OwnershipGroup.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+      }
+    );
+    await wa({
+      userId: req.user.id,
+      action: "group.update",
+      entityType: "Group",
+      entityId: group._id,
+      message: "Updated group",
+      meta: req.body,
+      ip: req.ip,
+    });
+    res.json(group);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteGroup = async (req, res, next) => {
+  try {
+    await GroupModel.findByIdAndDelete(req.params.id);
+    await wa({
+      userId: req.user.id,
+      action: "group.delete",
+      entityType: "Group",
+      entityId: req.params.id,
+      message: "Deleted group",
+      ip: req.ip,
+    });
+    res.json({ message: "deleted" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const addMember = async (req, res, next) => {
+  try {
+    const group = await OwnershipGroup.findById(req.params.id);
+    group.members.push(req.body.member);
+    await group.save();
+    await wa({
+      userId: req.user.id,
+      action: "group.addMember",
+      entityType: "Group",
+      entityId: group._id,
+      message: "Added member",
+      meta: req.body.member,
+      ip: req.ip,
+    });
+    res.json(group);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const removeMember = async (req, res, next) => {
+  try {
+    const group = await OwnershipGroup.findById(req.params.id);
+    group.members = group.members.filter(
+      (m) => m.userId.toString() !== req.params.userId
+    );
+    await group.save();
+    await wa({
+      userId: req.user.id,
+      action: "group.removeMember",
+      entityType: "Group",
+      entityId: group._id,
+      message: `Removed ${req.params.userId}`,
+      ip: req.ip,
+    });
+    res.json(group);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getGroupDetails = async (req, res, next) => {
+  try {
+    const group = await OwnershipGroup.findById(req.params.id).populate(
+      "members.userId",
+      "name email"
+    );
+    res.json(group);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getGroupFund = async (req, res, next) => {
+  try {
+    const group = await OwnershipGroup.findById(req.params.id);
+    res.json(group.commonFund);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateGroupFund = async (req, res, next) => {
+  try {
+    const { amount } = req.body;
+    const group = await OwnershipGroup.findById(req.params.id);
+    group.commonFund.balance += amount;
+    await group.save();
+    await WalletTransaction.create({
+      userId: req.user.id,
+      groupId: group._id,
+      type: "topup",
+      amount,
+      reference: "group_fund_topup",
+    });
+    await wa({
+      userId: req.user.id,
+      action: "group.fundUpdate",
+      entityType: "Group",
+      entityId: group._id,
+      message: `Topup ${amount}`,
+      meta: { amount },
+      ip: req.ip,
+    });
+    res.json(group.commonFund);
+  } catch (err) {
+    next(err);
+  }
+};
