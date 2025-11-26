@@ -1,12 +1,34 @@
-module.exports = (err, req, res, next) => {
-  console.error("[ERROR]", err);
+import logger from "../utils/logger.js";
 
-  const status = err.status || 500;
-  const message = err.message || "Internal Server Error";
+export const errorHandler = (err, req, res, next) => {
+  const status = err.statusCode || 500;
+  const payload = {
+    message: err.message,
+    status,
+    route: req.originalUrl,
+    method: req.method,
+    user: req.user?.id || "anon",
+    timestamp: new Date().toISOString(),
+    stack: err.stack,
+  };
 
-  // Unified JSON response
-  return res.status(status).json({
+  // log to error file (transportError) via logger.error
+  logger.error(
+    `ERROR ${payload.method} ${payload.route} user=${payload.user} msg=${payload.message}`,
+    payload
+  );
+
+  // also log a condensed audit entry
+  logger.audit(
+    `AUDIT_ERROR user=${payload.user} route=${payload.route} msg=${payload.message}`,
+    {
+      level: "audit",
+      error: true,
+    }
+  );
+
+  res.status(status).json({
     success: false,
-    error: message,
+    message: err.safeMessage || err.message || "Internal Server Error",
   });
 };
