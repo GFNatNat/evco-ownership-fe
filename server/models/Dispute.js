@@ -1,28 +1,12 @@
-const DisputeSchema = new mongoose.Schema({
-  bookingId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Booking",
-    required: true,
+import mongoose from "mongoose";
+const disputeSchema = new mongoose.Schema(
+  {
+    group: { type: mongoose.Schema.Types.ObjectId, ref: "Group" },
+    raisedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    content: String,
+    status: { type: String, enum: ["open", "resolved"], default: "open" },
   },
-  raisedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  against: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  reason: { type: String, required: true },
-  evidence: [{ type: String }],
-  status: {
-    type: String,
-    enum: ["open", "in-review", "resolved", "rejected"],
-    default: "open",
-  },
-  resolution: { type: String },
-  createdAt: { type: Date, default: Date.now },
-});
+  { timestamps: true }
+);
 
-module.exports = mongoose.model("Dispute", DisputeSchema);
+export default mongoose.model("Dispute", disputeSchema);

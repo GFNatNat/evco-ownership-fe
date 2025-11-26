@@ -1,31 +1,60 @@
-const UserSchema = new Schema({
-    name: String,
-    email: { type: String, unique: true, index: true },
-    phone: String,
-    password: String, // dùng cho Auth
-    status: { type: String, enum: ['active', 'inactive', 'suspended'], default: 'active' },
-    resetOtp: String,
-    resetOtpExpires: Date,
-    otpVerified: { type: Boolean, default: false },
-    refreshToken: String,
-    expiresRefreshToken: Date,
-    licenseNumber: String,
-    roles: [{ type: String, enum: ['admin', 'staff', 'coowner'] }],
-    verified: { type: Boolean, default: false },
-    idDocs: { // CMND/CCCD, driver's license
-        idType: String,
-        idNumber: String,
-        idFrontUrl: String,
-        idBackUrl: String,
-        licenseUrl: String,
-        verifiedAt: Date,
-        verifiedBy: { type: ObjectId, ref: 'User' }
-    },
-    wallet: {
-        balance: { type: Number, default: 0 },
-        lastTopupAt: Date
-    },
-    createdAt: Date,
-    updatedAt: Date
+// src/models/User.js
+import mongoose from "mongoose";
+const Schema = mongoose.Schema;
+
+const DocumentSchema = new Schema({
+  type: {
+    type: String,
+    enum: ["cccd", "cmnd", "driver_license"],
+    required: true,
+  },
+  url: { type: String, required: true },
+  uploadedAt: { type: Date, default: Date.now },
 });
-module.exports = mongoose.model('User', UserSchema)
+
+const WalletSchema = new Schema({
+  balance: { type: Number, default: 0 },
+  currency: { type: String, default: "VND" },
+});
+
+const UserSchema = new Schema(
+  {
+    name: { type: String, required: true },
+
+    email: { type: String, required: true, unique: true, lowercase: true },
+    phone: { type: String },
+
+    passwordHash: { type: String, required: true },
+
+    roles: {
+      type: [String],
+      enum: ["Coowner", "Staff", "Admin"],
+      default: ["Coowner"],
+    },
+
+    verified: {
+      idDocs: { type: Boolean, default: false },
+      driverLicense: { type: Boolean, default: false },
+    },
+
+    idDocuments: [DocumentSchema],
+
+    driverLicense: {
+      number: String,
+      expiry: Date,
+      url: String,
+    },
+
+    wallet: WalletSchema,
+
+    preferences: {
+      notifyByEmail: { type: Boolean, default: true },
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+const User = mongoose.model("User", UserSchema);
+export default User;
