@@ -5,4 +5,6 @@ authRouter.post("/register", AuthC.register);
 authRouter.post("/login", AuthC.login);
 authRouter.post("/refresh-token", AuthC.refreshToken);
 authRouter.post("/logout", AuthC.logout);
+authRouter.post("/forgot-password", AuthC.forgotPassword);
+authRouter.post("/reset-password/:token", AuthC.resetPassword);
 export default authRouter;
