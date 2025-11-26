@@ -1,0 +1,33 @@
+import express from "express";
+import authRoutes from "./authRoutes.js";
+import userRoutes from "./userRoutes.js";
+import vehicleRoutes from "./vehicleRoutes.js";
+import ownershipRoutes from "./ownershipRoutes.js";
+import groupRoutes from "./groupRoutes.js";
+import scheduleRoutes from "./scheduleRoutes.js";
+import costRoutes from "./costRoutes.js";
+import paymentRoutes from "./paymentRoutes.js";
+import contractRoutes from "./contractRoutes.js";
+import voteRoutes from "./voteRoutes.js";
+import checkinRoutes from "./checkinRoutes.js";
+import disputeRoutes from "./disputeRoutes.js";
+import notificationRoutes from "./notificationRoutes.js";
+import reportRoutes from "./reportRoutes.js";
+
+const router = express.Router();
+router.use("/auth", authRoutes);
+router.use("/users", userRoutes);
+router.use("/vehicles", vehicleRoutes);
+router.use("/ownership", ownershipRoutes);
+router.use("/groups", groupRoutes);
+router.use("/schedules", scheduleRoutes);
+router.use("/costs", costRoutes);
+router.use("/payments", paymentRoutes);
+router.use("/contracts", contractRoutes);
+router.use("/votes", voteRoutes);
+router.use("/checkin", checkinRoutes);
+router.use("/disputes", disputeRoutes);
+router.use("/notifications", notificationRoutes);
+router.use("/reports", reportRoutes);
+
+export default router;

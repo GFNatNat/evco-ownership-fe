@@ -1,0 +1,10 @@
+import express from "express";
+import * as DisputeC from "../../controllers/disputeController.js";
+import { authMiddleware } from "../../middlewares/authMiddleware.js";
+const disputeRouter = express.Router();
+disputeRouter.post("/", authMiddleware, DisputeC.createDispute);
+disputeRouter.put("/:id", authMiddleware, DisputeC.updateDispute);
+disputeRouter.put("/:id/resolve", authMiddleware, DisputeC.resolveDispute);
+disputeRouter.get("/", authMiddleware, DisputeC.getAllDisputes);
+disputeRouter.get("/:id", authMiddleware, DisputeC.getDisputeById);
+export default disputeRouter;
