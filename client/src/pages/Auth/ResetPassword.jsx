@@ -1,49 +1,20 @@
-import React, { useState } from "react";
-import { Box, Paper, TextField, Button, Typography } from "@mui/material";
-import { useParams, useNavigate } from "react-router-dom";
-import api from "../../api/axiosClient";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { ResetPasswordForm } from "../../components/auth/ResetPasswordForm";
+import authApi from "../../api/authApi";
 
 export default function ResetPassword() {
-  const { token } = useParams();
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const nav = useNavigate();
+  const [params] = useSearchParams();
+  const token = params.get("token");
+  const navigate = useNavigate();
 
-  const submit = async () => {
-    setLoading(true);
-    try {
-      await api.post("/auth/reset-password", { token, password });
-      alert("Đặt lại mật khẩu thành công");
-      nav("/login");
-    } catch (err) {
-      alert("Lỗi");
-    } finally {
-      setLoading(false);
-    }
+  const handleSubmit = async ({ password }) => {
+    await authApi.resetPassword(token, { password });
+    navigate("/login");
   };
 
   return (
-    <Box display="flex" justifyContent="center" p={2}>
-      <Paper sx={{ p: 3, width: 420 }}>
-        <Typography variant="h6">Đặt mật khẩu mới</Typography>
-        <TextField
-          label="Mật khẩu mới"
-          type="password"
-          fullWidth
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          sx={{ mt: 2 }}
-        />
-        <Button
-          variant="contained"
-          fullWidth
-          sx={{ mt: 2 }}
-          onClick={submit}
-          disabled={loading}
-        >
-          Xác nhận
-        </Button>
-      </Paper>
-    </Box>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+      <ResetPasswordForm onSubmit={handleSubmit} />
+    </div>
   );
 }

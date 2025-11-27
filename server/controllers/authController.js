@@ -41,17 +41,40 @@ export const register = async (req, res, next) => {
 export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
+
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (!user.passwordHash)
+      return res
+        .status(500)
+        .json({ message: "User has no passwordHash stored" });
+
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) return res.status(401).json({ message: "Invalid credentials" });
+
     const accessToken = generateAccessToken({
       id: user._id,
       roles: user.roles,
     });
-    const refreshToken = generateRefreshToken({ id: user._id });
-    res.json({ user, accessToken, refreshToken });
+
+    const refreshToken = generateRefreshToken({
+      id: user._id,
+    });
+
+    // ⭐ Quan trọng: đưa role ra FE
+    res.json({
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        roles: user.roles,
+      },
+      accessToken,
+      refreshToken,
+    });
   } catch (err) {
+    console.error("LOGIN ERROR:", err);
     next(err);
   }
 };

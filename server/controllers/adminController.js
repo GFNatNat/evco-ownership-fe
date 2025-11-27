@@ -1,23 +1,41 @@
-import Dispute from "../models/Dispute.js";
+// controllers/adminController.js
+import * as GroupC from "./groupController.js";
+import * as ContractC from "./contractController.js";
+import * as DisputeC from "./disputeController.js";
+import * as ReportC from "./reportController.js";
+import * as VehicleC from "./vehicleController.js";
 
-export const getAllGroups = async (req, res) => {
-  try {
-    const g = await Group.find();
-    res.json(g);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
+export const AdminController = {
+  // ---- GROUP MANAGEMENT ----
+  createGroup: GroupC.createGroup,
+  updateGroup: GroupC.updateGroup,
+  deleteGroup: GroupC.deleteGroup,
+  addMember: GroupC.addMember,
+  removeMember: GroupC.removeMember,
+  getGroupDetails: GroupC.getGroupDetails,
+  getGroupFund: GroupC.getGroupFund,
+  updateGroupFund: GroupC.updateGroupFund,
 
-export const resolveDispute = async (req, res) => {
-  try {
-    const dispute = await Dispute.findByIdAndUpdate(
-      req.params.id,
-      { status: "resolved" },
-      { new: true }
-    );
-    res.json(dispute);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+  // ---- CONTRACT MANAGEMENT ----
+  createContract: ContractC.createContract,
+  signContract: ContractC.signContract,
+  getContract: ContractC.getContract,
+
+  // ---- VEHICLE MANAGEMENT ----
+  createVehicle: VehicleC.createVehicle,
+  updateVehicle: VehicleC.updateVehicle,
+  deleteVehicle: VehicleC.deleteVehicle,
+  getAllVehicles: VehicleC.getAllVehicles,
+  getVehicleById: VehicleC.getVehicleById,
+
+  // ---- DISPUTE MANAGEMENT ----
+  createDispute: DisputeC.createDispute,
+  updateDispute: DisputeC.updateDispute,
+  resolveDispute: DisputeC.resolveDispute,
+  getAllDisputes: DisputeC.getAllDisputes,
+  getDisputeById: DisputeC.getDisputeById,
+
+  // ---- REPORTS ----
+  generateFinancialReport: ReportC.generateFinancialReport,
+  generateUsageReport: ReportC.generateUsageReport,
 };

@@ -1,65 +1,48 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
-  Box,
-  Paper,
   TextField,
   Button,
+  Card,
+  CardContent,
   Typography,
-  Alert,
 } from "@mui/material";
-import api from "../../api/axiosClient";
+import authApi from "../../api/authApi";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
 
-  const submit = async () => {
-    setError("");
-    setSuccess("");
-    setLoading(true);
-    try {
-      await api.post("/auth/forgot-password", { email });
-      setSuccess("Email reset đã được gửi nếu tài khoản tồn tại.");
-    } catch (err) {
-      setError("Gửi yêu cầu thất bại");
-    } finally {
-      setLoading(false);
-    }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await authApi.forgotPassword({ email });
+    setSent(true);
   };
 
   return (
-    <Box display="flex" justifyContent="center" p={2}>
-      <Paper sx={{ p: 3, width: 420 }}>
-        <Typography variant="h6">Quên mật khẩu</Typography>
-        {success && (
-          <Alert severity="success" sx={{ mt: 1 }}>
-            {success}
-          </Alert>
-        )}
-        {error && (
-          <Alert severity="error" sx={{ mt: 1 }}>
-            {error}
-          </Alert>
-        )}
-        <TextField
-          label="Email"
-          fullWidth
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          sx={{ mt: 2 }}
-        />
-        <Button
-          variant="contained"
-          fullWidth
-          sx={{ mt: 2 }}
-          onClick={submit}
-          disabled={loading}
-        >
-          Gửi
-        </Button>
-      </Paper>
-    </Box>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+      <Card className="max-w-md mx-auto shadow-xl p-4">
+        <CardContent className="flex flex-col gap-4">
+          <Typography variant="h6">Forgot Password</Typography>
+
+          {!sent ? (
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <TextField
+                label="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                fullWidth
+              />
+              <Button type="submit" variant="contained" fullWidth>
+                Send Reset Link
+              </Button>
+            </form>
+          ) : (
+            <p className="text-green-600">
+              Reset link has been sent to your email.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
