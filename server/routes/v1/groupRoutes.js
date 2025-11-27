@@ -3,6 +3,8 @@ import * as GroupC from "../../controllers/groupController.js";
 import { authMiddleware } from "../../middlewares/authMiddleware.js";
 import { authorizeRoles } from "../../middlewares/roleMiddleware.js";
 const groupRouter = express.Router();
+groupRouter.get("/", authMiddleware, GroupC.getMyGroups);
+
 groupRouter.post("/", authMiddleware, GroupC.createGroup);
 groupRouter.put("/:id", authMiddleware, GroupC.updateGroup);
 groupRouter.delete(

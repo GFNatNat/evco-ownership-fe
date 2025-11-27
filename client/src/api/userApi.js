@@ -1,12 +1,13 @@
 import axiosClient from "./axiosClient";
 
 const userApi = {
-  me: () => axiosClient.get("/user/me"),
-  updateMe: (data) => axiosClient.put("/user/me", data),
+  getProfile: () => axiosClient.get("/users/me"), // Sửa /user -> /users
+  me: () => axiosClient.get("/users/me"),
+  updateMe: (data) => axiosClient.put("/users/me", data),
   uploadLicense: (file) => {
     const formData = new FormData();
     formData.append("license", file);
-    return axiosClient.post("/user/me/upload-license", formData);
+    return axiosClient.post("/users/me/upload-license", formData);
   },
 };
 export default userApi;

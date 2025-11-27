@@ -1,10 +1,10 @@
 import axiosClient from "./axiosClient";
 
 const costApi = {
-  add: (data) => axiosClient.post("/cost/add", data),
-  settle: (id) => axiosClient.post(`/cost/settle/${id}`),
-  history: () => axiosClient.get("/cost/history"),
-  outstanding: () => axiosClient.get("/cost/outstanding"),
+  // Sửa /cost -> /costs
+  add: (data) => axiosClient.post("/costs/add", data),
+  settle: (id) => axiosClient.post(`/costs/settle/${id}`),
+  history: () => axiosClient.get("/costs/history"),
+  outstanding: () => axiosClient.get("/costs/outstanding"),
 };
-
 export default costApi;

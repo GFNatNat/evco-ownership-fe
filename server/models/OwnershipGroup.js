@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
 const MemberSchema = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    ownershipPercentage: { type: Number, required: true },
+    ownershipPercentage: { type: Number, default: 0 }, // Bỏ required hoặc để default 0
     role: {
       type: String,
       enum: ["owner", "groupAdmin", "member"],
@@ -19,7 +19,8 @@ const OwnershipGroupSchema = new Schema(
   {
     name: { type: String, required: true },
 
-    vehicleId: { type: Schema.Types.ObjectId, ref: "Vehicle", required: true },
+    // [FIX]: Bỏ required: true để tránh lỗi khi tạo group mà chưa có xe
+    vehicleId: { type: Schema.Types.ObjectId, ref: "Vehicle" },
 
     members: [MemberSchema],
 

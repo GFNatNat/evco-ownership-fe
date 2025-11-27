@@ -27,10 +27,16 @@ export default function Groups() {
   }, []);
 
   const handleCreate = async () => {
-    await groupApi.create({ name: groupName });
-    setOpen(false);
-    setGroupName("");
-    load();
+    try {
+      // Gọi API create vừa thêm
+      await groupApi.create({ name: groupName });
+      setOpen(false);
+      setGroupName("");
+      load(); // Load lại danh sách sau khi tạo
+    } catch (error) {
+      console.error("Failed to create group", error);
+      // Bạn có thể thêm notification báo lỗi ở đây nếu muốn
+    }
   };
 
   return (

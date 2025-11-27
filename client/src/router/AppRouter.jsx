@@ -11,13 +11,13 @@ import MainLayout from "../layout/MainLayout";
 import AdminLayout from "../layout/admin/AdminLayout";
 
 // Auth Pages
-import Login from "../pages/auth/Login";
-import Register from "../pages/auth/Register";
-import VerifyIdentity from "../pages/auth/VerifyIdentity";
-import VerifyLicense from "../pages/auth/VerifyLicense";
-import OnboardingSuccess from "../pages/auth/OnboardingSuccess";
-import ForgotPassword from "../pages/auth/ForgotPassword";
-import ResetPassword from "../pages/auth/ResetPassword";
+import Login from "../pages/Auth/Login";
+import Register from "../pages/Auth/Register";
+import VerifyIdentity from "../pages/Auth/VerifyIdentity";
+import VerifyLicense from "../pages/Auth/VerifyLicense";
+import OnboardingSuccess from "../pages/Auth/OnboardingSuccess";
+import ForgotPassword from "../pages/Auth/ForgotPassword";
+import ResetPassword from "../pages/Auth/ResetPassword";
 
 // Co-owner Pages
 import Overview from "../pages/dashboard/Overview";
@@ -30,7 +30,7 @@ import Voting from "../pages/dashboard/Voting";
 import VotingDetail from "../pages/dashboard/VotingDetail";
 import Costs from "../pages/dashboard/Costs";
 
-// Account
+// Account Pages
 import Profile from "../pages/account/Profile";
 import Notifications from "../pages/account/Notifications";
 
@@ -52,14 +52,8 @@ import StaffDashboard from "../pages/staff/StaffDashboard";
 import StaffCheckinUI from "../pages/staff/StaffCheckinUI";
 import CheckInOut from "../pages/staff/CheckInOut";
 
-// 🚀 AUTO REDIRECT BASED ON ROLE
-function DashboardRedirect() {
-  const role = localStorage.getItem("role");
-
-  if (role === "Admin") return <Navigate to="/admin" replace />;
-  if (role === "Staff") return <Navigate to="/staff" replace />;
-  return <Navigate to="/coowner/dashboard" replace />;
-}
+// Redirect Helper
+import DashboardRedirect from "../pages/DashboardRedirect";
 
 export default function AppRouter() {
   return (
@@ -67,7 +61,7 @@ export default function AppRouter() {
       <LoadingProvider>
         <BrowserRouter>
           <Routes>
-            {/* PUBLIC AUTH ROUTES */}
+            {/* --- PUBLIC ROUTES --- */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/verify-identity" element={<VerifyIdentity />} />
@@ -76,7 +70,17 @@ export default function AppRouter() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-            {/* MAIN DASHBOARD REDIRECT */}
+            {/* --- DISPATCHER --- */}
+            {/* Route gốc "/" sẽ tự động kiểm tra role và đưa về dashboard tương ứng */}
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <DashboardRedirect />
+                </ProtectedRoute>
+              }
+            />
+            {/* Route cũ "/dashboard" giữ lại để tương thích */}
             <Route
               path="/dashboard"
               element={
@@ -86,29 +90,36 @@ export default function AppRouter() {
               }
             />
 
-            {/* COOWNER */}
+            {/* --- CO-OWNER ROUTES --- */}
             <Route
               path="/coowner"
               element={
                 <ProtectedRoute>
+                  {/* Coowner, Admin, Staff đều xem được giao diện user thường */}
                   <RoleGuard roles={["Coowner", "Admin", "Staff"]}>
                     <MainLayout />
                   </RoleGuard>
                 </ProtectedRoute>
               }
             >
+              <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<Overview />} />
+              {/* Groups Management */}
               <Route path="groups" element={<Groups />} />
               <Route path="groups/:id" element={<GroupDetail />} />
+              {/* Vehicle & Schedule */}
               <Route path="schedule" element={<Schedule />} />
               <Route path="vehicles" element={<Vehicles />} />
               <Route path="vehicles/:id" element={<VehicleDetail />} />
-              <Route path="voting" element={<Voting />} />
+              {/* Voting & Costs */}
+              <Route path="vote" element={<Voting />} />{" "}
+              {/* Sửa path khớp với Sidebar */}
               <Route path="voting/:id" element={<VotingDetail />} />
-              <Route path="costs" element={<Costs />} />
+              <Route path="cost" element={<Costs />} />{" "}
+              {/* Sửa path khớp với Sidebar */}
             </Route>
 
-            {/* ACCOUNT */}
+            {/* --- ACCOUNT ROUTES (FIXED) --- */}
             <Route
               path="/account"
               element={
@@ -117,11 +128,13 @@ export default function AppRouter() {
                 </ProtectedRoute>
               }
             >
+              {/* QUAN TRỌNG: Dòng này sửa lỗi bấm vào Account bị trắng trang/login loop */}
+              <Route index element={<Navigate to="profile" replace />} />
               <Route path="profile" element={<Profile />} />
               <Route path="notifications" element={<Notifications />} />
             </Route>
 
-            {/* ADMIN */}
+            {/* --- ADMIN ROUTES --- */}
             <Route
               path="/admin"
               element={
@@ -133,8 +146,12 @@ export default function AppRouter() {
               }
             >
               <Route index element={<AdminDashboard />} />
+
+              {/* Group Management */}
               <Route path="groups" element={<AdminGroupManagement />} />
               <Route path="groups/:id" element={<AdminGroupDetail />} />
+
+              {/* Contract Management */}
               <Route path="contracts" element={<AdminContractList />} />
               <Route path="contracts/:id" element={<AdminContractDetail />} />
               <Route
@@ -142,6 +159,8 @@ export default function AppRouter() {
                 element={<AdminContractWorkflow />}
               />
               <Route path="contracts/manage" element={<ContractManagement />} />
+
+              {/* System Management */}
               <Route path="vehicles" element={<VehicleManagement />} />
               <Route path="disputes" element={<DisputeManagement />} />
               <Route
@@ -151,13 +170,13 @@ export default function AppRouter() {
               <Route path="reports" element={<FinanceReports />} />
             </Route>
 
-            {/* STAFF — FIXED: cần Layout bao quanh */}
+            {/* --- STAFF ROUTES --- */}
             <Route
               path="/staff"
               element={
                 <ProtectedRoute>
                   <RoleGuard roles={["Admin", "Staff"]}>
-                    <MainLayout /> {/* layout cho staff */}
+                    <MainLayout />
                   </RoleGuard>
                 </ProtectedRoute>
               }
@@ -167,8 +186,8 @@ export default function AppRouter() {
               <Route path="checkin/scan" element={<CheckInOut />} />
             </Route>
 
-            {/* DEFAULT */}
-            <Route path="*" element={<Navigate to="/login" replace />} />
+            {/* --- FALLBACK --- */}
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </BrowserRouter>
       </LoadingProvider>

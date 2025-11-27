@@ -9,10 +9,21 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   const fetchUser = async () => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await userApi.getProfile();
       setUser(res.data);
     } catch (err) {
+      console.error("Fetch user failed:", err);
+      // Nếu lỗi auth thì clear luôn để tránh loop
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("role");
       setUser(null);
     }
     setLoading(false);
@@ -26,9 +37,11 @@ export function AuthProvider({ children }) {
     try {
       const res = await authApi.login({ email, password });
 
-      const { user, accessToken } = res.data;
+      // Lấy cả refreshToken từ response
+      const { user, accessToken, refreshToken } = res.data;
 
       localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken); // <--- QUAN TRỌNG: Lưu cái này
       localStorage.setItem("role", user.roles[0]);
 
       setUser(user);
@@ -45,8 +58,10 @@ export function AuthProvider({ children }) {
     } catch {}
 
     localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
     localStorage.removeItem("role");
     setUser(null);
+    window.location.href = "/login";
   };
 
   return (

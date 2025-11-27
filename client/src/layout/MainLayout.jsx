@@ -18,9 +18,9 @@ import AppSettings from "../components/common/AppSettings";
 import Footer from "../components/common/Footer";
 
 const menu = [
-  { label: "Dashboard", path: "/" },
-  { label: "Groups", path: "/groups" },
-  { label: "Account", path: "/account" },
+  { label: "Dashboard", path: "/coowner/dashboard" }, // Nên dùng đường dẫn tuyệt đối
+  { label: "Groups", path: "/coowner/groups" },
+  { label: "Account", path: "/account/profile" }, // Sửa thành /account/profile
 ];
 
 export default function MainLayout() {

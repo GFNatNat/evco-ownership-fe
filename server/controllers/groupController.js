@@ -6,8 +6,16 @@ export const createGroup = async (req, res, next) => {
   try {
     const group = await OwnershipGroup.create({
       ...req.body,
+      members: [
+        {
+          userId: req.user.id,
+          role: "groupAdmin",
+          ownershipPercentage: 100, // Tạm để 100% hoặc 0 tùy logic
+        },
+      ],
       createdAt: new Date(),
     });
+
     await wa({
       userId: req.user.id,
       action: "group.create",
@@ -149,6 +157,17 @@ export const updateGroupFund = async (req, res, next) => {
       ip: req.ip,
     });
     res.json(group.commonFund);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getMyGroups = async (req, res, next) => {
+  try {
+    const groups = await OwnershipGroup.find({
+      "members.userId": req.user.id,
+    }).populate("vehicleId", "name plateNumber");
+    res.json(groups);
   } catch (err) {
     next(err);
   }

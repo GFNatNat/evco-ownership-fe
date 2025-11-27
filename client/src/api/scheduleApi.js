@@ -1,12 +1,13 @@
 import axiosClient from "./axiosClient";
 
 const scheduleApi = {
+  // Sửa /schedule -> /schedules
   availability: (vehicleId) =>
-    axiosClient.get(`/schedule/vehicle/${vehicleId}/availability`),
-  book: (data) => axiosClient.post("/schedule/book", data),
-  modify: (data) => axiosClient.put("/schedule/modify", data),
-  cancel: (id) => axiosClient.delete(`/schedule/cancel/${id}`),
-  mySchedule: () => axiosClient.get("/schedule/user"),
-  groupCalendar: (groupId) => axiosClient.get(`/schedule/group/${groupId}`),
+    axiosClient.get(`/schedules/vehicle/${vehicleId}/availability`),
+  book: (data) => axiosClient.post("/schedules/book", data),
+  modify: (data) => axiosClient.put("/schedules/modify", data),
+  cancel: (id) => axiosClient.delete(`/schedules/cancel/${id}`),
+  mySchedule: () => axiosClient.get("/schedules/user"),
+  groupCalendar: (groupId) => axiosClient.get(`/schedules/group/${groupId}`),
 };
 export default scheduleApi;
